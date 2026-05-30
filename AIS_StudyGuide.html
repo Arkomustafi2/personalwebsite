@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIS Study Guide — Intelligent Agents & Search</title>
+<style>
+:root {
+  --bg:#0f1117; --card:#1a1d27; --card2:#22263a; --border:#2e3354;
+  --text:#e2e6f0; --muted:#8892b0;
+  --accent:#7c6af7; --accent2:#4ecdc4; --accent3:#f06292; --accent4:#f7c948;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.65}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* HEADER */
+.hdr{background:var(--card);border-bottom:2px solid var(--accent);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}
+.hdr-left h1{font-size:1.25rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hdr-left p{color:var(--muted);font-size:0.8rem;margin-top:2px}
+.prog-wrap{display:flex;align-items:center;gap:10px}
+.prog-outer{width:160px;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.prog-inner{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px;transition:width .35s ease;width:0%}
+.prog-lbl{font-size:0.8rem;color:var(--muted);min-width:70px;text-align:right}
+
+/* NAV */
+.nav{display:flex;gap:4px;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;flex-wrap:nowrap}
+.nav button{background:none;border:1px solid transparent;color:var(--muted);padding:7px 13px;border-radius:7px;cursor:pointer;font-size:0.83rem;white-space:nowrap;transition:all .18s;font-family:inherit}
+.nav button:hover{background:var(--card2);color:var(--text);border-color:var(--border)}
+.nav button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* SECTIONS */
+.section{display:none;max-width:980px;margin:0 auto;padding:28px 18px}
+.section.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px}
+.card h2{font-size:1.12rem;color:var(--accent);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card h3{font-size:0.97rem;color:var(--accent2);margin:16px 0 8px;font-weight:600}
+.card h4{font-size:0.9rem;color:var(--accent4);margin:12px 0 6px;font-weight:600}
+.card p{margin-bottom:8px;color:var(--text)}
+.card ul,.card ol{padding-left:1.4em;margin-bottom:8px}
+.card li{margin-bottom:4px}
+
+/* FORMULA */
+.formula{background:#12151f;border-left:3px solid var(--accent4);border-radius:6px;padding:12px 16px;font-family:'Courier New',monospace;font-size:0.87rem;color:var(--accent4);white-space:pre;overflow-x:auto;margin:10px 0;line-height:1.7}
+
+/* ALERTS */
+.alert{border-radius:8px;padding:12px 16px;margin:12px 0;border-left:4px solid;font-size:0.9rem}
+.alert strong{font-weight:700;display:block;margin-bottom:4px}
+.alert-info{background:#1a2744;border-color:#4a7fc1;color:#a8c7f0}
+.alert-warn{background:#2a2010;border-color:var(--accent4);color:#e8c96a}
+.alert-key{background:#0e2520;border-color:var(--accent2);color:#6fe8de}
+.alert-exam{background:#2a1020;border-color:var(--accent3);color:#f48aaa}
+
+/* STEPS */
+.steps{margin:12px 0}
+.step{display:flex;gap:13px;margin-bottom:12px;align-items:flex-start}
+.step-num{min-width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-body strong{color:var(--accent4)}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;margin:12px 0}
+.tbl{width:100%;border-collapse:collapse;font-size:0.87rem}
+.tbl th{background:var(--card2);color:var(--accent);padding:9px 12px;border:1px solid var(--border);text-align:left;font-weight:600}
+.tbl td{padding:8px 12px;border:1px solid var(--border);vertical-align:top;color:var(--text)}
+.tbl tr:nth-child(even) td{background:#161926}
+.tbl .hl{color:var(--accent2);font-weight:600}
+.tbl .hl2{color:var(--accent4);font-weight:600}
+
+/* GRIDS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* SUMMARY BOX */
+.summary-box{background:linear-gradient(135deg,#1a1d27,#1e2235);border:1px solid var(--accent);border-radius:12px;padding:22px;margin-bottom:22px}
+.summary-box p{color:var(--text);line-height:1.8;margin-bottom:8px}
+
+/* TIMELINE */
+.tl-item{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start}
+.tl-dot{min-width:13px;height:13px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0;box-shadow:0 0 0 5px #7c6af720}
+.tl-time{min-width:68px;color:var(--accent4);font-size:0.8rem;font-weight:700;padding-top:3px}
+.tl-task strong{display:block;color:var(--text);font-size:0.9rem}
+.tl-task span{color:var(--muted);font-size:0.8rem}
+.tl-task .slides{color:var(--accent3);font-size:0.78rem;margin-top:2px}
+
+/* CHECKLIST */
+.checklist{list-style:none;margin:10px 0}
+.checklist li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:0.9rem;transition:color .2s}
+.checklist li:last-child{border-bottom:none}
+.checklist li input{width:17px;height:17px;accent-color:var(--accent2);cursor:pointer;flex-shrink:0}
+.checklist li.done{color:var(--muted);text-decoration:line-through}
+
+/* AGENT ARCH DIAGRAM */
+.arch-container{background:var(--card2);border-radius:10px;padding:16px;margin:12px 0;font-size:0.83rem}
+.arch-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.arch-box{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:7px 12px;font-size:0.82rem;text-align:center;white-space:nowrap}
+.arch-box.env{border-color:var(--accent3);color:var(--accent3)}
+.arch-box.sense{border-color:var(--accent2);color:var(--accent2)}
+.arch-box.act{border-color:var(--accent4);color:var(--accent4)}
+.arch-box.proc{border-color:var(--accent);color:var(--accent)}
+.arch-arrow{color:var(--muted);font-size:1.1rem}
+.arch-env-block{background:var(--card);border:2px solid var(--accent3);border-radius:8px;padding:10px;text-align:center;color:var(--accent3);font-weight:700;min-width:80px}
+
+/* QUIZ */
+.quiz-score-bar{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.score-val{font-size:1.8rem;font-weight:800;color:var(--accent4)}
+.score-lbl{color:var(--muted);font-size:0.85rem}
+.reset-btn{background:var(--accent3);color:#fff;border:none;padding:8px 20px;border-radius:7px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit}
+.reset-btn:hover{opacity:.85}
+.quiz-q{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
+.q-num{color:var(--accent);font-size:0.78rem;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.q-text{font-weight:600;margin-bottom:13px;color:var(--text)}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:7px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:all .18s;user-select:none}
+.opt:hover:not(.correct):not(.wrong){border-color:var(--accent);background:var(--card2)}
+.opt.correct{background:#0e2a1a;border-color:var(--accent2);color:var(--accent2)}
+.opt.wrong{background:#2a1020;border-color:var(--accent3);color:var(--accent3)}
+.opt-let{font-weight:700;color:var(--accent);min-width:22px;flex-shrink:0}
+.q-exp{background:var(--card2);border-left:3px solid var(--accent2);border-radius:6px;padding:10px 14px;margin-top:10px;color:var(--muted);font-size:0.87rem;display:none;line-height:1.65}
+.q-exp.show{display:block}
+
+/* TOOL */
+.sim-section{margin-bottom:18px}
+.sim-section label{display:block;color:var(--muted);font-size:0.85rem;margin-bottom:6px;font-weight:600}
+.sim-input,.pp-input{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:7px;font-family:'Courier New',monospace;font-size:0.87rem;width:100%;transition:border .2s}
+.sim-input:focus,.pp-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px #7c6af720}
+.sim-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.sim-row2{grid-template-columns:1fr}}
+.pp-btn{background:linear-gradient(135deg,var(--accent),#5a4fd6);color:#fff;border:none;padding:10px 28px;border-radius:8px;cursor:pointer;font-size:0.95rem;font-weight:700;margin-top:6px;font-family:inherit;transition:all .2s}
+.pp-btn:hover{transform:translateY(-1px);box-shadow:0 4px 18px #7c6af740}
+.result-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:18px;display:none}
+.result-box.show{display:block}
+.result-step{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:12px 14px;margin-bottom:10px;font-family:'Courier New',monospace;font-size:0.84rem}
+.result-step .rs-head{color:var(--accent2);font-weight:700;margin-bottom:6px;font-size:0.88rem}
+.result-step .rs-open{color:var(--accent4)}
+.result-step .rs-visited{color:var(--accent)}
+.result-path{background:linear-gradient(135deg,#1a2a1a,#1e2a1e);border:2px solid var(--accent2);border-radius:8px;padding:14px;margin-top:12px;font-family:monospace;font-size:1rem}
+.mono{font-family:'Courier New',monospace;color:var(--accent4);font-size:0.88rem}
+.tag{display:inline-block;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:0.77rem;color:var(--muted);margin:2px}
+.tag.a{border-color:var(--accent);color:var(--accent)}
+.tag.b{border-color:var(--accent2);color:var(--accent2)}
+.tag.c{border-color:var(--accent3);color:var(--accent3)}
+.links-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.ext-link{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border);color:var(--accent2);padding:6px 12px;border-radius:7px;font-size:0.83rem;transition:all .18s}
+.ext-link:hover{border-color:var(--accent2);background:#0e2520;text-decoration:none}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>🤖 AIS Study Guide</h1>
+    <p>Intelligent Agents &amp; Search Algorithms · M.Sc. · University of Dhaka</p>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-outer"><div class="prog-inner" id="progBar"></div></div>
+    <div class="prog-lbl" id="progLbl">0 / 10 done</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="active" onclick="show('plan',this)">📅 Study Plan</button>
+  <button onclick="show('agents',this)">🤖 Intelligent Agents</button>
+  <button onclick="show('arch',this)">🏗️ Agent Architectures</button>
+  <button onclick="show('uninformed',this)">🔍 Uninformed Search</button>
+  <button onclick="show('informed',this)">🎯 Informed Search &amp; GA</button>
+  <button onclick="show('tool',this)">🧮 A* Simulator</button>
+  <button onclick="show('quiz',this)">🧠 Quiz</button>
+</div>
+
+<!-- ============================================================ STUDY PLAN ============================================================ -->
+<div class="section active" id="plan">
+
+  <div class="summary-box">
+    <h2 style="color:var(--accent);font-size:1.1rem;margin-bottom:10px">📌 What This Course Is Really About</h2>
+    <p>This module covers the foundational architecture of intelligent systems — starting from the formal definition of an <strong>agent</strong> (anything that perceives and acts) and the five canonical agent types (Simple Reflex through Learning), all framed by the PEAS model. The second half pivots to <strong>search</strong>: how an agent systematically finds solutions in a state space, covering both uninformed strategies (BFS, DFS, DLS, IDDFS, UCS) and informed strategies that exploit heuristics (Greedy Best-First, A*). The module closes with a brief treatment of <strong>Genetic Algorithms</strong> as a population-based optimization method. The unifying thread is rationality — every design choice, from choosing a queue type to defining admissibility, is about maximising the agent's performance measure.</p>
+  </div>
+
+  <div class="card">
+    <h2>⏱️ 6-Hour Study Timeline</h2>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">0–45 min</div>
+      <div class="tl-task"><strong>Agents: Concepts & PEAS</strong><span>Definitions, agent function, rational agent, PEAS model, 5-type taxonomy</span><div class="slides">📄 Slides 1–2 · Tab: Intelligent Agents</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">45–90 min</div>
+      <div class="tl-task"><strong>All 5 Agent Architectures (with diagrams)</strong><span>Simple Reflex → Model-Based → Goal-Based → Utility → Learning. Draw each block diagram from memory.</span><div class="slides">📄 Slides 3–7 · Tab: Agent Architectures</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">90–150 min</div>
+      <div class="tl-task"><strong>Uninformed Search (BFS, DFS, DLS, IDDFS)</strong><span>Trace queues/stacks manually. Memorise complexities. Work the BFS tree level by level.</span><div class="slides">📄 Slides 8–12 · Tab: Uninformed Search</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">150–210 min</div>
+      <div class="tl-task"><strong>Uniform Cost Search — full worked example</strong><span>Trace the priority-queue table from the slide. Understand why it equals BFS when costs are uniform.</span><div class="slides">📄 Slide 13 · Tab: Uninformed Search</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">210–300 min</div>
+      <div class="tl-task"><strong>Informed Search: Greedy, A*, Admissibility proof</strong><span>Trace Greedy BFS table, then A* table. Derive f(n)=g(n)+h(n) and prove optimality.</span><div class="slides">📄 Slides 14–17 · Tab: Informed Search</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">300–360 min</div>
+      <div class="tl-task"><strong>Genetic Algorithm + A* Simulator + Quiz</strong><span>Review GA workflow. Run the interactive A* simulator for 2-3 graphs. Take the full 15-question quiz.</span><div class="slides">📄 Slide 18 · Tabs: Informed Search, A* Simulator, Quiz</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✅ Progress Checklist <span style="color:var(--muted);font-size:0.8rem;font-weight:400">(click to mark complete)</span></h2>
+    <ul class="checklist" id="chk">
+      <li onclick="tick(this)"><input type="checkbox">I can formally define an agent using sensors, actuators and the agent function f: P*→A</li>
+      <li onclick="tick(this)"><input type="checkbox">I can define Rational Agent, Performance Measure, and list the 4 PEAS components</li>
+      <li onclick="tick(this)"><input type="checkbox">I can draw and explain the Simple Reflex Agent architecture from memory</li>
+      <li onclick="tick(this)"><input type="checkbox">I can draw and explain Model-Based, Goal-Based, Utility-Based, and Learning Agent architectures</li>
+      <li onclick="tick(this)"><input type="checkbox">I can trace BFS on a tree (level by level, FIFO queue) and state its 4 complexity properties</li>
+      <li onclick="tick(this)"><input type="checkbox">I can trace DFS on a tree (LIFO stack) and explain why it is NOT complete for infinite spaces</li>
+      <li onclick="tick(this)"><input type="checkbox">I understand DLS and IDDFS and why IDDFS gives both completeness and optimality</li>
+      <li onclick="tick(this)"><input type="checkbox">I can trace UCS on a weighted graph using a min-priority queue ordered by g(n)</li>
+      <li onclick="tick(this)"><input type="checkbox">I can trace Greedy BFS (f=h) and A* (f=g+h) on the slide examples and get the correct route</li>
+      <li onclick="tick(this)"><input type="checkbox">I can state the admissibility condition and sketch the A* optimality proof (G1 vs G2 argument)</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🔗 Recommended External Resources</h2>
+    <div class="links-row">
+      <a class="ext-link" href="https://www.youtube.com/watch?v=uB7O8i1TYQE" target="_blank">▶ BFS/DFS Visualised — CS Dojo</a>
+      <a class="ext-link" href="https://www.youtube.com/watch?v=6TsL96NAZCo" target="_blank">▶ A* Search Algorithm — Sebastian Lague</a>
+      <a class="ext-link" href="https://www.youtube.com/watch?v=eSRGenurnEc" target="_blank">▶ Genetic Algorithms Intro — The Coding Train</a>
+      <a class="ext-link" href="https://cs.stanford.edu/people/eroberts/courses/soco/projects/2003-04/intelligent-agents/" target="_blank">🌐 Stanford — Intelligent Agents</a>
+      <a class="ext-link" href="https://www.redblobgames.com/pathfinding/a-star/introduction.html" target="_blank">🌐 A* Interactive Guide — Red Blob Games</a>
+      <a class="ext-link" href="https://qiao.github.io/PathFinding.js/visual/" target="_blank">🌐 Pathfinding Visualiser (BFS/DFS/A*)</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ INTELLIGENT AGENTS ============================================================ -->
+<div class="section" id="agents">
+  <div class="card">
+    <h2>🤖 What Is an Agent?</h2>
+    <p>An <strong>agent</strong> is anything that can be viewed as:</p>
+    <ul>
+      <li><strong>Perceiving</strong> its environment through <em>sensors</em></li>
+      <li><strong>Acting</strong> upon that environment through <em>actuators</em></li>
+    </ul>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card" style="margin:0;background:var(--card2)">
+        <h4>Human Agent</h4>
+        <p><span class="tag b">Sensors</span> Eyes, ears, other organs</p>
+        <p><span class="tag a">Actuators</span> Hands, legs, mouth, other body parts</p>
+      </div>
+      <div class="card" style="margin:0;background:var(--card2)">
+        <h4>Robotic Agent</h4>
+        <p><span class="tag b">Sensors</span> Cameras, infrared range finders</p>
+        <p><span class="tag a">Actuators</span> Various motors</p>
+      </div>
+      <div class="card" style="margin:0;background:var(--card2)">
+        <h4>Software Agent</h4>
+        <p><span class="tag b">Sensors</span> Keystrokes, file contents, received network packets</p>
+        <p><span class="tag a">Actuators</span> Display on screen, files, sent network packets</p>
+      </div>
+      <div class="card" style="margin:0;background:var(--card2)">
+        <h4>Goal</h4>
+        <p>We want it to be a <strong>machine that can automatically sense and act</strong> — i.e., Agent → Percept → Decision → Actions (to change environment)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📥 Percept &amp; Percept Sequence</h2>
+    <div class="grid2">
+      <div>
+        <h3>Percept</h3>
+        <p>The agent's <strong>perceptual input at any given instant</strong>. The single snapshot of what the sensors currently detect.</p>
+      </div>
+      <div>
+        <h3>Percept Sequence</h3>
+        <p>The <strong>complete history of everything the agent has ever perceived</strong>. Used by the agent function to decide actions.</p>
+      </div>
+    </div>
+    <div class="alert alert-key">
+      <strong>Key Principle</strong>
+      An agent's behaviour is described by the <strong>agent function</strong>, which maps from percept histories (P*) to actions (A):
+      <div class="formula">  f : P* → A</div>
+      Internally, this function is implemented by an <strong>agent program</strong> running on a physical architecture to produce f.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚖️ Rational Agent</h2>
+    <p>A <strong>rational agent</strong> is one that can take actions to <strong>maximise its performance measure</strong> based on:</p>
+    <ul>
+      <li>The <strong>perceived sequence</strong> to date</li>
+      <li><strong>Prior knowledge</strong> of the environment</li>
+    </ul>
+    <div class="alert alert-exam">
+      <strong>🎓 Exam Definition</strong>
+      "A rational agent is an agent which can do the right action to maximise performance measure based on the perceived sequence to date and prior knowledge of the environment."
+    </div>
+    <h3>Performance Measure</h3>
+    <p>An <strong>objective criterion</strong> for the success of an agent's behaviour. The right action is the one that <strong>will cause the agent to be most successful</strong>.</p>
+    <div class="alert alert-warn">
+      <strong>⚠️ Distinction</strong>
+      Rationality ≠ omniscience. A rational agent maximises <em>expected</em> performance given what it can perceive and do — it doesn't require perfect knowledge.
+    </div>
+    <h3>Goals of an Agent</h3>
+    <ul>
+      <li>High performance</li>
+      <li>Optimised result</li>
+      <li>Rational (right) action</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🧩 PEAS Model</h2>
+    <p>PEAS defines the <strong>factors in modelling an agent</strong>:</p>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Letter</th><th>Full Form</th><th>Description</th><th>Autonomous Car Example</th></tr>
+        <tr><td class="hl">P</td><td>Performance Measure</td><td>Criterion for success (objective)</td><td>Autonomous, comfortable, safe, fast, legal</td></tr>
+        <tr><td class="hl">E</td><td>Environment</td><td>The world the agent operates in</td><td>Roads, traffic, pedestrians, weather</td></tr>
+        <tr><td class="hl">A</td><td>Actuators</td><td>How agent affects the environment</td><td>Steering, acceleration, brakes, horn, display</td></tr>
+        <tr><td class="hl">S</td><td>Sensors</td><td>How agent perceives the environment</td><td>Cameras, sonar, GPS, speedometer</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-info">
+      <strong>Usage</strong> PEAS is the standard framework for specifying any AI agent task. In an exam question "design a PEAS description for X", you list all four components systematically.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🗂️ 5 Types of Agents — Overview</h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>#</th><th>Type</th><th>Uses History?</th><th>Uses Goals?</th><th>Uses Utility?</th><th>Learns?</th></tr>
+        <tr><td>1</td><td class="hl">Simple Reflex</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        <tr><td>2</td><td class="hl">Model-Based Reflex</td><td>✅ Internal state</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        <tr><td>3</td><td class="hl">Goal-Based</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+        <tr><td>4</td><td class="hl">Utility-Based</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>5</td><td class="hl">Learning</td><td>✅</td><td>✅</td><td>✅</td><td>✅ (all types)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ AGENT ARCHITECTURES ============================================================ -->
+<div class="section" id="arch">
+
+  <!-- SIMPLE REFLEX -->
+  <div class="card">
+    <h2>1️⃣ Simple Reflex Agent</h2>
+    <p>Selects actions <strong>on the basis of the current percept only</strong>, ignoring the rest of the percept history. "Reflex" = immediately / spontaneously, without any calculation.</p>
+    <div class="arch-container">
+      <div class="arch-row">
+        <div class="arch-box env" style="min-width:90px;text-align:center">Environment</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box sense">Sensors</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box proc">What the world<br>is like now<br>(Current situation)</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box proc">Condition-Action<br>Rule</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box proc">What action I<br>should do now</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box act">Actuators</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box env" style="min-width:90px">Environment</div>
+      </div>
+    </div>
+    <h3>Key Characteristics</h3>
+    <ul>
+      <li>Acts <strong>only on the basis of current perception</strong></li>
+      <li>Ignores the rest of percept history (gained from previous records)</li>
+      <li>Based on <strong>If-Then (condition-based) Rules</strong></li>
+      <li>Environment <strong>must be fully observable</strong> — agent's sensors give access to the complete state of environment at each point in time</li>
+    </ul>
+    <div class="alert alert-exam">
+      <strong>⚠️ Limitations (Exam Critical)</strong>
+      <ul>
+        <li>Agent will only work if the correct decision can be made on basis of current percept — only if environment is fully observable</li>
+        <li>Infinite loops are often unavoidable — escape possible by randomising action</li>
+        <li>Very limited intelligence despite simplicity</li>
+      </ul>
+    </div>
+    <p><strong>Example:</strong> A thermostat — if temperature &lt; threshold → turn on heater.</p>
+  </div>
+
+  <!-- MODEL-BASED -->
+  <div class="card">
+    <h2>2️⃣ Model-Based Reflex Agent</h2>
+    <p>Maintains some sort of <strong>internal state</strong> that depends on the percept history and reflects at least some of the unobserved aspects of the current state.</p>
+    <div class="arch-container">
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div class="arch-box proc" style="margin-bottom:8px">State</div>
+          <div class="arch-box proc" style="margin-bottom:8px">How the world evolves</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What my actions do</div>
+          <div class="arch-box proc">Condition-Action Rules</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box proc" style="margin-bottom:8px">What the world is like now</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What action I should do now</div>
+          <div class="arch-box act">Actuators</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box env">Environment</div>
+          <div style="margin:8px 0;color:var(--muted)">↕ Sensors</div>
+          <div class="arch-box sense">Instant save current</div>
+        </div>
+      </div>
+    </div>
+    <h3>Key Characteristics</h3>
+    <ul>
+      <li>Agent should keep track of the part of the world it <strong>can't see now</strong></li>
+      <li>Environment must be <strong>partially observable</strong></li>
+      <li>Should update internal state &amp; information as time goes by</li>
+      <li>Requires two kinds of knowledge encoded in the agent program:
+        <ul>
+          <li>Information about <strong>how the world evolves independently</strong> of the agent</li>
+          <li>Information about <strong>how the agent's own actions affect the world</strong></li>
+        </ul>
+      </li>
+    </ul>
+    <p><strong>Example:</strong> A robotic vacuum that creates an internal map to remember which areas it has already cleaned.</p>
+  </div>
+
+  <!-- GOAL-BASED -->
+  <div class="card">
+    <h2>3️⃣ Goal-Based Agent</h2>
+    <p>Agents that act to <strong>achieve specific objectives or goals</strong> by considering future outcomes rather than just current states.</p>
+    <div class="arch-container">
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div class="arch-box proc" style="margin-bottom:8px">State</div>
+          <div class="arch-box proc" style="margin-bottom:8px">How the world evolves</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What my actions do</div>
+          <div class="arch-box proc">Goals</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box proc" style="margin-bottom:8px">What the world is like now</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What if I do Action A?</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What action I should do now</div>
+          <div class="arch-box act">Actuators</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box env">Environment</div>
+          <div style="margin:8px 0;color:var(--muted)">↕ Sensors</div>
+        </div>
+      </div>
+    </div>
+    <h3>Key Characteristics</h3>
+    <ul>
+      <li>Agent needs some sort of <strong>goal information</strong> that describes situations that are desirable — along with current state and percept history of the environment</li>
+      <li>Agent program can combine this with information about the results of possible actions in order to <strong>choose actions that achieve the goal</strong></li>
+      <li>Usually requires <strong>search and planning</strong></li>
+    </ul>
+    <div class="alert alert-key">
+      <strong>Key difference from Model-Based</strong> Goal-based asks: "What if I do Action A?" It reasons about hypothetical future states, not just the current model.
+    </div>
+    <p><strong>Example:</strong> A GPS navigation system that plans a route from point A to point B.</p>
+  </div>
+
+  <!-- UTILITY-BASED -->
+  <div class="card">
+    <h2>4️⃣ Utility-Based Agent</h2>
+    <p>Uses a <strong>"utility function"</strong> to measure how desirable a particular state is.</p>
+    <div class="arch-container">
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div class="arch-box proc" style="margin-bottom:8px">State</div>
+          <div class="arch-box proc" style="margin-bottom:8px">How the world evolves</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What my actions do</div>
+          <div class="arch-box proc">Utility</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box proc" style="margin-bottom:8px">What the world is like now</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What if I do Action A?</div>
+          <div class="arch-box proc" style="margin-bottom:8px">How happy I will be in such a state?</div>
+          <div class="arch-box proc" style="margin-bottom:8px">What action I should do now</div>
+          <div class="arch-box act">Actuators</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box env">Environment</div>
+          <div style="margin:8px 0;color:var(--muted)">↕ Sensors</div>
+        </div>
+      </div>
+    </div>
+    <h3>Key Characteristics</h3>
+    <ul>
+      <li>Doesn't just reach the goal — looks for the <strong>best way to reach it</strong> by maximising performance metric</li>
+      <li>A <strong>utility function</strong> maps a state onto a real number, describing the associated degree of happiness/utility. <em>"Utility means the quality of being useful."</em></li>
+      <li>When multiple goals conflict or are uncertain, utility provides the tradeoff framework</li>
+    </ul>
+    <div class="formula">Utility Function:  U : State → ℝ
+Goal: maximise  E[U(outcome)]</div>
+    <p><strong>Example:</strong> A self-driving car that chooses the fastest route that is also safest.</p>
+  </div>
+
+  <!-- LEARNING AGENT -->
+  <div class="card">
+    <h2>5️⃣ Learning Agent</h2>
+    <p>Designed to <strong>improve its performance over time</strong> by learning from its past experience and feedback.</p>
+    <div class="arch-container">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:start;font-size:0.82rem">
+        <div>
+          <div class="arch-box sense" style="margin-bottom:6px">Critic ← Performance Standard</div>
+          <div style="margin:4px 0;color:var(--muted);text-align:center">↓ feedback</div>
+          <div class="arch-box proc" style="margin-bottom:6px">Learning Element</div>
+          <div style="margin:4px 0;color:var(--muted);text-align:center">↓ learning goals</div>
+          <div class="arch-box proc">Problem Generator</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box proc" style="margin-bottom:6px">Performance Element</div>
+          <div style="margin:4px 0;color:var(--muted)">↓</div>
+          <div class="arch-box act" style="margin-bottom:6px">Actuators → Environment</div>
+          <div style="margin:4px 0;color:var(--muted)">← knowledge / changes →</div>
+        </div>
+        <div style="text-align:center">
+          <div class="arch-box env" style="margin-bottom:6px">Environment</div>
+          <div style="margin:4px 0;color:var(--muted)">↓</div>
+          <div class="arch-box sense">Sensors</div>
+        </div>
+      </div>
+    </div>
+    <h3>Four Key Components</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Component</th><th>Responsibility</th></tr>
+        <tr><td class="hl">Learning Element</td><td>Responsible for making <strong>improvements</strong> — modifies agent's knowledge</td></tr>
+        <tr><td class="hl">Performance Element</td><td>Responsible for <strong>selecting external actions</strong> — this is what we think of as the "agent" itself</td></tr>
+        <tr><td class="hl">Critic</td><td>Evaluates <strong>how well the agent is doing</strong> against a fixed performance standard; provides feedback to learning element</td></tr>
+        <tr><td class="hl">Problem Generator</td><td>Responsible for <strong>suggesting actions that will lead to new and informative experiences</strong> — exploration</td></tr>
+      </table>
+    </div>
+    <h3>Key Characteristics</h3>
+    <ul>
+      <li>Agent operates in initially unknown environments and <strong>becomes more competent than its initial knowledge alone might allow</strong></li>
+      <li>Applies to all 4 other agent types — any of them can be enhanced with a learning element</li>
+    </ul>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="card">
+    <h2>📊 Full Agent Comparison Table</h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Property</th><th>Simple Reflex</th><th>Model-Based</th><th>Goal-Based</th><th>Utility-Based</th><th>Learning</th></tr>
+        <tr><td>State used</td><td>Current percept</td><td>Internal + percept</td><td>Internal + goals</td><td>Internal + utility</td><td>All above</td></tr>
+        <tr><td>Environment</td><td>Fully observable</td><td>Partially observable</td><td>Any</td><td>Any</td><td>Unknown initially</td></tr>
+        <tr><td>Decision basis</td><td>Condition-action rules</td><td>World model</td><td>Future outcomes</td><td>Utility maximisation</td><td>Learned policy</td></tr>
+        <tr><td>Complexity</td><td>Very low</td><td>Medium</td><td>High (search)</td><td>Very high</td><td>Highest</td></tr>
+        <tr><td>Example</td><td>Thermostat</td><td>Vacuum with map</td><td>GPS navigation</td><td>Self-driving car</td><td>Chess AI (AlphaZero)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ UNINFORMED SEARCH ============================================================ -->
+<div class="section" id="uninformed">
+
+  <div class="card">
+    <h2>🗺️ State Space Search — Formulation</h2>
+    <p>A <strong>state space search</strong> goes from an initial state to a goal state through intermediary steps, comparing each intermediary step state with the goal state.</p>
+    <div class="formula">Problem = {S, A, Action(s), Result(s,a), Cost(s,a)}
+
+  S         = Set of all possible states
+  A         = Set of actions
+  Action(s) = Actions applicable in state s
+  Result(s,a) = State resulting from action a in state s
+  Cost(s,a) = Step cost for action a in state s</div>
+    <h3>8-Puzzle Example</h3>
+    <p>The empty tile can move: <strong>up, down, left, right</strong>. Start state is scrambled; goal is sorted arrangement. Each branch is a move.</p>
+    <h3>Types of Searching</h3>
+    <div class="grid2">
+      <div class="alert alert-info"><strong>Uninformed (Blind)</strong> Only start and goal state are known. Examples: BFS, DFS, DLS, IDDFS, UCS</div>
+      <div class="alert alert-key"><strong>Informed (Heuristic)</strong> Additional domain knowledge used. Examples: Greedy Best-First, A*, and its variants</div>
+    </div>
+    <h3>Problem-Solving Performance Metrics</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Metric</th><th>Meaning</th></tr>
+        <tr><td class="hl">Completeness</td><td>Yes/No for whether a solution will always be found if one exists</td></tr>
+        <tr><td class="hl">Optimality</td><td>Is the solution found the optimal one based on cost function?</td></tr>
+        <tr><td class="hl">Time Complexity</td><td>Time to run the algorithm (nodes expanded)</td></tr>
+        <tr><td class="hl">Space Complexity</td><td>Memory (RAM) required for the algorithm (nodes stored)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- BFS -->
+  <div class="card">
+    <h2>🌊 Breadth First Search (BFS) — Uninformed</h2>
+    <p>Simple strategy in which the root node is expanded first, then all the successors of the root node, next their successors, and so on. <strong>Expand shallowest unexpanded node.</strong></p>
+    <h3>Data Structure</h3>
+    <div class="alert alert-key">
+      <strong>Fringe = FIFO Queue</strong> New nodes added to the <em>tail</em>; expanded from the <em>head</em>. This guarantees level-by-level (breadth-first) exploration.
+    </div>
+    <h3>Step-by-Step Queue Trace (Example Tree)</h3>
+    <div class="tbl-wrap" style="margin-top:10px">
+      <pre style="background:var(--card2);padding:12px;border-radius:8px;font-size:0.82rem;overflow-x:auto;color:var(--text)">
+Tree:                           A (d=0)
+                              / | \
+                            B   C   D   (d=1)
+                           / \ / \   \
+                          E  F G  H   I  (d=2)
+                         / \         |
+                        J   K        M  (d=3)
+                       /
+                      N  (d=4)
+      </pre>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Step</th><th>Node Expanded</th><th>Queue After Expansion</th><th>Notes</th></tr>
+        <tr><td>1</td><td class="hl">A</td><td>[B, C, D]</td><td>Root expanded; depth 0</td></tr>
+        <tr><td>2</td><td class="hl">B</td><td>[C, D, E, F]</td><td>B's children E,F added</td></tr>
+        <tr><td>3</td><td class="hl">C</td><td>[D, E, F, G, H]</td><td>C's children G,H added</td></tr>
+        <tr><td>4</td><td class="hl">D</td><td>[E, F, G, H, I]</td><td>D's child I added</td></tr>
+        <tr><td>5</td><td class="hl">E</td><td>[F, G, H, I, J, K]</td><td>E's children J,K added</td></tr>
+        <tr><td>6</td><td class="hl">F</td><td>[G, H, I, J, K]</td><td>F is leaf</td></tr>
+        <tr><td>7</td><td class="hl">G</td><td>[H, I, J, K]</td><td>G is leaf</td></tr>
+        <tr><td>8</td><td class="hl">H</td><td>[I, J, K]</td><td>H is leaf</td></tr>
+        <tr><td>9</td><td class="hl">I</td><td>[J, K, M]</td><td>I's child M added</td></tr>
+        <tr><td>10</td><td class="hl">J</td><td>[K, M, N]</td><td>J's child N added</td></tr>
+        <tr><td>…</td><td>…</td><td>…</td><td>Continue level by level</td></tr>
+      </table>
+    </div>
+    <h3>Properties</h3>
+    <div class="grid2">
+      <div>
+        <div class="alert alert-key"><strong>1. Completeness</strong> Always finds a solution if one exists (level-wise complete, shallowest→nearest node)</div>
+        <div class="alert alert-key"><strong>2. Optimality</strong> Optimal if all actions have the same cost (finds shallowest goal first)</div>
+      </div>
+      <div>
+        <div class="formula">Time Complexity  : O(b^d)
+Space Complexity : O(b^d)
+
+b = branching factor (max successors)
+d = depth of shallowest solution</div>
+      </div>
+    </div>
+    <div class="alert alert-exam">
+      <strong>🎓 Exam: Why does BFS use O(b^d) space?</strong> It must keep all nodes in the fringe (queue) — at depth d there are b^d nodes, all stored simultaneously.
+    </div>
+  </div>
+
+  <!-- DFS -->
+  <div class="card">
+    <h2>🌲 Depth First Search (DFS) — Uninformed</h2>
+    <p>Expands the <strong>deepest unexpanded node</strong> and does backtracking after reaching the deepest leaf node.</p>
+    <div class="alert alert-key">
+      <strong>Fringe = LIFO Queue (Stack)</strong> Put successors at front (top of stack). Last In, First Out.
+    </div>
+    <h3>DFS Traversal Order (Example)</h3>
+    <div class="tbl-wrap">
+      <pre style="background:var(--card2);padding:12px;border-radius:8px;font-size:0.82rem;overflow-x:auto;color:var(--text)">
+Tree: A → B → D → H → I → J → E → K → C → F → G (goal) → M → N → D (revisit warning)
+
+DFS Stack trace (each column = stack contents):
+[A] → [B,C] → expand B: [D,E,C] → expand D: [H,I,E,C] → expand H: [I,E,C]
+→ expand I: [J,E,C] → expand J: [E,C] → expand E: [K,C] → expand K: [C]
+→ expand C: [F,G] → expand F: [G_n,G] → ...
+      </pre>
+    </div>
+    <h3>Properties</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>#</th><th>Property</th><th>Value</th><th>Reason</th></tr>
+        <tr><td>1</td><td>Completeness</td><td class="hl" style="color:var(--accent3)">❌ Incomplete</td><td>Not complete in infinite depth spaces (with loops) — may go forever on one branch</td></tr>
+        <tr><td>2</td><td>Optimality</td><td class="hl" style="color:var(--accent3)">❌ Not optimal</td><td>May find a deep (non-optimal) solution first</td></tr>
+        <tr><td>3</td><td>Time</td><td class="hl2">O(b^m)</td><td>b = branch factor, m = max depth</td></tr>
+        <tr><td>4</td><td>Space</td><td class="hl2">O(b·m) = linear</td><td>Only stores current path + siblings — far better than BFS</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-warn">
+      <strong>⚠️ Infinite node problem</strong> If there are infinite nodes in the tree, DFS cannot come back. This is why DLS and IDDFS were developed.
+    </div>
+    <p><strong>Key advantage over BFS:</strong> Linear space O(bm) vs O(b^d). Critical for deep state spaces.</p>
+  </div>
+
+  <!-- DLS -->
+  <div class="card">
+    <h2>✂️ Depth Limited Search (DLS)</h2>
+    <p>A variant of DFS that <strong>imposes a limit (L) on the depth of the search tree</strong>. Particularly used in problems where the search space is vast or infinite.</p>
+    <div class="alert alert-info">
+      <strong>Motivation</strong> In DFS, on an infinite space with nodes, the goal state may have an infinite number of nodes to traverse, causing infinite loops. So we limit the depth to L (e.g., 3 or 5), so each node has depth ≤ L and we can find the goal faster.
+    </div>
+    <h3>Key Points</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">The primary characteristic of DLS is the <strong>depth limit (L)</strong>. The algorithm explores the search tree only up to the specified depth.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">DLS is <strong>incomplete</strong> if the solution exists beyond the depth limit — it will miss it entirely.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Time complexity: O(b^L)</strong> where b = branching factor, L = depth limit.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Space complexity: O(L)</strong> — linear in depth limit (like DFS).</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body">DLS is <strong>not optimal</strong> — does not guarantee the shortest path if multiple solutions exist within limit.</div></div>
+    </div>
+    <div class="alert alert-exam">
+      <strong>🎓 Exam Comparison: DFS vs DLS</strong> DFS has no depth bound (may loop forever on infinite graphs). DLS adds a hard cutoff at depth L, preventing infinite loops but potentially missing solutions deeper than L.
+    </div>
+  </div>
+
+  <!-- IDDFS -->
+  <div class="card">
+    <h2>🔄 Iterative Deepening DFS (IDDFS)</h2>
+    <p>Combines the benefits of DFS and BFS. Searches to a limited depth, <strong>increasing the limit with each iteration</strong>. Ensures exploration of all nodes at each depth before going deeper.</p>
+    <div class="alert alert-key">
+      <strong>Key Properties</strong>
+      <ul>
+        <li>✅ <strong>Complete</strong> (like BFS)</li>
+        <li>✅ <strong>Optimal</strong> (finds shallowest solution first)</li>
+        <li>✅ <strong>Linear Space</strong> O(bd) (like DFS)</li>
+        <li>⚠️ Does redundant work: nodes at shallow depths are expanded multiple times</li>
+      </ul>
+    </div>
+    <h3>Worked Example — Iteration Trace</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Iteration (I)</th><th>Depth Limit (d)</th><th>Nodes Visited</th></tr>
+        <tr><td>I = 0</td><td>d = 0</td><td>A</td></tr>
+        <tr><td>I = 1</td><td>d = 1 (limit increases)</td><td>A → B → C → D</td></tr>
+        <tr><td>I = 2</td><td>d = 2 (limit +1)</td><td>A → B → E → F → C → G → H → D → I <span class="hl">(Goal found!)</span></td></tr>
+      </table>
+    </div>
+    <p style="color:var(--muted);font-size:0.88rem;margin-top:8px">At I=2, DFS-style traversal is done but depth ≤ 2 is enforced. Once I reaches goal depth, search succeeds. Nodes like A, B, C, D at shallow depths are re-expanded at each iteration (redundant work) — but this is a small constant factor.</p>
+    <div class="alert alert-warn">
+      <strong>Why is redundant work acceptable?</strong> Most nodes are at the deepest level — in a tree with branching factor b and goal at depth d, the fraction of work at the last level is (1 - 1/b), which approaches 1 for large b. So re-expanding shallower nodes costs relatively little.
+    </div>
+    <h3>IDDFS vs BFS vs DFS — Final Comparison</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Algorithm</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th></tr>
+        <tr><td>BFS</td><td>✅</td><td>✅ (uniform cost)</td><td>O(b^d)</td><td>O(b^d)</td></tr>
+        <tr><td>DFS</td><td>❌</td><td>❌</td><td>O(b^m)</td><td>O(bm)</td></tr>
+        <tr><td>DLS (limit L)</td><td>❌ (if sol > L)</td><td>❌</td><td>O(b^L)</td><td>O(L)</td></tr>
+        <tr><td class="hl">IDDFS</td><td class="hl">✅</td><td class="hl">✅</td><td class="hl">O(b^d)</td><td class="hl">O(bd)</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-exam">
+      <strong>🎓 Why IDDFS is preferred in practice</strong> It gets BFS's completeness and optimality with DFS's linear space. The overhead from re-expansion is usually a constant factor (e.g., ×b/(b-1)) which is small for large branching factors.
+    </div>
+  </div>
+
+  <!-- UCS -->
+  <div class="card">
+    <h2>💰 Uniform Cost Search (UCS)</h2>
+    <p>An uninformed search strategy that <strong>expands the node with the lowest cumulative cost</strong> from the start node. Each link has a length/cost (always &gt; 0).</p>
+    <div class="alert alert-key">
+      <strong>Key Idea</strong>
+      <ul>
+        <li>We want the shortest / least-cost path</li>
+        <li>Fringe = <strong>Queue ordered by path cost g(n)</strong></li>
+        <li>Equivalent to BFS if all step costs are equal</li>
+        <li>Expands least-cost unexpanded node</li>
+      </ul>
+    </div>
+    <h3>Worked Example — Full Queue Trace</h3>
+    <div class="alert alert-info" style="margin-bottom:10px">
+      <strong>Graph</strong> Nodes: S, A, B, C, D, G &nbsp;|&nbsp; Edges: S→A=2, S→B=5, A→C=2, A→D=4, B→D=1, B→G=5, D→G=2, D→C=3
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Step</th><th>Node Expanded</th><th>Open Queue (node, g, path)</th><th>Visited</th></tr>
+        <tr><td>1</td><td class="hl">S (g=0)</td><td>[(A,2,S), (B,5,S)]</td><td>{S}</td></tr>
+        <tr><td>2</td><td class="hl">A (g=2)</td><td>[(C,4,A-S), (B,5,S), (D,6,A-S)]</td><td>{S,A}</td></tr>
+        <tr><td>3</td><td class="hl">C (g=4)</td><td>[(B,5,S), (D,6,A-S)]</td><td>{S,A,C}</td></tr>
+        <tr><td>4</td><td class="hl">B (g=5)</td><td>[(D,6,A-S), (D,6,B-S), (G,10,B-S)]</td><td>{S,A,C,B}</td></tr>
+        <tr><td>5</td><td class="hl">D via A (g=6)</td><td>[(D,6,B-S), (G,8,D-A-S), (G,10,B-S), (C,9,D-A-S)]</td><td>{S,A,C,B,D}</td></tr>
+        <tr><td>6</td><td>D via B — skip</td><td>D already visited; skip (g=6,B-S)</td><td>{S,A,C,B,D}</td></tr>
+        <tr><td>7</td><td class="hl">G (g=8)</td><td>Goal reached!</td><td>{S,A,C,B,D,G}</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-key">
+      <strong>Optimal Path Found:</strong> S → A → D → G with total cost = 2 + 4 + 2 = <strong>8</strong>
+    </div>
+    <h3>UCS Properties</h3>
+    <div class="formula">1. Complete   : Yes, if step cost ≥ ε > 0
+2. Optimal    : Yes (nodes expanded in increasing order of g(n))
+3. Time  : O(b^ceil(C*/ε))  where C* = cost of optimal solution
+4. Space : O(b^ceil(C*/ε))</div>
+  </div>
+</div>
+
+<!-- ============================================================ INFORMED SEARCH ============================================================ -->
+<div class="section" id="informed">
+
+  <div class="card">
+    <h2>💡 Heuristics in AI — "Rule of Thumb"</h2>
+    <p>A heuristic is a <strong>technique designed to solve a problem quickly</strong> when standard methods are too slow. It reduces time complexity but is <em>not sure about optimality</em>.</p>
+    <div class="grid2">
+      <div>
+        <h3>Why Heuristics?</h3>
+        <ul>
+          <li>Exponential complexity of uninformed search is impractical for large problems</li>
+          <li>Domain knowledge can guide the search toward the goal</li>
+          <li>Trade-off: speed vs guaranteed optimality</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Euclidean Distance (common heuristic)</h3>
+        <div class="formula">h(n) = √[(x₂-x₁)² + (y₂-y₁)²]
+
+Straight-line distance from node n
+to the goal state G — minimal distance</div>
+      </div>
+    </div>
+    <div class="alert alert-key">
+      <strong>Heuristic Function h(n)</strong> Estimates the cost of the cheapest path from node n to a goal node. In Best-First Search, the heuristic value determines the path/priority used to enter the queue.
+    </div>
+  </div>
+
+  <!-- GREEDY BFS -->
+  <div class="card">
+    <h2>🤑 Greedy Best First Search</h2>
+    <p>Expands the node that <strong>appears to be closest to the goal</strong>. Based entirely on heuristic value (greedy — only cares about estimated cost to goal, ignores cost so far).</p>
+    <div class="formula">Evaluation function:  f(n) = h(n)
+h(n) = estimated cost from n to goal
+     = straight-line distance from n to goal</div>
+    <h3>Worked Example from Slides</h3>
+    <div class="alert alert-info" style="margin-bottom:10px">
+      <strong>Graph:</strong> S (start) → A, B, C, D, G (goal) &nbsp;|&nbsp;
+      <strong>Heuristic values:</strong> A=2, B=3, C=1, D=4, S=10, G=0
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Step</th><th>Open Queue (h, node, path)</th><th>Visited</th><th>Action</th></tr>
+        <tr><td>1</td><td class="hl">(10, S)</td><td>S</td><td>Start at S</td></tr>
+        <tr><td>2</td><td>(2, A, S) (3, B, S)</td><td>B, A, S</td><td>Expand S → neighbours A(h=2), B(h=3)</td></tr>
+        <tr><td>3</td><td class="hl">(1, C, A, S)</td><td>C, D, B, A, S</td><td>Expand A(h=2) → C(h=1), D(h=4)</td></tr>
+        <tr><td>4</td><td>(3, B, S)(4, D, A, S)</td><td>C, D, B, A, S</td><td>C removed; C's neighbours or goal?</td></tr>
+        <tr><td>5</td><td class="hl">(0, G, B, S)</td><td>C, D, B, A, S</td><td>Expand C → G (h=0) Goal found!</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-key">
+      <strong>Path found:</strong> S → A → C → G (via heuristic-guided path)
+    </div>
+    <h3>Greedy BFS Properties</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>#</th><th>Property</th><th>Value</th><th>Reason</th></tr>
+        <tr><td>1</td><td>Complete</td><td style="color:var(--accent3)">❌ No</td><td>Can get stuck in loops (no cost tracking)</td></tr>
+        <tr><td>2</td><td>Optimal</td><td style="color:var(--accent3)">❌ No</td><td>Ignores g(n); may take a non-optimal path</td></tr>
+        <tr><td>3</td><td>Time</td><td>O(b^m)</td><td>But a good heuristic can give dramatic improvement</td></tr>
+        <tr><td>4</td><td>Space</td><td>O(b^m)</td><td>Keeps all nodes in memory</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- A* -->
+  <div class="card">
+    <h2>⭐ A* Search</h2>
+    <p>A search algorithm in which the node with the <strong>least f(n) value is expanded first</strong>. Combines actual cost so far with estimated cost to goal.</p>
+    <div class="alert alert-exam">
+      <strong>🎓 Core Formula</strong>
+      <div class="formula">f(n) = g(n) + h(n)
+
+  g(n) = cost so far to reach n (actual cumulative path cost)
+  h(n) = estimated cost from n to goal (heuristic)
+  f(n) = estimated total cost of path through n to goal</div>
+    </div>
+    <h3>Why A* Works — Intuition</h3>
+    <p>At each step, A* picks the node with <strong>lowest total estimated cost</strong>: actual cost already paid + optimistic estimate of remaining cost. By never overestimating (admissibility), it guarantees finding the true optimal path.</p>
+    <h3>Worked Example from Slides (Slide 16)</h3>
+    <div class="alert alert-info" style="margin-bottom:10px">
+      <strong>Graph edges:</strong> S→B=4, S→C=3, B→e=12, B→f=5, C→d=7, C→e=10, d→e=2, e→G=5, f→G=16<br>
+      <strong>Heuristic h(n):</strong> S=14, B=12, C=11, d=6, e=4, f=11, G=0
+    </div>
+    <h4>Pre-compute f values for initial expansions:</h4>
+    <div class="formula">f(S) = 0 + 14 = 14    [start]
+f(B via S) = 4 + 12 = 16   [path S→B, g=4]
+f(C via S) = 3 + 11 = 14   [path S→C, g=3]
+f(d via C) = 10 + 6 = 16   [path S→C→d, g=3+7=10]
+f(e via C) = 13 + 4 = 17   [path S→C→e, g=3+10=13]
+f(e via d) = 12 + 4 = 16   [path S→C→d→e, g=10+2=12] ← better than via C!
+f(G via e) = 17 + 0 = 17   [path S→C→d→e→G, g=12+5=17]</div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Step</th><th>Expand</th><th>g</th><th>f=g+h</th><th>Open Queue (sorted by f)</th><th>Visited</th></tr>
+        <tr><td>1</td><td class="hl">S</td><td>0</td><td>14</td><td>[(C,f=14), (B,f=16)]</td><td>{S}</td></tr>
+        <tr><td>2</td><td class="hl">C (g=3)</td><td>3</td><td>14</td><td>[(d,f=16), (B,f=16), (e,f=17 via C)]</td><td>{S,C}</td></tr>
+        <tr><td>3</td><td class="hl">d (g=10)</td><td>10</td><td>16</td><td>[(B,f=16), (e,f=16 via d), (e,f=17 via C)]</td><td>{S,C,d}</td></tr>
+        <tr><td>4</td><td class="hl">B (g=4)</td><td>4</td><td>16</td><td>[(e,f=16), (e,f=17), (f,f=20), (e,f=20 via B)]</td><td>{S,C,d,B}</td></tr>
+        <tr><td>5</td><td class="hl">e (g=12) via d</td><td>12</td><td>16</td><td>[(G,f=17), (e,f=17 via C), (f,f=20), ...]</td><td>{S,C,d,B,e}</td></tr>
+        <tr><td>6</td><td class="hl">G (g=17)</td><td>17</td><td>17</td><td>— Goal Reached! —</td><td>{S,C,d,B,e,G}</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-key">
+      <strong>✅ Optimal Path Found:</strong> S → C → d → e → G &nbsp;|&nbsp; Total Cost = 3 + 7 + 2 + 5 = <strong>17</strong>
+    </div>
+    <h3>A* Properties</h3>
+    <div class="formula">1. Complete  : Always finds a solution if one exists
+2. Optimal   : Finds the best (lowest-cost) solution
+3. Time  : Exponential in worst case (#nodes with cost + h < goal cost)
+4. Space : Keeps all nodes in memory (exponential worst case)</div>
+  </div>
+
+  <!-- ADMISSIBLE HEURISTICS -->
+  <div class="card">
+    <h2>🎯 Admissible Heuristics</h2>
+    <p>A heuristic h(n) is <strong>admissible</strong> if for every node n:</p>
+    <div class="formula">h(n) ≤ h*(n)
+
+where h*(n) = true (optimal) cost to reach goal from n</div>
+    <div class="alert alert-exam">
+      <strong>🎓 What admissibility means</strong> An admissible heuristic <strong>never overestimates</strong> the cost to reach the goal. It is <em>optimistic</em> — it thinks the cost of solving the problem is less than it actually is. This ensures A* never "gives up" on the optimal path prematurely.
+    </div>
+    <h3>Optimality of A* (Tree Search) — Proof Sketch</h3>
+    <div class="alert alert-key">
+      <strong>Theorem:</strong> If h(n) is admissible, A* using TREE SEARCH is optimal.
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Suppose</strong> some suboptimal goal G₂ has been generated and is in the fringe. Let the cost of the optimal solution to goal G₁ be C*.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">Since G₂ is suboptimal: <strong>g(G₂) > C*</strong></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">Let n be a node on the optimal path to G₁ that is still in the fringe. Then: <strong>f(n) = g(n) + h(n) ≤ g(n) + h*(n) = C*</strong> (by admissibility)</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">For G₂ (a goal): <strong>f(G₂) = g(G₂)</strong> (since h(G₂) = 0 for a goal node)</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body">Therefore: <strong>f(G₂) = g(G₂) > C* ≥ f(n)</strong></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Conclusion:</strong> A* will expand n before G₂, so it will never expand a suboptimal goal. QED.</div></div>
+    </div>
+    <div class="formula">Summary of key steps:
+  f(G₂) = g(G₂)    since h(G₂) = 0
+  g(G₂) > C*       since G₂ is suboptimal
+  f(n)  ≤ C*        by admissibility of h
+  ∴ f(G₂) > f(n)   → A* expands n first → optimal goal found first</div>
+  </div>
+
+  <!-- GENETIC ALGORITHMS -->
+  <div class="card">
+    <h2>🧬 Genetic Algorithm (GA)</h2>
+    <p>A <strong>population-based evolutionary optimization technique</strong> inspired by the principles of natural selection and genetics. Works by iteratively evolving a population of candidate solutions using biologically motivated operators.</p>
+    <div class="grid2">
+      <div>
+        <h3>Core Operators</h3>
+        <ul>
+          <li><strong>Selection:</strong> Choose fitter individuals to reproduce</li>
+          <li><strong>Crossover:</strong> Combine genetic material from two parents to produce offspring</li>
+          <li><strong>Mutation:</strong> Apply random changes to offspring genes to maintain diversity</li>
+        </ul>
+        <div class="alert alert-key">
+          <strong>Fitness Function</strong> Acts as the guiding force — determines which individuals are more likely to reproduce. Evaluates solution quality.
+        </div>
+      </div>
+      <div>
+        <h3>Algorithm Flowchart</h3>
+        <div style="background:var(--card2);border-radius:8px;padding:14px;font-size:0.83rem;text-align:center">
+          <div style="border:1px solid var(--border);border-radius:5px;padding:6px;margin-bottom:6px">Start</div>
+          <div style="color:var(--muted)">↓</div>
+          <div style="border:1px solid var(--accent2);border-radius:5px;padding:6px;margin-bottom:6px;color:var(--accent2)">Population Initialization</div>
+          <div style="color:var(--muted)">↓</div>
+          <div style="border:1px solid var(--accent);border-radius:5px;padding:6px;margin-bottom:6px;color:var(--accent)">Fitness Evaluation</div>
+          <div style="color:var(--muted)">↓</div>
+          <div style="border:1px solid var(--border);border-radius:5px;padding:6px;margin-bottom:6px">Parent Selection</div>
+          <div style="color:var(--muted)">↓</div>
+          <div style="border:1px solid var(--border);border-radius:5px;padding:6px;margin-bottom:6px">Crossover</div>
+          <div style="color:var(--muted)">↓</div>
+          <div style="border:1px solid var(--accent4);border-radius:5px;padding:6px;margin-bottom:6px;color:var(--accent4)">Mutation</div>
+          <div style="color:var(--muted)">↓</div>
+          <div style="border:1px solid var(--border);border-radius:5px;padding:6px;margin-bottom:6px">New Generation Formation</div>
+          <div style="color:var(--muted)">↓</div>
+          <div style="border:1px solid var(--accent3);border-radius:5px;padding:6px;margin-bottom:6px;color:var(--accent3)">Termination Check</div>
+          <div style="color:var(--muted)">↙ Yes</div>
+          <div style="border:1px solid var(--accent2);border-radius:5px;padding:6px;color:var(--accent2)">Output Best Solution → End</div>
+        </div>
+      </div>
+    </div>
+    <h3>Step-by-Step Explanation</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Step</th><th>Name</th><th>Description</th></tr>
+        <tr><td>1</td><td class="hl">Population Initialization</td><td>Generate initial population of chromosomes randomly within problem constraints</td></tr>
+        <tr><td>2</td><td class="hl">Fitness Evaluation</td><td>Evaluate each chromosome using the fitness function to measure solution quality</td></tr>
+        <tr><td>3</td><td class="hl">Parent Selection</td><td>Select parent chromosomes based on fitness using methods like <strong>Roulette Wheel Selection</strong> (higher fitness → higher probability of selection)</td></tr>
+        <tr><td>4</td><td class="hl">Crossover</td><td>Combine genetic material from selected parents to produce offspring (e.g., single-point crossover splits chromosomes at a random point and swaps segments)</td></tr>
+        <tr><td>5</td><td class="hl">Mutation</td><td>Apply random changes to offspring genes to <strong>maintain diversity</strong> and prevent premature convergence to local optima</td></tr>
+        <tr><td>6</td><td class="hl">New Generation Formation</td><td>Replace the old population with newly generated offspring</td></tr>
+        <tr><td>7</td><td class="hl">Termination Check</td><td>If stopping criterion met (max generations, fitness threshold, convergence) → output best solution. Else → repeat from step 2.</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-exam">
+      <strong>🎓 GA vs Traditional Search</strong> GA searches in parallel (population-based, not single-path) and uses probabilistic operators, making it well-suited for complex, multi-modal optimization landscapes where gradient-based methods fail. The fitness function is the performance measure analogue.
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ INTERACTIVE TOOL ============================================================ -->
+<div class="section" id="tool">
+  <div class="card">
+    <h2>🧮 A* Search Simulator</h2>
+    <p>Enter a weighted graph and heuristic values to run A* step by step. <strong>Pre-loaded with the exact example from Slide 16.</strong></p>
+
+    <div class="sim-section">
+      <label>Graph Edges (format: NodeA-NodeB:cost, one per line or comma-separated; undirected)</label>
+      <textarea id="graphIn" class="sim-input" rows="5">S-B:4
+S-C:3
+B-e:12
+B-f:5
+C-d:7
+C-e:10
+d-e:2
+e-G:5
+f-G:16</textarea>
+    </div>
+
+    <div class="sim-row2">
+      <div class="sim-section">
+        <label>Heuristic Values h(n) (format: Node:value, comma-separated)</label>
+        <input id="hIn" class="pp-input" value="S:14, B:12, C:11, d:6, e:4, f:11, G:0">
+      </div>
+      <div class="sim-section">
+        <label>Start Node</label>
+        <input id="startIn" class="pp-input" value="S" style="width:100%">
+      </div>
+    </div>
+    <div class="sim-section">
+      <label>Goal Node</label>
+      <input id="goalIn" class="pp-input" value="G" style="width:100%;max-width:200px">
+    </div>
+
+    <button class="pp-btn" onclick="runAstar()">▶ Run A* Search</button>
+
+    <div class="result-box" id="resultBox">
+      <h3 style="color:var(--accent2);margin-bottom:14px">📊 A* Execution Trace</h3>
+      <div id="resultSteps"></div>
+      <div id="resultPath"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📝 How to Use</h2>
+    <div class="grid2">
+      <div>
+        <h3>Graph Format</h3>
+        <p>Each line (or comma): <span class="mono">NodeA-NodeB:cost</span></p>
+        <p>Edges are treated as <strong>undirected</strong> (bidirectional).</p>
+        <p>Node names can be multi-character (e.g., <span class="mono">S1</span>, <span class="mono">Goal</span>).</p>
+      </div>
+      <div>
+        <h3>Heuristic Format</h3>
+        <p>Comma-separated: <span class="mono">NodeName:value</span></p>
+        <p>Goal node should have h=0.</p>
+        <p>Nodes without heuristic default to 0 (admissible but uninformative).</p>
+      </div>
+    </div>
+    <h3>Try These Test Cases</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <tr><th>Test</th><th>Graph</th><th>Heuristic</th><th>Expected Path</th></tr>
+        <tr><td>Romania Map</td><td>A-B:2, A-C:5, B-D:3, C-D:1, D-G:2</td><td>A:8,B:6,C:3,D:2,G:0</td><td>A→C→D→G (cost=8)</td></tr>
+        <tr><td>Slide 16</td><td>(preloaded)</td><td>(preloaded)</td><td>S→C→d→e→G (cost=17)</td></tr>
+        <tr><td>Simple 3-node</td><td>S-A:1, S-B:4, A-G:3, B-G:1</td><td>S:4,A:3,B:1,G:0</td><td>S→A→G (cost=4)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ QUIZ ============================================================ -->
+<div class="section" id="quiz">
+  <div class="quiz-score-bar">
+    <div>
+      <div class="score-val" id="scoreVal">0 / 15</div>
+      <div class="score-lbl">Quiz Score (answered: <span id="answered">0</span>)</div>
+    </div>
+    <button class="reset-btn" onclick="resetQuiz()">↺ Reset Quiz</button>
+  </div>
+  <div id="quizContainer"></div>
+</div>
+
+<script>
+// ========== NAVIGATION ==========
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ========== CHECKLIST ==========
+function tick(li) {
+  const cb = li.querySelector('input');
+  cb.checked = !cb.checked;
+  li.classList.toggle('done', cb.checked);
+  updateProgress();
+}
+function updateProgress() {
+  const items = document.querySelectorAll('#chk li');
+  const done = document.querySelectorAll('#chk li.done').length;
+  const pct = (done / items.length) * 100;
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progLbl').textContent = done + ' / ' + items.length + ' done';
+}
+
+// ========== A* SIMULATOR ==========
+function parseGraph(txt) {
+  const g = {};
+  const lines = txt.split(/[\n,]+/);
+  lines.forEach(line => {
+    line = line.trim();
+    if (!line) return;
+    const m = line.match(/^([^-]+)-([^:]+):(.+)$/);
+    if (!m) return;
+    const [, a, b, c] = m;
+    const na = a.trim(), nb = b.trim(), cost = parseFloat(c.trim());
+    if (!g[na]) g[na] = {};
+    if (!g[nb]) g[nb] = {};
+    g[na][nb] = cost;
+    g[nb][na] = cost;
+  });
+  return g;
+}
+function parseH(txt) {
+  const h = {};
+  txt.split(',').forEach(p => {
+    p = p.trim();
+    const [n, v] = p.split(':');
+    if (n && v !== undefined) h[n.trim()] = parseFloat(v.trim());
+  });
+  return h;
+}
+
+function runAstar() {
+  const graph = parseGraph(document.getElementById('graphIn').value);
+  const h = parseH(document.getElementById('hIn').value);
+  const start = document.getElementById('startIn').value.trim();
+  const goal = document.getElementById('goalIn').value.trim();
+
+  if (!graph[start]) { alert('Start node "' + start + '" not found in graph.'); return; }
+
+  const steps = [];
+  const getH = n => (h[n] !== undefined ? h[n] : 0);
+
+  // open: [{node, g, f, path}]
+  let open = [{ node: start, g: 0, f: getH(start), path: [start] }];
+  const visited = new Set();
+  let found = null;
+
+  while (open.length > 0) {
+    open.sort((a, b) => a.f - b.f || a.g - b.g);
+    const curr = open.shift();
+
+    if (visited.has(curr.node)) {
+      steps.push({ skip: true, node: curr.node, g: curr.g, f: curr.f, path: curr.path, open: [...open], visited: [...visited] });
+      continue;
+    }
+    visited.add(curr.node);
+
+    const stepSnap = {
+      node: curr.node, g: curr.g, f: curr.f, path: [...curr.path],
+      open: open.map(x => `${x.node}(g=${x.g.toFixed(1)},h=${getH(x.node).toFixed(1)},f=${x.f.toFixed(1)})`),
+      visited: [...visited], skip: false
+    };
+
+    if (curr.node === goal) {
+      stepSnap.isGoal = true;
+      steps.push(stepSnap);
+      found = curr;
+      break;
+    }
+
+    const neighbours = graph[curr.node] || {};
+    const expanded = [];
+    for (const [nb, cost] of Object.entries(neighbours)) {
+      if (!visited.has(nb)) {
+        const ng = curr.g + cost;
+        const nf = ng + getH(nb);
+        open.push({ node: nb, g: ng, f: nf, path: [...curr.path, nb] });
+        expanded.push(`${nb}(g=${ng.toFixed(1)},h=${getH(nb).toFixed(1)},f=${nf.toFixed(1)})`);
+      }
+    }
+    stepSnap.expanded = expanded;
+    steps.push(stepSnap);
+    if (steps.length > 100) { steps.push({ overflow: true }); break; }
+  }
+
+  renderResults(steps, found, goal);
+}
+
+function renderResults(steps, found, goal) {
+  const box = document.getElementById('resultBox');
+  const stepsDiv = document.getElementById('resultSteps');
+  const pathDiv = document.getElementById('resultPath');
+  box.classList.add('show');
+
+  let html = `<div class="tbl-wrap"><table class="tbl">
+    <tr><th>Step</th><th>Node Expanded</th><th>g(n)</th><th>f(n)=g+h</th><th>Neighbours Added</th><th>Open Queue (top 5)</th></tr>`;
+
+  let idx = 0;
+  steps.forEach(s => {
+    if (s.overflow) { html += `<tr><td colspan="6" style="color:var(--accent3)">Search exceeded 100 steps — check for cycles or disconnected goal.</td></tr>`; return; }
+    if (s.skip) return;
+    idx++;
+    const rowStyle = s.isGoal ? 'background:#0e2a1a;' : '';
+    const nodeLabel = s.isGoal ? `<span style="color:var(--accent2);font-weight:700">🎯 ${s.node}</span>` : `<span style="color:var(--accent4)">${s.node}</span>`;
+    const expStr = (s.expanded && s.expanded.length) ? s.expanded.join('<br>') : '<span style="color:var(--muted)">—</span>';
+    const openTop = s.open.slice(0, 5).join('<br>') || '<span style="color:var(--muted)">empty</span>';
+    html += `<tr style="${rowStyle}">
+      <td>${idx}</td><td>${nodeLabel}</td>
+      <td class="hl2">${s.g.toFixed(1)}</td>
+      <td class="hl2">${s.f.toFixed(1)}</td>
+      <td style="font-size:0.8rem">${expStr}</td>
+      <td style="font-size:0.78rem;font-family:monospace">${openTop}</td>
+    </tr>`;
+  });
+  html += '</table></div>';
+  stepsDiv.innerHTML = html;
+
+  if (found) {
+    pathDiv.innerHTML = `<div class="result-path">
+      <div style="color:var(--accent2);font-weight:700;margin-bottom:8px">✅ Optimal Path Found!</div>
+      <div style="font-size:1.05rem;margin-bottom:6px">${found.path.join(' → ')}</div>
+      <div style="color:var(--muted)">Total Cost: <strong style="color:var(--accent4)">${found.g.toFixed(2)}</strong> &nbsp;|&nbsp; Nodes expanded: <strong>${steps.filter(s => !s.skip && !s.overflow).length}</strong></div>
+    </div>`;
+  } else {
+    pathDiv.innerHTML = `<div class="alert alert-warn"><strong>No path found</strong> Goal "${goal}" is not reachable from start.</div>`;
+  }
+}
+
+// ========== QUIZ ==========
+const QUESTIONS = [
+  {
+    q: "The agent function is formally defined as f: P* → A. What does this mean?",
+    opts: [
+      "It maps the current percept to an action",
+      "It maps the complete history of percepts to an action",
+      "It maps actions to percepts",
+      "It maps performance measures to states"
+    ],
+    ans: 1,
+    exp: "P* denotes the set of all possible percept sequences (complete history). The agent function maps from any percept history to an action. This is more powerful than mapping only the current percept — it allows the agent to consider everything it has ever seen."
+  },
+  {
+    q: "In the PEAS description for a medical diagnostic system, which component would 'X-ray scanner and lab results' belong to?",
+    opts: ["Performance Measure", "Environment", "Actuators", "Sensors"],
+    ans: 3,
+    exp: "Sensors are how the agent perceives its environment. X-ray scanners and lab results are inputs that the agent receives. Performance Measure would be 'correct diagnosis'. Environment is 'patients, hospitals'. Actuators would be 'display diagnosis, prescribe treatment'."
+  },
+  {
+    q: "A Simple Reflex Agent fails when the environment is only partially observable because:",
+    opts: [
+      "It cannot store percept history",
+      "It has no actuators",
+      "The condition-action rules may fire incorrectly if it cannot access the full state",
+      "It lacks a utility function"
+    ],
+    ans: 2,
+    exp: "Simple Reflex Agents act based on the current percept only via condition-action rules. If the environment is partially observable, the current percept does not fully characterise the world's state, so the rule may fire on incomplete information — leading to incorrect actions. Full observability is a prerequisite."
+  },
+  {
+    q: "What is the key structural difference between a Model-Based Reflex Agent and a Simple Reflex Agent?",
+    opts: [
+      "Model-Based agents use goals; Simple Reflex agents do not",
+      "Model-Based agents maintain internal state tracking world evolution; Simple Reflex do not",
+      "Model-Based agents use utility functions",
+      "Simple Reflex agents use search; Model-Based do not"
+    ],
+    ans: 1,
+    exp: "The defining feature of a Model-Based Reflex Agent is its internal state — a model of how the world evolves (independently and due to the agent's own actions). This lets it handle partially observable environments. Simple Reflex agents have no internal state; they react only to the current percept."
+  },
+  {
+    q: "BFS is optimal when:",
+    opts: [
+      "The heuristic is admissible",
+      "The search space is finite",
+      "All actions have the same (uniform) cost",
+      "The depth limit L is set correctly"
+    ],
+    ans: 2,
+    exp: "BFS expands nodes level by level, so it always finds the shallowest goal. If all step costs are equal (uniform), the shallowest goal is also the cheapest → optimal. If costs vary, BFS may find a shallower but more expensive path. For non-uniform costs, use UCS."
+  },
+  {
+    q: "The time complexity of BFS is O(b^d). What does 'b' represent?",
+    opts: [
+      "Depth of deepest node",
+      "Branching factor (maximum number of successors of any node)",
+      "Number of goal states",
+      "Beam width"
+    ],
+    ans: 1,
+    exp: "b = branching factor: the maximum number of successors any node has. d = depth of the shallowest solution. At depth d, there are b^d nodes, explaining both the time and space complexity of BFS being O(b^d)."
+  },
+  {
+    q: "Which statement about DFS is CORRECT?",
+    opts: [
+      "DFS is complete for all finite and infinite state spaces",
+      "DFS uses O(b^d) space, same as BFS",
+      "DFS is not complete for infinite-depth spaces and is not optimal",
+      "DFS expands nodes with lowest cost first"
+    ],
+    ans: 2,
+    exp: "DFS is incomplete for infinite-depth spaces — it can get stuck going deeper forever without finding a solution (especially with loops). It is also not optimal — it may find a deeper (more costly) solution before a shallower one. Its key advantage is space: O(b·m) linear space vs O(b^d) for BFS."
+  },
+  {
+    q: "IDDFS (Iterative Deepening DFS) is preferred over plain DFS in practice because:",
+    opts: [
+      "It uses less memory than DFS",
+      "It avoids revisiting nodes entirely",
+      "It combines completeness + optimality of BFS with linear space of DFS",
+      "It eliminates the need for a heuristic"
+    ],
+    ans: 2,
+    exp: "IDDFS gets the best of both worlds: BFS-style completeness and optimality (finds shallowest solution first) with DFS-style linear space O(b·d). The overhead of re-expanding shallower nodes is a constant factor O(b/(b-1)) which is small for b ≥ 2."
+  },
+  {
+    q: "Uniform Cost Search is equivalent to BFS when:",
+    opts: [
+      "The heuristic h(n) = 0 for all nodes",
+      "All step costs are equal",
+      "The search space is a tree (no repeated states)",
+      "The depth limit equals the solution depth"
+    ],
+    ans: 1,
+    exp: "UCS orders the fringe by cumulative path cost g(n). When all step costs are equal, g(n) is proportional to depth d, so ordering by g(n) is the same as ordering by d — which is exactly what BFS does. Hence UCS degenerates to BFS for uniform costs."
+  },
+  {
+    q: "In A* Search, the evaluation function is f(n) = g(n) + h(n). Which statement is TRUE?",
+    opts: [
+      "g(n) is the heuristic estimate; h(n) is the actual cost",
+      "g(n) is the actual cost so far; h(n) is the estimated remaining cost",
+      "f(n) is always equal to h(n) in Best-First Search",
+      "g(n) is ignored in A* — only h(n) matters"
+    ],
+    ans: 1,
+    exp: "g(n) = actual cumulative cost from start to node n (known exactly). h(n) = heuristic estimate of cost from n to goal (unknown, estimated). f(n) = estimated total cost of optimal path through n to goal. Greedy Best-First uses only h(n); UCS uses only g(n); A* uses both."
+  },
+  {
+    q: "A heuristic h(n) is admissible if:",
+    opts: [
+      "h(n) ≥ h*(n) for all n (overestimates)",
+      "h(n) = h*(n) for all n (exact)",
+      "h(n) ≤ h*(n) for all n (never overestimates)",
+      "h(n) = 0 for all n (trivial)"
+    ],
+    ans: 2,
+    exp: "Admissibility: h(n) ≤ h*(n) where h*(n) is the true optimal cost. The heuristic must never overestimate — it must be optimistic. This guarantees A* finds the optimal solution. h(n)=0 is trivially admissible (reduces A* to UCS) but provides no guidance. h(n)=h*(n) is the perfect heuristic."
+  },
+  {
+    q: "Greedy Best-First Search is NOT optimal because:",
+    opts: [
+      "It does not use a heuristic function",
+      "It only considers h(n), ignoring the actual cost g(n) already paid",
+      "It always finds the deepest solution",
+      "It uses BFS's queue structure"
+    ],
+    ans: 1,
+    exp: "Greedy BFS uses f(n) = h(n) only — it ignores g(n), the cost already incurred. This means it may follow a path that looks close to the goal (low h) but has already paid a high cost, missing a cheaper overall path. A* fixes this by including g(n) in the evaluation."
+  },
+  {
+    q: "In the A* optimality proof, we consider a suboptimal goal G₂ in the fringe and a node n on the optimal path. The proof shows f(G₂) > f(n) because:",
+    opts: [
+      "g(G₂) < C* since G₂ is suboptimal",
+      "h(G₂) > 0 always",
+      "f(G₂) = g(G₂) > C* ≥ f(n) by admissibility of h",
+      "n is always at depth 0"
+    ],
+    ans: 2,
+    exp: "The proof chain: (1) f(G₂)=g(G₂) since h(G₂)=0 for goal node. (2) g(G₂)>C* since G₂ is suboptimal. (3) f(n)=g(n)+h(n) ≤ g(n)+h*(n) = C* by admissibility. Therefore f(G₂) > C* ≥ f(n) → A* expands n before G₂ → optimal goal always found first."
+  },
+  {
+    q: "In a Genetic Algorithm, the purpose of the MUTATION operator is:",
+    opts: [
+      "To select the fittest individuals for reproduction",
+      "To combine two parent chromosomes into offspring",
+      "To apply random changes to offspring genes to maintain genetic diversity",
+      "To evaluate the quality of each candidate solution"
+    ],
+    ans: 2,
+    exp: "Mutation applies random changes to offspring genes (e.g., flipping a bit). Its purpose is to maintain genetic diversity in the population, preventing premature convergence to local optima. Without mutation, the GA might converge to a suboptimal solution and stay there. Crossover does the combining; Selection does the fitness-based choosing; Fitness evaluation does quality assessment."
+  },
+  {
+    q: "Which of the following is TRUE about the Learning Agent architecture?",
+    opts: [
+      "The Performance Element is responsible for evaluating the agent against a fixed standard",
+      "The Critic modifies the agent's knowledge based on feedback",
+      "The Problem Generator suggests actions that lead to new informative experiences",
+      "The Learning Element selects external actions to take"
+    ],
+    ans: 2,
+    exp: "Problem Generator: suggests exploratory actions → new experiences. Critic: evaluates performance against standard → gives feedback to learning element. Learning Element: makes improvements to agent's knowledge based on critic's feedback. Performance Element: selects the actual external actions. The options try to swap these roles — know them precisely."
+  }
+];
+
+let score = 0;
+let answered = 0;
+const answeredMap = {};
+
+function buildQuiz() {
+  const c = document.getElementById('quizContainer');
+  c.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.id = 'qq' + i;
+    div.innerHTML = `
+      <div class="q-num">Question ${i + 1} of ${QUESTIONS.length}</div>
+      <div class="q-text">${q.q}</div>
+      ${q.opts.map((o, j) => `
+        <div class="opt" id="opt_${i}_${j}" onclick="answer(${i}, ${j})">
+          <span class="opt-let">${String.fromCharCode(65 + j)}.</span>
+          <span>${o}</span>
+        </div>`).join('')}
+      <div class="q-exp" id="exp_${i}">${q.exp}</div>
+    `;
+    c.appendChild(div);
+  });
+}
+
+function answer(qi, oi) {
+  if (answeredMap[qi] !== undefined) return;
+  answeredMap[qi] = oi;
+  answered++;
+  const correct = QUESTIONS[qi].ans;
+  const selEl = document.getElementById('opt_' + qi + '_' + oi);
+  const corrEl = document.getElementById('opt_' + qi + '_' + correct);
+  selEl.classList.add(oi === correct ? 'correct' : 'wrong');
+  if (oi !== correct) corrEl.classList.add('correct');
+  // disable all
+  for (let j = 0; j < QUESTIONS[qi].opts.length; j++) {
+    const el = document.getElementById('opt_' + qi + '_' + j);
+    el.style.cursor = 'default';
+  }
+  document.getElementById('exp_' + qi).classList.add('show');
+  if (oi === correct) score++;
+  document.getElementById('scoreVal').textContent = score + ' / 15';
+  document.getElementById('answered').textContent = answered;
+}
+
+function resetQuiz() {
+  score = 0;
+  answered = 0;
+  Object.keys(answeredMap).forEach(k => delete answeredMap[k]);
+  document.getElementById('scoreVal').textContent = '0 / 15';
+  document.getElementById('answered').textContent = '0';
+  buildQuiz();
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

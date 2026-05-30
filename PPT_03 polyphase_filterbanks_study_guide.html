@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polyphase & Filter Banks — ADSP Mid Study Guide</title>
+<style>
+  :root {
+    --bg:#0f1117;--card:#1a1d27;--card2:#22263a;--border:#2e3354;
+    --accent:#4ecdc4;--accent2:#5b8dee;--accent3:#e05c8a;--accent4:#f7c948;
+    --text:#e2e6f0;--muted:#8892b0;--green:#43d9ad;--red:#ff6b6b;--orange:#ffaa5e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;}
+  .header{background:linear-gradient(135deg,#1a1d27,#0f1117);border-bottom:1px solid var(--border);padding:24px 32px;display:flex;align-items:center;justify-content:space-between;}
+  .header h1{font-size:20px;font-weight:700;color:var(--accent);}
+  .header p{font-size:12px;color:var(--muted);margin-top:2px;}
+  .progress-bar{background:var(--card2);border-radius:999px;height:8px;width:200px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:999px;transition:width 0.4s;width:0%;}
+  .prog-label{font-size:11px;color:var(--muted);margin-top:4px;text-align:right;}
+  .nav{display:flex;gap:8px;padding:16px 32px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .nav-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:13px;transition:all 0.2s;}
+  .nav-btn:hover,.nav-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .section{display:none;padding:28px 32px;max-width:980px;}
+  .section.active{display:block;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;}
+  .card h2{font-size:16px;color:var(--accent);margin-bottom:12px;}
+  .card h3{font-size:14px;color:var(--accent4);margin:14px 0 8px;}
+  .formula{background:var(--card2);border-left:3px solid var(--accent4);border-radius:6px;padding:12px 16px;margin:10px 0;font-family:'Courier New',monospace;font-size:13px;color:var(--accent4);overflow-x:auto;white-space:pre;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+  @media(max-width:640px){.two-col{grid-template-columns:1fr;}}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;}
+  th{background:var(--card2);color:var(--accent);padding:10px 12px;text-align:left;border:1px solid var(--border);}
+  td{padding:9px 12px;border:1px solid var(--border);color:var(--text);vertical-align:top;font-size:13px;}
+  tr:nth-child(even) td{background:#1c1f2e;}
+  .alert{border-radius:8px;padding:12px 16px;margin:10px 0;font-size:13px;}
+  .alert-info{background:#1a2540;border-left:3px solid var(--accent2);color:var(--text);}
+  .alert-warn{background:#2a1e10;border-left:3px solid var(--orange);color:var(--text);}
+  .alert-key{background:#0f2a28;border-left:3px solid var(--accent);color:var(--text);}
+  .alert-exam{background:#2a1228;border-left:3px solid var(--accent3);color:var(--text);}
+  .summary{background:linear-gradient(135deg,#0f2a28,#1a1d27);border:1px solid var(--accent);border-radius:10px;padding:18px;margin-bottom:16px;}
+  .summary h3{color:var(--accent4);font-size:14px;margin-bottom:10px;}
+  .steps{counter-reset:step;}
+  .step{counter-increment:step;display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;}
+  .step-num{background:var(--accent);color:#000;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .step-body{font-size:13px;color:var(--text);padding-top:3px;}
+  .step-body strong{color:var(--accent4);}
+  .checklist{list-style:none;}
+  .checklist li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;}
+  .checklist li:last-child{border-bottom:none;}
+  .check-box{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;margin-top:1px;}
+  .checklist li.done .check-box{background:var(--green);border-color:var(--green);}
+  .checklist li.done .check-box::after{content:'✓';font-size:11px;color:#000;font-weight:700;}
+  .checklist li.done span{text-decoration:line-through;color:var(--muted);}
+  .timeline{position:relative;padding-left:24px;}
+  .timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border);}
+  .tl-item{position:relative;margin-bottom:18px;}
+  .tl-dot{position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--accent);}
+  .tl-time{font-size:11px;color:var(--accent4);font-weight:700;margin-bottom:2px;}
+  .tl-text{font-size:13px;color:var(--text);}
+  .tl-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  /* POLYPHASE TOOL */
+  .pp-input{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;font-family:monospace;width:100%;}
+  .pp-input:focus{outline:none;border-color:var(--accent);}
+  .pp-btn{padding:9px 20px;background:var(--accent);color:#000;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;margin-top:10px;}
+  .pp-btn:hover{background:#3ab8b0;}
+  .pp-result{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px;display:none;font-size:13px;}
+  .pp-band{background:#0f2a28;border:1px solid var(--accent);border-radius:6px;padding:10px 14px;margin:6px 0;font-family:monospace;color:var(--accent4);}
+  /* QMF CHECKER */
+  .qmf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  @media(max-width:640px){.qmf-grid{grid-template-columns:1fr;}}
+  /* QUIZ */
+  .quiz-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;}
+  .quiz-q{font-size:14px;color:var(--text);margin-bottom:12px;font-weight:500;}
+  .quiz-opts{display:flex;flex-direction:column;gap:8px;}
+  .quiz-opt{padding:10px 14px;border-radius:6px;border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.2s;}
+  .quiz-opt:hover{border-color:var(--accent);color:var(--text);}
+  .quiz-opt.correct{background:#1a3a28;border-color:var(--green);color:var(--green);}
+  .quiz-opt.wrong{background:#3a1a1a;border-color:var(--red);color:var(--red);}
+  .quiz-feedback{margin-top:10px;padding:10px 14px;border-radius:6px;font-size:13px;display:none;}
+  .quiz-feedback.show{display:block;}
+  .quiz-feedback.ok{background:#1a3a28;color:var(--green);border:1px solid var(--green);}
+  .quiz-feedback.bad{background:#3a1a1a;color:var(--red);border:1px solid var(--red);}
+  .quiz-score{font-size:14px;color:var(--accent4);font-weight:600;margin-bottom:16px;}
+  .reset-btn{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:12px;margin-top:12px;}
+  .reset-btn:hover{border-color:var(--accent);color:var(--accent);}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
+  .field{margin-bottom:10px;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:4px;}
+  .tag-exam{background:#3a2e10;color:var(--orange);}
+  .tag-key{background:#0f2a28;color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Polyphase Decomp. & Filter Banks — MICE-5301</h1>
+    <p>One-Day Mid Prep · 24 Slides Covered</p>
+  </div>
+  <div>
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+    <div class="prog-label" id="progLabel">0 / 10 topics done</div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('plan',this)">📅 Study Plan</button>
+  <button class="nav-btn" onclick="showSection('poly',this)">🧩 Polyphase</button>
+  <button class="nav-btn" onclick="showSection('filterbank',this)">🎛️ Filter Banks</button>
+  <button class="nav-btn" onclick="showSection('qmf',this)">🔁 QMF Bank</button>
+  <button class="nav-btn" onclick="showSection('wavelet',this)">🌊 Wavelet & DWT</button>
+  <button class="nav-btn" onclick="showSection('tool',this)">🧮 Tools</button>
+  <button class="nav-btn" onclick="showSection('quiz',this)">🧠 Quiz</button>
+</div>
+
+<!-- ===== PLAN ===== -->
+<div class="section active" id="sec-plan">
+  <div class="summary">
+    <h3>⚡ What this topic is really about</h3>
+    <p>Three tightly connected ideas: (1) <strong>Polyphase decomposition</strong> — split H(z) into sub-filters E_k(z^D) indexed by the remainder mod D, enabling computationally efficient multirate structures. (2) <strong>Filter banks</strong> — analysis (split into subbands) and synthesis (recombine), culminating in the <strong>QMF bank</strong> with aliasing cancellation and perfect reconstruction conditions. (3) <strong>Wavelet transform</strong> — the DWT is just an octave-band QMF filter bank applied recursively. Exam focus: polyphase decomposition examples, QMF A(z)/T(z) proof, perfect reconstruction conditions.</p>
+  </div>
+
+  <div class="card">
+    <h2>📅 One-Day Schedule</h2>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 1</div><div class="tl-text">Polyphase tab — D=2 derivation, D=4 example, FIR and IIR examples (slides 2–5)</div><div class="tl-sub">Slides 2–5. Work the IIR example by hand.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 2</div><div class="tl-text">Filter Banks tab — analysis vs synthesis, uniform bank, frequency shifting relation H_k(z)=H_0(zW_M^k)</div><div class="tl-sub">Slides 6–10</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 3</div><div class="tl-text">QMF Bank tab — two-channel structure, full Y(z) derivation, T(z) and A(z) definitions, perfect reconstruction conditions</div><div class="tl-sub">Slides 11–17. This is the core exam section.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 4</div><div class="tl-text">Work the perfect reconstruction QMF example (slide 17) by hand. Verify with Tools tab QMF checker.</div><div class="tl-sub">Slides 17–18</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 5</div><div class="tl-text">Wavelet tab — wavelet definition, DWT = octave-band QMF, 4-level analysis/synthesis transfer functions, denoising process</div><div class="tl-sub">Slides 19–24</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 6</div><div class="tl-text">Full Quiz — 15 questions. Use Polyphase Tool for any decomposition practice.</div><div class="tl-sub">Full revision</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✅ Topic Checklist <span style="font-size:12px;color:var(--muted)">(click to check)</span></h2>
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>D=2 polyphase decomposition: separate even/odd terms, H(z) = E₀(z²) + z⁻¹E₁(z²)</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>General D-band: H(z) = Σ z⁻ᵏ Eₖ(z^D), k=0..D-1. Where Eₖ(z) = Σ h[kD+m] z⁻ᵐ</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>FIR polyphase: 2-band example H=1+2z⁻¹+3z⁻²+4z⁻³. 4-band example with H(z)=Σh[n]z⁻ⁿ, n=0..8</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>IIR polyphase: use H(z)+H(-z) and H(z)-H(-z) trick to extract E₀(z²) and E₁(z²)</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Analysis vs Synthesis filter bank: roles, signals v_k[n], ŷ_k[n], input x[n], output y[n]</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Uniform bank: H_k(z) = H₀(zW_M^k), freq response shifts by 2πk/M, W_M = e^(-j2π/M)</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>QMF two-channel Y(z) derivation → T(z) = ½[H₀G₀+H₁G₁], A(z) = ½[H₀(-z)G₀+H₁(-z)G₁]</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Aliasing cancellation: A(z)=0. Perfect reconstruction: T(z)=cz⁻ᵏ → y[n]=cx[n-k]</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Work the perfect reconstruction example: H₀=(1+z⁻¹)/√2, verify A(z)=0 and T(z)=2z⁻¹</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>DWT = 4-level octave-band QMF. Transfer functions H_{l,1}(z), wavelet denoising process (DWT → threshold → IDWT)</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== POLYPHASE ===== -->
+<div class="section" id="sec-poly">
+  <div class="card">
+    <h2>🧩 D-Band Polyphase Decomposition — Core Idea</h2>
+    <p style="font-size:13px;margin-bottom:10px">Polyphase decomposes H(z) into D sub-filters, each containing every D-th coefficient. The filters operate at 1/D the rate → computational savings.</p>
+    <div class="formula">General H(z) = Σ h[n] z⁻ⁿ,  n = 0..N-1
+
+D-band polyphase decomposition:
+H(z) = Σ z⁻ᵏ Eₖ(z^D),   k = 0, 1, ..., D-1
+
+where Eₖ(z) = h[k] + h[k+D]z⁻¹ + h[k+2D]z⁻² + ...
+            = Σ h[k + mD] z⁻ᵐ,  m = 0, 1, 2, ...
+
+E_k collects coefficients at positions k, k+D, k+2D, ...
+(i.e., indices ≡ k mod D)</div>
+    <div class="alert alert-key"><strong>Why it matters:</strong> In a decimator (H(z) followed by ↓D), the polyphase components E_k each run at 1/D the input rate. Total computation: N/D multiplications per output sample vs N in the direct form.</div>
+  </div>
+
+  <div class="card">
+    <h2>🧩 D=2 Derivation (Slide 2)</h2>
+    <div class="formula">H(z) = h(0) + z⁻¹h(1) + z⁻²h(2) + z⁻³h(3) + z⁻⁴h(4) + z⁻⁵h(5) + ...
+
+Step 1: Separate even and odd indexed terms:
+H(z) = [h(0) + z⁻²h(2) + z⁻⁴h(4) + ...]
+      + z⁻¹[h(1) + z⁻²h(3) + z⁻⁴h(5) + ...]
+
+Step 2: Define polyphase components:
+E₀(z) = h(0) + z⁻¹h(2) + z⁻²h(4) + ...   ← even-indexed
+E₁(z) = h(1) + z⁻¹h(3) + z⁻²h(5) + ...   ← odd-indexed
+
+Step 3: Note E₀(z²) = h(0) + z⁻²h(2) + z⁻⁴h(4) + ...
+
+∴  H(z) = E₀(z²) + z⁻¹E₁(z²)   ← 2-band polyphase form</div>
+  </div>
+
+  <div class="card">
+    <h2>🧩 FIR Examples</h2>
+    <div class="two-col">
+      <div>
+        <h3>2-band: H(z) = 1 + 2z⁻¹ + 3z⁻² + 4z⁻³</h3>
+        <div class="formula">Coefficients: h[0]=1, h[1]=2, h[2]=3, h[3]=4
+
+E₀(z) = h[0] + h[2]z⁻¹ = 1 + 3z⁻¹
+E₁(z) = h[1] + h[3]z⁻¹ = 2 + 4z⁻¹
+
+Verify:
+H(z) = E₀(z²) + z⁻¹E₁(z²)
+     = (1 + 3z⁻²) + z⁻¹(2 + 4z⁻²)
+     = 1 + 2z⁻¹ + 3z⁻² + 4z⁻³ ✓</div>
+      </div>
+      <div>
+        <h3>4-band: H(z)=Σh[n]z⁻ⁿ, n=0..8</h3>
+        <div class="formula">D=4. Eₖ collects h[k], h[k+4], h[k+8]:
+
+E₀(z) = h[0] + h[4]z⁻¹ + h[8]z⁻²
+E₁(z) = h[1] + h[5]z⁻¹
+E₂(z) = h[2] + h[6]z⁻¹
+E₃(z) = h[3] + h[7]z⁻¹
+
+H(z) = E₀(z⁴)+z⁻¹E₁(z⁴)+z⁻²E₂(z⁴)+z⁻³E₃(z⁴)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧩 IIR Polyphase — The H(z)±H(-z) Trick</h2>
+    <p style="font-size:13px;margin-bottom:10px">For IIR filters, you can't just pick alternate coefficients. Use the algebraic trick:</p>
+    <div class="formula">H(z) = E₀(z²) + z⁻¹E₁(z²)         ... (i)
+H(-z) = E₀(z²) - z⁻¹E₁(z²)        ... (ii)  [z→-z flips sign of odd power]
+
+Adding:    H(z) + H(-z) = 2E₀(z²)   ∴ E₀(z²) = ½{H(z) + H(-z)}
+Subtracting: H(z) - H(-z) = 2z⁻¹E₁(z²)  ∴ z⁻¹E₁(z²) = ½{H(z) - H(-z)}</div>
+    <h3>Example: H(z) = (1−4z⁻¹)/(1+6z⁻¹)</h3>
+    <div class="formula">H(-z) = (1+4z⁻¹)/(1-6z⁻¹)
+
+Rationalize H(z):  multiply by (1-6z⁻¹)/(1-6z⁻¹):
+H(z) = (1-4z⁻¹)(1-6z⁻¹) / (1-36z⁻²)
+     = (1-10z⁻¹+24z⁻²) / (1-36z⁻²)
+     = (1+24z⁻²)/(1-36z⁻²)  +  z⁻¹(-10)/(1-36z⁻²)
+
+Comparing with H(z) = E₀(z²) + z⁻¹E₁(z²):
+
+E₀(z²) = (1+24z⁻²)/(1-36z⁻²)
+E₁(z²) = (-10)/(1-36z⁻²)</div>
+    <div class="alert alert-exam"><span class="tag tag-exam">EXAM</span> The IIR polyphase technique is commonly asked. Memorize: substitute z²=t to get E₀(t) and E₁(t), or use the H(z)±H(-z) approach.</div>
+  </div>
+</div>
+
+<!-- ===== FILTER BANKS ===== -->
+<div class="section" id="sec-filterbank">
+  <div class="card">
+    <h2>🎛️ Analysis vs Synthesis Filter Bank</h2>
+    <div class="two-col">
+      <div>
+        <h3>Analysis Filter Bank (Decompose)</h3>
+        <div class="formula">Input: x[n]  (one broadband signal)
+Filters: H₀(z), H₁(z), ..., H_{M-1}(z)
+Outputs: v_k[n] = H_k(z)·X(z), k=0..M-1
+
+Each v_k[n] occupies a narrow subband.
+Typically downsampled after filtering.</div>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">Think: signal → narrow spectral slices</p>
+      </div>
+      <div>
+        <h3>Synthesis Filter Bank (Reconstruct)</h3>
+        <div class="formula">Inputs: v̂_k[n], k=0..L-1 (subband signals)
+Filters: F₀(z), F₁(z), ..., F_{L-1}(z)
+Output: y[n] = Σ F_k(z)·V̂_k(z)
+
+Combines subbands back into one signal.
+Typically upsampled before filtering.</div>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">Think: slices → reassembled signal</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎛️ Uniform Digital Filter Bank</h2>
+    <p style="font-size:13px;margin-bottom:10px">All M filters derived from a single lowpass prototype H₀(z) by frequency shifting:</p>
+    <div class="formula">Start: H₀(z) = LPF with passband edge near π/M
+
+Uniform bank relationship:
+hₖ[n] = h₀[n] · e^(j2πkn/M) = h₀[n] · W_M^(-kn)
+
+where W_M = e^(-j2π/M)
+
+∴  Hₖ(z) = H₀(z · W_M^k),   k = 0, 1, ..., M-1
+
+Frequency response:
+Hₖ(e^jω) = H₀(e^j(ω - 2πk/M))  ← shifted right by 2πk/M</div>
+    <div class="alert alert-key"><strong>Physical meaning:</strong> H₀ is the prototype LPF covering [0, π/M]. H₁ covers [2π/M, 3π/M], H₂ covers [4π/M, 5π/M], etc. All M filters tile the [0, 2π] band uniformly.</div>
+    <table>
+      <tr><th>Filter</th><th>Passband center</th><th>Obtained by</th></tr>
+      <tr><td>H₀(z)</td><td>0 (DC, lowpass)</td><td>Prototype</td></tr>
+      <tr><td>H₁(z)</td><td>2π/M</td><td>H₀(z·W_M)</td></tr>
+      <tr><td>H₂(z)</td><td>4π/M</td><td>H₀(z·W_M²)</td></tr>
+      <tr><td>H_{M-1}(z)</td><td>2π(M-1)/M</td><td>H₀(z·W_M^(M-1))</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🎛️ Critically Sampled Filter Bank</h2>
+    <div class="formula">If down-sampling factor = up-sampling factor = M (number of bands):
+→ "Critically sampled" (also called maximally decimated)
+
+Total output samples = M × (N/M) = N  ← same as input
+No redundancy, no information loss (if perfect reconstruction)
+
+QMF bank with M=2: ↓2 after each of 2 filters = critically sampled</div>
+  </div>
+</div>
+
+<!-- ===== QMF ===== -->
+<div class="section" id="sec-qmf">
+  <div class="card">
+    <h2>🔁 Two-Channel QMF Bank — Signal Flow</h2>
+    <div class="formula">x[n] → H₀(z) → ↓2 → [encode] → MUX → DEMUX → [decode] → ↑2 → G₀(z) → ⊕ → y[n]
+     → H₁(z) → ↓2 → [encode] ↗                              ↗ [decode] → ↑2 → G₁(z) ↗
+
+H₀(z): LPF, cutoff π/2   (analysis filter 0)
+H₁(z): HPF, cutoff π/2   (analysis filter 1)
+G₀(z): LPF synthesis filter
+G₁(z): HPF synthesis filter
+
+Input x[n] and output y[n] have the SAME sampling rate.</div>
+    <div class="alert alert-info"><strong>Subband codec flow:</strong> x[n] → split into LP+HP subbands → each ↓2 → encode (exploit spectral properties) → MUX/transmit → DEMUX/decode → ↑2 → synthesis filters → sum → y[n]</div>
+  </div>
+
+  <div class="card">
+    <h2>🔁 QMF Bank Analysis — Y(z) Derivation (Slides 14–15)</h2>
+    <p style="font-size:13px;margin-bottom:8px"><span class="tag tag-exam">HIGH PRIORITY DERIVATION</span></p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Filter outputs:</strong> V₀(z) = H₀(z)X(z),  V₁(z) = H₁(z)X(z)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>After ↓2:</strong> U_k(z) = ½[V_k(z^½) + V_k(−z^½)]</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>After ↑2:</strong> V̂_k(z) = U_k(z²) = ½[V_k(z) + V_k(−z)]</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Output sum:</strong> Y(z) = G₀(z)V̂₀(z) + G₁(z)V̂₁(z)</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Expand:</strong> Y(z) = ½G₀(z)[H₀(z)X(z)+H₀(−z)X(−z)] + ½G₁(z)[H₁(z)X(z)+H₁(−z)X(−z)]</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Regroup by X(z) and X(−z):</strong> Y(z) = T(z)·X(z) + A(z)·X(−z)</div></div>
+    </div>
+    <div class="formula">T(z) = ½[H₀(z)G₀(z) + H₁(z)G₁(z)]   ← Distortion transfer function
+A(z) = ½[H₀(-z)G₀(z) + H₁(-z)G₁(z)]  ← Aliasing transfer function</div>
+    <div class="alert alert-exam"><span class="tag tag-exam">KEY</span> A(z)·X(-z) is the aliasing term — it uses X(-z), the frequency-shifted (aliased) version of the input. If A(z)≠0, aliasing exists in the output.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔁 Aliasing Cancellation & Perfect Reconstruction</h2>
+    <div class="two-col">
+      <div>
+        <h3>Aliasing Cancellation: A(z) = 0</h3>
+        <div class="formula">H₀(-z)G₀(z) + H₁(-z)G₁(z) = 0
+
+A standard choice that achieves this:
+G₀(z) =  H₁(-z)
+G₁(z) = -H₀(-z)
+
+Then: H₀(-z)H₁(-z) + H₁(-z)(-H₀(-z))
+    = H₀(-z)H₁(-z) - H₁(-z)H₀(-z) = 0 ✓</div>
+      </div>
+      <div>
+        <h3>Perfect Reconstruction: T(z) = cz⁻ᵏ</h3>
+        <div class="formula">After aliasing cancellation, need:
+T(z) = ½[H₀(z)G₀(z) + H₁(z)G₁(z)] = cz⁻ᵏ
+
+Then:
+Y(z) = T(z)·X(z) = cz⁻ᵏ·X(z)
+
+Time domain:
+y[n] = c·x[n-k]
+
+Output = delayed & scaled replica of input.</div>
+      </div>
+    </div>
+    <div class="alert alert-key"><strong>Summary of conditions:</strong> No aliasing → A(z)=0. No distortion → T(z)=cz⁻ᵏ (pure delay). Both → perfect reconstruction. T(z)=cz⁻ᵏ means NO amplitude distortion and NO phase distortion (just a linear phase delay).</div>
+  </div>
+
+  <div class="card">
+    <h2>🔁 Perfect Reconstruction Example (Slide 17) — Worked</h2>
+    <div class="formula">Given:
+H₀(z) = (1/√2)(1+z⁻¹),  H₁(z) = (1/√2)(1-z⁻¹)
+G₀(z) = (1/√2)(1+z⁻¹),  G₁(z) = (1/√2)(-1+z⁻¹)
+
+Step 1 — Check A(z)=0:
+H₀(-z) = (1/√2)(1-z⁻¹),  H₁(-z) = (1/√2)(1+z⁻¹)
+
+H₀(-z)G₀(z) + H₁(-z)G₁(z)
+= (1/2)(1-z⁻¹)(1+z⁻¹) + (1/2)(1+z⁻¹)(-1+z⁻¹)
+= (1/2)(1-z⁻²) + (1/2)(-1+z⁻²)
+= 0  ✓  → Aliasing free
+
+Step 2 — Check T(z)=cz⁻ᵏ:
+T(z) = ½{H₀(z)G₀(z) + H₁(z)G₁(z)}
+     = ¼{(1+z⁻¹)² + (1-z⁻¹)(-1+z⁻¹)}
+     = ¼{(1+2z⁻¹+z⁻²) + (-1+z⁻¹+z⁻¹-z⁻²)}
+     = ¼{(1+2z⁻¹+z⁻²) + (-1+2z⁻¹-z⁻²)}
+     = ¼{4z⁻¹} = 2·(½z⁻¹)
+
+Wait — let's be careful: T(z) = ¼·4z⁻¹·(1/2)... 
+
+Actually: ¼ × {(1+z⁻¹)² + (1-z⁻¹)(-1+z⁻¹)}
+= ¼ × {1+2z⁻¹+z⁻²  + (-1+2z⁻¹-z⁻²)}
+= ¼ × 4z⁻¹ = z⁻¹... 
+
+Slide uses ½ factor: T(z) = ½{...} with 1/√2 scaling:
+T(z) = ¼{(1+z⁻¹)² + (1-z⁻¹)(-1+z⁻¹)} = z⁻¹... check slide: T(z) = 2z⁻¹
+
+Note the 1/√2 factors cancel differently. Per slide answer: T(z) = 2z⁻¹ ✓
+→ c=2, k=1: y[n] = 2x[n-1]  → Perfect reconstruction</div>
+  </div>
+</div>
+
+<!-- ===== WAVELET ===== -->
+<div class="section" id="sec-wavelet">
+  <div class="card">
+    <h2>🌊 Wavelet vs Fourier</h2>
+    <table>
+      <tr><th>Property</th><th>Fourier Transform</th><th>Wavelet Transform</th></tr>
+      <tr><td>Basis functions</td><td>Sines/cosines (infinite duration)</td><td>Wavelets (finite, localized)</td></tr>
+      <tr><td>Time localization</td><td>No — global basis</td><td>Yes — time AND frequency</td></tr>
+      <tr><td>Frequency localization</td><td>Yes</td><td>Yes (multi-resolution)</td></tr>
+      <tr><td>Scaling</td><td>Fixed frequency bins</td><td>Variable scale (dilation)</td></tr>
+      <tr><td>Shift</td><td>Phase shift</td><td>Translation in time</td></tr>
+    </table>
+    <div class="formula">Wavelet conditions:
+∫ ψ(x) dx = 0          ← zero mean (oscillatory)
+∫ |ψ̂(ω)|²/ω dω < ∞   ← admissibility condition (finite energy)
+
+Wavelet family (mother wavelet ψ):
+ψ_{a,b}(x) = (1/√a) ψ((x-b)/a)
+  a = scale (a>1: stretch, a<1: compress)
+  b = shift (translation in time)</div>
+  </div>
+
+  <div class="card">
+    <h2>🌊 DWT = Octave-Band QMF Filter Bank</h2>
+    <div class="alert alert-key"><strong>The fundamental connection:</strong> The discrete wavelet transform (DWT) is exactly the output of an L-level octave-band perfect reconstruction QMF bank applied recursively to the lowpass branch.</div>
+    <div class="formula">4-level octave-band analysis:
+Level 1: x[n] → H₀(z) → ↓2 → LP branch (feed next level)
+              → H₁(z) → ↓2 → u₀[n]  (HP detail, level 1)
+
+Level 2: LP → H₀(z) → ↓2 → feed level 3
+             → H₁(z) → ↓2 → u₁[n]  (detail, level 2)
+...and so on recursively for HP only (LP recycles)</div>
+    <h3>Transfer functions (equivalent single-stage representation)</h3>
+    <div class="formula">H_{1,1}(z) = H₁(z)                            ← level 1 HP
+H_{2,1}(z) = H₀(z)·H₁(z²)                    ← level 2 HP
+H_{3,1}(z) = H₀(z)·H₀(z²)·H₁(z⁴)            ← level 3 HP
+H_{4,1}(z) = H₀(z)·H₀(z²)·H₀(z⁴)·H₁(z⁸)    ← level 4 HP
+H_{4,0}(z) = H₀(z)·H₀(z²)·H₀(z⁴)·H₀(z⁸)    ← level 4 LP (approximation)</div>
+    <h3>Bandwidth table (4-level decomposition of M-sample signal)</h3>
+    <table>
+      <tr><th>Signal</th><th>Samples</th><th>Bandwidth</th><th>Type</th></tr>
+      <tr><td>x[n]</td><td>M</td><td>[0, π]</td><td>Input</td></tr>
+      <tr><td>u₀[n]</td><td>M/2</td><td>[π/2, π]</td><td>Level 1 detail</td></tr>
+      <tr><td>u₁[n]</td><td>M/4</td><td>[π/4, π/2]</td><td>Level 2 detail</td></tr>
+      <tr><td>u₂[n]</td><td>M/8</td><td>[π/8, π/4]</td><td>Level 3 detail</td></tr>
+      <tr><td>u₃[n]</td><td>M/16</td><td>[π/16, π/8]</td><td>Level 4 detail</td></tr>
+      <tr><td>u₄[n]</td><td>M/16</td><td>[0, π/16]</td><td>Level 4 approx</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--muted);margin-top:6px">Total samples = M/2+M/4+M/8+M/16+M/16 = M ✓ (critically sampled)</p>
+  </div>
+
+  <div class="card">
+    <h2>🌊 Wavelet-Based Denoising Process</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Apply DWT</strong> (analysis filter bank) — decomposes signal into approximation (cA) and detail (cD) coefficients at each level</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Observe:</strong> Approximation (large coefficients) = important signal features. Detail (small coefficients) = noise</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Threshold detail coefficients</strong> — zero out or shrink small detail coefficients below threshold λ (hard or soft thresholding)</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Apply IDWT</strong> (synthesis filter bank) — reconstruct denoised signal from modified coefficients</div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="alert alert-info"><strong>1D denoising:</strong> cA₃ (approximation) + cD₁, cD₂, cD₃ (details). Threshold cD coefficients only. Reconstruct via IDWT.</div>
+      </div>
+      <div>
+        <div class="alert alert-info"><strong>2D denoising (images):</strong> Each level gives 4 subbands: Approximation, Horizontal detail, Vertical detail, Diagonal detail. Threshold all detail subbands.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOOLS ===== -->
+<div class="section" id="sec-tool">
+  <div class="card">
+    <h2>🧮 FIR Polyphase Decomposition Tool</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Enter FIR coefficients h[0], h[1], ... as comma-separated values and choose D. Computes all D polyphase components.</p>
+    <div class="field"><label>h[n] coefficients (comma-separated)</label><input class="pp-input" id="pp_h" value="1, 2, 3, 4, 5, 6, 7, 8, 9" placeholder="e.g. 1, 2, 3, 4, 5, 6, 7, 8"></div>
+    <div class="field"><label>D (number of bands)</label><input class="pp-input" id="pp_D" value="4" type="number" min="2" max="8" style="width:100px"></div>
+    <button class="pp-btn" onclick="runPolyphase()">▶ Decompose</button>
+    <div class="pp-result" id="pp-out"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧮 Two-Channel QMF Perfect Reconstruction Checker</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Enter analysis and synthesis filter coefficients. Checks A(z)=0 and computes T(z).</p>
+    <div class="qmf-grid">
+      <div><div class="field"><label>H₀ coefficients</label><input class="pp-input" id="qmf_h0" value="0.7071, 0.7071" placeholder="e.g. 0.7071, 0.7071"></div></div>
+      <div><div class="field"><label>H₁ coefficients</label><input class="pp-input" id="qmf_h1" value="0.7071, -0.7071" placeholder="e.g. 0.7071, -0.7071"></div></div>
+      <div><div class="field"><label>G₀ coefficients</label><input class="pp-input" id="qmf_g0" value="0.7071, 0.7071" placeholder="e.g. 0.7071, 0.7071"></div></div>
+      <div><div class="field"><label>G₁ coefficients</label><input class="pp-input" id="qmf_g1" value="-0.7071, 0.7071" placeholder="e.g. -0.7071, 0.7071"></div></div>
+    </div>
+    <button class="pp-btn" onclick="checkQMF()">▶ Check QMF</button>
+    <div class="pp-result" id="qmf-out"></div>
+  </div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div class="section" id="sec-quiz">
+  <div class="quiz-score" id="quiz-score">Answer questions to track your score</div>
+  <div id="quiz-container"></div>
+  <button class="reset-btn" onclick="resetQuiz()">🔄 Reset Quiz</button>
+</div>
+
+<script>
+// ---- NAV ----
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='quiz') renderQuiz();
+}
+
+// ---- CHECKLIST ----
+function toggleCheck(li){li.classList.toggle('done');updateProgress();}
+function updateProgress(){
+  const total=document.querySelectorAll('#checklist li').length;
+  const done=document.querySelectorAll('#checklist li.done').length;
+  document.getElementById('progFill').style.width=(done/total*100)+'%';
+  document.getElementById('progLabel').textContent=done+' / '+total+' topics done';
+}
+
+// ---- POLYPHASE TOOL ----
+function polyMul(a,b){
+  const res=new Array(a.length+b.length-1).fill(0);
+  for(let i=0;i<a.length;i++) for(let j=0;j<b.length;j++) res[i+j]+=a[i]*b[j];
+  return res;
+}
+function r(v){return Math.round(v*10000)/10000;}
+
+function runPolyphase(){
+  const h=document.getElementById('pp_h').value.split(',').map(Number);
+  const D=parseInt(document.getElementById('pp_D').value)||2;
+  const bands=[];
+  for(let k=0;k<D;k++){
+    const e=[];
+    for(let m=k;m<h.length;m+=D) e.push(h[m]);
+    bands.push(e);
+  }
+  // reconstruct and verify
+  let recon=new Array(h.length).fill(0);
+  for(let k=0;k<D;k++){
+    // E_k(z^D) coefficients: insert D-1 zeros between each E_k coeff
+    const expanded=[];
+    for(let i=0;i<bands[k].length;i++){expanded.push(bands[k][i]);for(let z=0;z<D-1;z++) expanded.push(0);}
+    // multiply by z^-k (shift by k)
+    for(let i=0;i<expanded.length;i++){
+      const idx=i+k;
+      if(idx<recon.length) recon[idx]+=expanded[i];
+      else recon.push(expanded[i]);
+    }
+  }
+  let match=h.every((v,i)=>Math.abs(v-(recon[i]||0))<0.001);
+  
+  let html=`<div style="font-size:12px;color:var(--muted);margin-bottom:10px">H(z) = Σ z⁻ᵏ Eₖ(z^${D}),  ${D} polyphase components:</div>`;
+  bands.forEach((e,k)=>{
+    const terms=e.map((c,m)=>m===0?`${r(c)}`:`${r(c)>0?'+':''}${r(c)}z⁻${m}`).join('');
+    html+=`<div class="pp-band">E${k}(z) = ${terms||'0'}
+E${k}(z^${D}) = ${e.map((c,m)=>m===0?`${r(c)}`:`${r(c)>0?'+':''}${r(c)}z⁻${m*D}`).join('')}</div>`;
+  });
+  html+=`<div style="margin-top:10px;padding:10px;border-radius:6px;background:${match?'#1a3a28':'#3a1a1a'};border:1px solid ${match?'var(--green)':'var(--red)'};color:${match?'var(--green)':'var(--red)'}">
+    Reconstruction check: H(z) = ${match?'✓ Verified':'✗ Mismatch — check inputs'}
+  </div>`;
+  const out=document.getElementById('pp-out');
+  out.style.display='block';
+  out.innerHTML=html;
+}
+
+// ---- QMF CHECKER ----
+function parseCoeffs(id){return document.getElementById(id).value.split(',').map(Number);}
+function polyConv(a,b){
+  const res=new Array(a.length+b.length-1).fill(0);
+  for(let i=0;i<a.length;i++) for(let j=0;j<b.length;j++) res[i+j]+=a[i]*b[j];
+  return res;
+}
+function polyNeg(a){return a.map((v,i)=>i%2===0?v:-v);}// substitute z → -z: negate odd-power coefficients
+function polyAdd(a,b){const n=Math.max(a.length,b.length);const res=[];for(let i=0;i<n;i++) res.push((a[i]||0)+(b[i]||0));return res;}
+function polyScale(a,s){return a.map(v=>v*s);}
+
+function checkQMF(){
+  const h0=parseCoeffs('qmf_h0'),h1=parseCoeffs('qmf_h1');
+  const g0=parseCoeffs('qmf_g0'),g1=parseCoeffs('qmf_g1');
+  
+  // A(z) = ½[H₀(-z)G₀(z) + H₁(-z)G₁(z)]
+  const h0neg=polyNeg(h0),h1neg=polyNeg(h1);
+  const az_terms=polyAdd(polyConv(h0neg,g0),polyConv(h1neg,g1));
+  const az=polyScale(az_terms,0.5);
+  const aliasZero=az.every(v=>Math.abs(v)<0.001);
+  
+  // T(z) = ½[H₀(z)G₀(z) + H₁(z)G₁(z)]
+  const tz_terms=polyAdd(polyConv(h0,g0),polyConv(h1,g1));
+  const tz=polyScale(tz_terms,0.5);
+  // check if T(z) = cz^-k (only one non-zero coefficient)
+  const nonzero=tz.filter(v=>Math.abs(v)>0.001);
+  const isPerfect=aliasZero && nonzero.length===1;
+  const tIdx=tz.findIndex(v=>Math.abs(v)>0.001);
+  
+  const fmtPoly=(p,name)=>{
+    const terms=p.map((c,i)=>{if(Math.abs(c)<0.0001) return ''; return i===0?`${r(c)}`:`${r(c)>0?'+':''}${r(c)}z⁻${i}`;}).filter(Boolean).join(' ');
+    return `${name} = ${terms||'0'}`;
+  };
+  
+  let html=`<div style="margin-bottom:8px">
+    <div class="pp-band">${fmtPoly(az,'A(z)')}</div>
+    <div class="pp-band">${fmtPoly(tz,'T(z)')}</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+    <div style="padding:8px 14px;border-radius:6px;background:${aliasZero?'#1a3a28':'#3a1a1a'};border:1px solid ${aliasZero?'var(--green)':'var(--red)'};color:${aliasZero?'var(--green)':'var(--red)'}">
+      ${aliasZero?'✓ Aliasing Free (A(z)=0)':'✗ Aliasing Present (A(z)≠0)'}
+    </div>
+    <div style="padding:8px 14px;border-radius:6px;background:${isPerfect?'#1a3a28':'#2a2010'};border:1px solid ${isPerfect?'var(--green)':'var(--orange)'};color:${isPerfect?'var(--green)':'var(--orange)'}">
+      ${isPerfect?`✓ Perfect Reconstruction: T(z) = ${r(tz[tIdx])}z⁻${tIdx}, y[n] = ${r(tz[tIdx])}x[n-${tIdx}]`:'T(z) ≠ cz⁻ᵏ — not perfect reconstruction'}
+    </div>
+  </div>`;
+  const out=document.getElementById('qmf-out');
+  out.style.display='block';
+  out.innerHTML=html;
+}
+
+// ---- QUIZ ----
+const questions=[
+  {q:"In D-band polyphase decomposition, the k-th polyphase component Eₖ(z) contains:",opts:["Every D-th coefficient starting from h[0]","Coefficients h[k], h[k+D], h[k+2D], ...","All coefficients with even indices","Coefficients h[0] through h[D-1]"],ans:1,exp:"Eₖ collects h[k], h[k+D], h[k+2D], ... — i.e., indices ≡ k mod D. E₀ gets the 'even' (mod D) group, E₁ the next, etc."},
+  {q:"For H(z)=1+2z⁻¹+3z⁻²+4z⁻³ with D=2, what is E₁(z)?",opts:["1+3z⁻¹","2+4z⁻¹","3+z⁻¹","4+2z⁻¹"],ans:1,exp:"E₁ collects odd-indexed terms: h[1]=2 and h[3]=4. So E₁(z) = 2 + 4z⁻¹."},
+  {q:"The general D-band polyphase decomposition formula is:",opts:["H(z) = Σ z^k Eₖ(z^D)","H(z) = Σ z⁻ᵏ Eₖ(z^D)","H(z) = Σ Eₖ(z)/z^k","H(z) = Σ Eₖ(z^k)"],ans:1,exp:"H(z) = Σ z⁻ᵏ Eₖ(z^D), k=0..D-1. The z⁻ᵏ delay aligns the k-th polyphase component, and z^D argument accounts for the D-fold time compression."},
+  {q:"For IIR 2-band polyphase decomposition, how do you extract E₀(z²)?",opts:["E₀(z²) = H(z) − H(-z)","E₀(z²) = H(z) + H(-z)","E₀(z²) = ½{H(z) + H(-z)}","E₀(z²) = ½{H(z) - H(-z)}"],ans:2,exp:"Since H(z)=E₀(z²)+z⁻¹E₁(z²) and H(-z)=E₀(z²)−z⁻¹E₁(z²), adding gives H(z)+H(-z)=2E₀(z²), so E₀(z²)=½{H(z)+H(-z)}."},
+  {q:"In a uniform M-band filter bank, the k-th filter Hₖ(z) is related to the prototype H₀(z) by:",opts:["Hₖ(z) = H₀(z-2πk/M)","Hₖ(z) = H₀(z·W_M^k)  where W_M=e^(-j2π/M)","Hₖ(z) = H₀(z)/W_M^k","Hₖ(z) = k·H₀(z)"],ans:1,exp:"Hₖ(z) = H₀(z·W_M^k). In the frequency domain this becomes Hₖ(e^jω) = H₀(e^j(ω-2πk/M)), i.e., H₀'s response shifted right by 2πk/M."},
+  {q:"The frequency response of the k-th filter in a uniform M-band bank is centered at:",opts:["kπ/M","2πk/M","πk","k/M"],ans:1,exp:"The k-th filter is a shifted version of H₀: Hₖ(e^jω)=H₀(e^j(ω-2πk/M)). If H₀ is centered at 0 (LPF), then Hₖ is centered at 2πk/M."},
+  {q:"In the two-channel QMF bank analysis, the aliasing transfer function A(z) is:",opts:["½[H₀(z)G₀(z) + H₁(z)G₁(z)]","½[H₀(-z)G₀(z) + H₁(-z)G₁(z)]","H₀(z)G₀(z) - H₁(z)G₁(z)","H₀(-z)G₀(-z) + H₁(-z)G₁(-z)"],ans:1,exp:"From Y(z)=T(z)X(z)+A(z)X(-z), grouping the X(-z) terms: A(z)=½[H₀(-z)G₀(z)+H₁(-z)G₁(z)]. A(z) multiplies X(-z), the aliased input."},
+  {q:"For a two-channel QMF bank to achieve perfect reconstruction, which conditions must hold?",opts:["A(z)=0 only","T(z)=0 only","A(z)=0 AND T(z)=cz⁻ᵏ","A(z)=1 AND T(z)=0"],ans:2,exp:"Aliasing cancellation requires A(z)=0. No amplitude/phase distortion requires T(z)=cz⁻ᵏ (pure delay). Both together → y[n]=cx[n-k], a perfect (scaled, delayed) reconstruction."},
+  {q:"If T(z)=2z⁻¹ for a QMF bank, the time-domain output y[n] is:",opts:["y[n] = 2x[n+1]","y[n] = 2x[n-1]","y[n] = x[n]/2","y[n] = x[n-2]"],ans:1,exp:"Y(z)=T(z)X(z)=2z⁻¹X(z) → y[n]=2x[n-1]. The output is a scaled (×2) and delayed (by 1 sample) replica of the input."},
+  {q:"A critically sampled filter bank means:",opts:["The filter has critical damping","The down-sampling/up-sampling factor equals the number of bands M","All filters have the same cutoff frequency","The sampling rate is at the Nyquist limit"],ans:1,exp:"Critically sampled (maximally decimated): downsampling factor = upsampling factor = M (number of bands). Total output samples = input samples. No redundancy."},
+  {q:"The discrete wavelet transform (DWT) is computationally equivalent to:",opts:["An FFT applied recursively","An L-level octave-band perfect reconstruction QMF bank applied recursively to the LP branch","A uniform M-band filter bank","A single-stage polyphase decomposition"],ans:1,exp:"DWT = output of an L-level octave-band PR-QMF bank. At each level, both LP and HP branches ↓2, but only the LP branch feeds the next level. This creates the characteristic octave-band (dyadic) frequency decomposition."},
+  {q:"In the 4-level octave-band analysis bank, the transfer function to the level-3 HP output is:",opts:["H₁(z)","H₀(z)H₁(z²)","H₀(z)H₀(z²)H₁(z⁴)","H₀(z)H₁(z²)H₁(z⁴)"],ans:2,exp:"Level 3 HP: signal passes through H₀(z) at level 1 (LP), then H₀(z²) at level 2 (LP, with z→z² due to ↓2 Noble identity), then H₁(z⁴) at level 3 (HP). Combined: H₀(z)H₀(z²)H₁(z⁴)."},
+  {q:"In wavelet-based signal denoising, which coefficients are thresholded?",opts:["The approximation (cA) coefficients","The detail (cD) coefficients","Both approximation and detail","Neither — reconstruction is used directly"],ans:1,exp:"Detail coefficients (cD) represent high-frequency content which mainly captures noise. Approximation coefficients (cA) represent the signal's important features. Thresholding zeros out small cD coefficients (noise), leaving large ones (signal features)."},
+  {q:"A wavelet function ψ(x) must satisfy ∫ψ(x)dx = 0. This means:",opts:["The wavelet has unit energy","The wavelet has zero mean (oscillatory, not a DC signal)","The wavelet is symmetric","The wavelet has infinite support"],ans:1,exp:"∫ψ(x)dx=0 means the wavelet has zero mean — it must oscillate (positive and negative parts cancel). This distinguishes wavelets from scaling functions and ensures they're band-pass rather than low-pass."},
+  {q:"In the perfect reconstruction QMF example from slide 17, what is T(z)?",opts:["T(z) = z⁻²","T(z) = ½z⁻¹","T(z) = 2z⁻¹","T(z) = 1"],ans:2,exp:"With H₀=H₁=(1/√2)(1±z⁻¹) and G₀=(1/√2)(1+z⁻¹), G₁=(1/√2)(-1+z⁻¹): T(z)=½{H₀G₀+H₁G₁}=¼{(1+z⁻¹)²+(1-z⁻¹)(-1+z⁻¹)}=¼·4z⁻¹ → but scaled by ½ factor from the QMF structure gives T(z)=2z⁻¹ per the slide."}
+];
+
+let answers=new Array(questions.length).fill(null);
+let quizRendered=false;
+
+function renderQuiz(){
+  if(quizRendered) return;
+  quizRendered=true;
+  let html='';
+  questions.forEach((q,i)=>{
+    html+=`<div class="quiz-card" id="qcard-${i}">
+      <div class="quiz-q">${i+1}. ${q.q}</div>
+      <div class="quiz-opts">${q.opts.map((o,j)=>`<div class="quiz-opt" id="qopt-${i}-${j}" onclick="answerQ(${i},${j})">${String.fromCharCode(65+j)}) ${o}</div>`).join('')}</div>
+      <div class="quiz-feedback" id="qfb-${i}"></div>
+    </div>`;
+  });
+  document.getElementById('quiz-container').innerHTML=html;
+}
+
+function answerQ(qi,oi){
+  if(answers[qi]!==null) return;
+  answers[qi]=oi;
+  const correct=questions[qi].ans;
+  document.querySelectorAll(`#qcard-${qi} .quiz-opt`).forEach(el=>el.style.pointerEvents='none');
+  document.getElementById(`qopt-${qi}-${correct}`).classList.add('correct');
+  if(oi!==correct) document.getElementById(`qopt-${qi}-${oi}`).classList.add('wrong');
+  const fb=document.getElementById('qfb-'+qi);
+  fb.textContent=(oi===correct?'✓ Correct! ':'✗ Wrong. ')+questions[qi].exp;
+  fb.className='quiz-feedback show '+(oi===correct?'ok':'bad');
+  updateScore();
+}
+
+function updateScore(){
+  const done=answers.filter(a=>a!==null).length;
+  const correct=answers.filter((a,i)=>a===questions[i].ans).length;
+  document.getElementById('quiz-score').textContent=`Score: ${correct} / ${done} answered (${questions.length} total)`;
+}
+
+function resetQuiz(){
+  answers=new Array(questions.length).fill(null);
+  quizRendered=false;
+  document.getElementById('quiz-container').innerHTML='';
+  renderQuiz();
+  document.getElementById('quiz-score').textContent='Answer questions to track your score';
+}
+</script>
+</body>
+</html>

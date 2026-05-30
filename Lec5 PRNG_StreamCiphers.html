@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EEE-5305 | Lec 5: PRNG & Stream Ciphers</title>
+<style>
+:root{
+  --bg:#0f1117;--card:#1a1d27;--card2:#22263a;--border:#2e3354;
+  --text:#e2e6f0;--muted:#8892b0;
+  --accent:#a855f7;--accent2:#7c3aed;--accent3:#c084fc;
+  --accent4:#f7c948;--green:#10b981;--red:#ef4444;--blue:#38bdf8;
+  --teal:#2dd4bf;--pink:#f472b6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--accent3)}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#1a0533,#0f1117);border-bottom:1px solid var(--border);padding:18px 24px}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.hdr-title{font-size:1.25rem;font-weight:700;color:var(--accent3)}
+.hdr-sub{font-size:.8rem;color:var(--muted);margin-top:2px}
+.progress-wrap{min-width:220px}
+.progress-label{font-size:.75rem;color:var(--muted);margin-bottom:4px}
+#prog-bar-outer{background:var(--card2);border-radius:20px;height:8px;overflow:hidden}
+#prog-bar{background:linear-gradient(90deg,var(--accent2),var(--accent3));height:100%;width:0%;transition:width .4s}
+#prog-text{font-size:.75rem;color:var(--accent3);margin-top:3px}
+
+/* NAV */
+nav{background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap;padding:0 16px}
+nav button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.82rem;padding:14px 16px;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+nav button.active,nav button:hover{color:var(--accent3);border-bottom-color:var(--accent)}
+
+/* MAIN */
+main{max-width:1100px;margin:0 auto;padding:24px 16px}
+.section{display:none}
+.section.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px}
+.card h2{font-size:1.1rem;color:var(--accent3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3{font-size:.95rem;color:var(--blue);margin:14px 0 8px}
+.card p{color:var(--text);margin-bottom:10px}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+
+/* FORMULA */
+.formula{background:#0a0c14;border-left:3px solid var(--accent4);border-radius:6px;padding:12px 16px;margin:10px 0;font-family:'Courier New',monospace;color:var(--accent4);white-space:pre;font-size:.88rem;overflow-x:auto}
+
+/* ALERTS */
+.alert{border-radius:7px;padding:12px 16px;margin:10px 0;font-size:.88rem;line-height:1.5}
+.alert-info{background:#0d1f3c;border-left:3px solid var(--blue);color:#bae6fd}
+.alert-warn{background:#1c1200;border-left:3px solid #f59e0b;color:#fde68a}
+.alert-key{background:#0d2424;border-left:3px solid var(--teal);color:#99f6e4}
+.alert-exam{background:#2d0a1e;border-left:3px solid var(--pink);color:#fbcfe8}
+.alert strong{display:block;margin-bottom:4px;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;opacity:.8}
+
+/* STEPS */
+.steps{counter-reset:step;margin:12px 0}
+.step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.step-num{background:var(--accent2);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-body{flex:1;font-size:.88rem}
+.step-body .formula{margin:6px 0}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{background:var(--card2);color:var(--accent3);padding:8px 12px;text-align:left;border:1px solid var(--border)}
+td{padding:7px 12px;border:1px solid var(--border);color:var(--text)}
+tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+.highlight-row td{background:rgba(168,85,247,.12);color:var(--accent3);font-weight:600}
+
+/* BADGE */
+.badge{display:inline-block;background:var(--accent2);color:#fff;border-radius:4px;padding:2px 8px;font-size:.72rem;font-weight:600;margin-left:6px;vertical-align:middle}
+.badge-green{background:#065f46;color:#6ee7b7}
+.badge-blue{background:#0c4a6e;color:#7dd3fc}
+
+/* TIMELINE */
+.timeline{margin:16px 0}
+.tl-item{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:38px;height:38px;background:var(--card2);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--accent3);flex-shrink:0}
+.tl-time{font-size:.78rem;color:var(--accent4);font-weight:600;min-width:70px;margin-top:2px}
+.tl-task{font-weight:600;font-size:.9rem}
+.tl-slides{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+/* CHECKLIST */
+.checklist{list-style:none}
+.checklist li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:.2s;font-size:.88rem}
+.checklist li:hover{background:var(--card2)}
+.checklist li input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.checklist li.done{text-decoration:line-through;color:var(--muted)}
+
+/* COMPARISON TABLE */
+.cmp-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.85rem}
+.cmp-table th{background:var(--accent2);color:#fff;padding:9px 14px;text-align:center}
+.cmp-table td{padding:8px 14px;border:1px solid var(--border);vertical-align:top}
+.cmp-table tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+.cmp-table .feature{font-weight:600;color:var(--accent3);background:var(--card2)}
+
+/* QUIZ */
+.quiz-q{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+.quiz-q p{font-weight:600;margin-bottom:12px;color:var(--text)}
+.quiz-opts button{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 14px;margin:5px 0;cursor:pointer;font-size:.85rem;transition:.2s}
+.quiz-opts button:hover:not(:disabled){background:var(--card2);border-color:var(--accent)}
+.quiz-opts button.correct{background:#064e3b;border-color:var(--green);color:#6ee7b7}
+.quiz-opts button.wrong{background:#450a0a;border-color:var(--red);color:#fca5a5}
+.quiz-opts button:disabled{cursor:default}
+.quiz-exp{display:none;margin-top:10px;padding:10px 14px;background:#0d1f3c;border-left:3px solid var(--blue);border-radius:5px;font-size:.83rem;color:#bae6fd}
+.quiz-exp.show{display:block}
+.quiz-score{text-align:center;font-size:1.3rem;font-weight:700;color:var(--accent3);padding:20px}
+#quiz-reset{background:var(--accent2);color:#fff;border:none;border-radius:7px;padding:10px 28px;cursor:pointer;font-size:.9rem;margin-top:8px}
+#quiz-reset:hover{background:var(--accent)}
+#score-counter{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 20px;text-align:center;margin-bottom:16px;font-size:.9rem;color:var(--muted)}
+#score-counter span{color:var(--accent3);font-weight:700;font-size:1.1rem}
+
+/* INTERACTIVE TOOL */
+.sim-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.sim-field{display:flex;flex-direction:column;gap:4px}
+.sim-field label{font-size:.78rem;color:var(--muted)}
+.sim-input{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 12px;font-family:'Courier New',monospace;font-size:.9rem;width:160px}
+.sim-input:focus{outline:none;border-color:var(--accent)}
+.pp-btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:7px;padding:10px 24px;cursor:pointer;font-size:.88rem;font-weight:600;letter-spacing:.03em}
+.pp-btn:hover{opacity:.88}
+#sim-output{display:none;margin-top:16px}
+.result-header{font-size:.78rem;color:var(--muted);margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-title">EEE-5305: Network &amp; Information Security</div>
+      <div class="hdr-sub">Lecture 5 — Pseudo-Random Numbers &amp; Stream Ciphers &nbsp;|&nbsp; University of Dhaka M.Sc.</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label">Study Progress</div>
+      <div id="prog-bar-outer"><div id="prog-bar"></div></div>
+      <div id="prog-text">0 / 10 completed</div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('s-plan',this)">📅 Study Plan</button>
+  <button onclick="showSection('s-core',this)">🔑 Core Concepts</button>
+  <button onclick="showSection('s-prng',this)">📐 PRNG Algorithms</button>
+  <button onclick="showSection('s-stream',this)">🔒 Stream Ciphers</button>
+  <button onclick="showSection('s-rc4',this)">🔄 RC4 Deep Dive</button>
+  <button onclick="showSection('s-tool',this)">🧮 Interactive Tool</button>
+  <button onclick="showSection('s-quiz',this)">🧠 Quiz</button>
+</nav>
+
+<main>
+
+<!-- ===== TAB 1: STUDY PLAN ===== -->
+<div id="s-plan" class="section active">
+
+  <div class="card">
+    <h2>📌 What This Lecture Is Really About</h2>
+    <p>Cryptography depends on unpredictable sequences of bits. This lecture establishes <strong>how those sequences are generated</strong>: starting from physical entropy (TRNG), converting it into a scalable pseudo-random stream (PRNG), and applying that stream to encrypt data one byte at a time (stream ciphers). You will study three PRNG constructions — the Linear Congruential Generator, the Blum Blum Shub generator, and block-cipher-based PRNGs — then dissect RC4, the dominant stream cipher in legacy wireless and web protocols. The central insight is the tradeoff between computational security and true unpredictability.</p>
+    <div class="alert alert-exam"><strong>⚠ Exam Focus</strong>Know the BBS algorithm cold (formula + why it's cryptographically secure), understand the RC4 KSA and PRGA pseudocode step-by-step, and be able to distinguish TRNG vs PRNG vs PRF with architectural diagrams.</div>
+  </div>
+
+  <div class="card">
+    <h2>⏱️ 6-Hour Study Timeline</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot">1</div>
+        <div>
+          <div class="tl-time">0:00–0:45</div>
+          <div class="tl-task">Random Numbers Fundamentals</div>
+          <div class="tl-slides">Slides 1–4 | Uses, randomness properties, unpredictability. Sketch the TRNG/PRNG/PRF block diagrams from memory.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">2</div>
+        <div>
+          <div class="tl-time">0:45–1:30</div>
+          <div class="tl-task">PRNG Requirements &amp; Seed Generation</div>
+          <div class="tl-slides">Slides 5–6 | Randomness tests, forward/backward unpredictability, TRNG→PRNG pipeline.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">3</div>
+        <div>
+          <div class="tl-time">1:30–2:30</div>
+          <div class="tl-task">PRNG Algorithms: LCG &amp; BBS</div>
+          <div class="tl-slides">Slides 7–9 | Derive LCG formula, trace BBS worked example (n=192649) row by row in the table.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">4</div>
+        <div>
+          <div class="tl-time">2:30–3:15</div>
+          <div class="tl-task">Block-Cipher PRNGs &amp; ANSI X9.17</div>
+          <div class="tl-slides">Slides 10–12 | Counter Mode vs OFB Mode. Trace ANSI X9.17 EDE block diagram and write out the three Triple-DES operations.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">5</div>
+        <div>
+          <div class="tl-time">3:15–4:15</div>
+          <div class="tl-task">Stream Ciphers &amp; Design Criteria</div>
+          <div class="tl-slides">Slides 13–14 | XOR-based encryption, keystream concept, comparison to block ciphers.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">6</div>
+        <div>
+          <div class="tl-time">4:15–5:30</div>
+          <div class="tl-task">RC4: KSA + PRGA Full Algorithm</div>
+          <div class="tl-slides">Slides 15–19 | Initialize S, T. Trace KSA swap loop. Run PRGA stream generation. Understand WEP vulnerability context.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">7</div>
+        <div>
+          <div class="tl-time">5:30–6:00</div>
+          <div class="tl-task">Interactive Tool + Full Quiz</div>
+          <div class="tl-slides">Use the BBS/RC4 simulator to verify your understanding, then attempt all 15 quiz questions.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✅ Progress Checklist</h2>
+    <ul class="checklist" id="checklist">
+      <li><input type="checkbox" onchange="updateProgress()"> Understand TRNG vs PRNG vs PRF distinctions and block diagrams</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Know the two properties of randomness: uniform distribution + independence</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Memorize LCG formula X_{n+1} = (aX_n + c) mod m and parameter requirements</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Trace the BBS example (n=192649, s=101355) through at least 5 iterations manually</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Explain why BBS is cryptographically secure (hardness of quadratic residuosity)</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Understand Counter Mode and OFB Mode PRNG architectures</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Describe ANSI X9.17 PRNG: inputs, three EDE operations, outputs R_i and V_{i+1}</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Explain stream cipher operation: keystream XOR plaintext</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Trace RC4 KSA: initialise S, fill T, permute S via swap loop</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Trace RC4 PRGA: generate keystream byte k = S[t] and encrypt/decrypt</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== TAB 2: CORE CONCEPTS ===== -->
+<div id="s-core" class="section">
+
+  <div class="card">
+    <h2>🎲 Uses of Random Numbers in Cryptography</h2>
+    <div class="grid2">
+      <div>
+        <div class="alert alert-key"><strong>🔑 Three Primary Uses</strong>
+          1. Key distribution and authentication schemes<br>
+          2. Generation of session keys or keys for RSA<br>
+          3. Generation of the bit stream for stream ciphers
+        </div>
+      </div>
+      <div>
+        <div class="alert alert-info"><strong>ℹ Note</strong>Every cryptographic protocol ultimately depends on the quality of its random number source. A weak RNG breaks the entire system regardless of algorithm strength.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Properties of Random Numbers</h2>
+    <h3>Randomness</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>Definition</th><th>Test Examples</th></tr>
+        <tr><td><strong>Uniform Distribution</strong></td><td>Frequency of 0s and 1s are approximately equal across the sequence</td><td>Frequency test, monobit test</td></tr>
+        <tr><td><strong>Independence</strong></td><td>No sub-sequence can be statistically inferred from knowledge of other sub-sequences</td><td>Runs test, serial test, autocorrelation</td></tr>
+      </table>
+    </div>
+    <h3>Unpredictability</h3>
+    <div class="alert alert-exam"><strong>⚠ Exam Critical</strong>Unpredictability means it is computationally <em>hard</em> to predict the next value in the sequence — even when you know the algorithm and have observed previous outputs. This is stronger than just randomness.</div>
+    <div class="grid2">
+      <div class="alert alert-key"><strong>Forward Unpredictability</strong>Given outputs k₁, k₂, …, kₙ, it is infeasible to predict kₙ₊₁</div>
+      <div class="alert alert-key"><strong>Backward Unpredictability</strong>Given outputs kₙ, kₙ₊₁, …, it is infeasible to determine previous values or the seed</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🏗️ TRNG, PRNG, and PRF — Comparison</h2>
+    <div class="tbl-wrap">
+      <table class="cmp-table">
+        <tr><th>Feature</th><th>TRNG</th><th>PRNG</th><th>PRF</th></tr>
+        <tr><td class="feature">Input</td><td>Physical entropy source</td><td>Seed (short value)</td><td>Context-specific seed + values</td></tr>
+        <tr><td class="feature">Algorithm</td><td>Conversion to binary (non-deterministic)</td><td>Deterministic algorithm</td><td>Deterministic algorithm</td></tr>
+        <tr><td class="feature">Output</td><td>True random bit stream</td><td>Pseudorandom bit stream (infinite)</td><td>Pseudorandom value (fixed length)</td></tr>
+        <tr><td class="feature">Deterministic?</td><td>No</td><td>Yes (given seed)</td><td>Yes (given seed + context)</td></tr>
+        <tr><td class="feature">Reproducible?</td><td>No</td><td>Yes (same seed → same stream)</td><td>Yes (same inputs → same value)</td></tr>
+        <tr><td class="feature">Scalability</td><td>Limited — hardware bottleneck</td><td>Unlimited output</td><td>Fixed-length output per call</td></tr>
+        <tr><td class="feature">Examples</td><td>Thermal noise, keystroke timing, radioactive decay</td><td>BBS, LCG, AES-CTR</td><td>HMAC-based KDF, AES-PRF</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-info"><strong>📌 Pipeline</strong>In practice: TRNG generates a truly random <strong>seed</strong> → that seed is fed into a PRNG → the PRNG produces a scalable pseudorandom bit stream. This combines the unpredictability of hardware entropy with the efficiency of algorithmic generation.</div>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ TRNG Sources</h2>
+    <div class="grid2">
+      <div>
+        <h3>Physical Phenomena Used</h3>
+        <ul style="padding-left:18px;font-size:.88rem;color:var(--text)">
+          <li style="margin-bottom:6px">Ionizing radiation event detection</li>
+          <li style="margin-bottom:6px">Leaky capacitors (hardware noise)</li>
+          <li style="margin-bottom:6px">Thermal noise from resistors</li>
+          <li style="margin-bottom:6px">Audio input noise</li>
+          <li style="margin-bottom:6px">Mouse/keyboard activity timing</li>
+          <li style="margin-bottom:6px">I/O operation timing jitter</li>
+          <li style="margin-bottom:6px">OS interrupt timing</li>
+        </ul>
+      </div>
+      <div>
+        <div class="alert alert-warn"><strong>⚠ Limitation</strong>TRNGs produce only a small number of values per second. They cannot directly supply the high-bandwidth random bit streams needed by stream ciphers. This is why they are used only to seed PRNGs.</div>
+        <div class="alert alert-info"><strong>Modern Note</strong>Intel CPUs include RDRAND/RDSEED hardware instructions that mix TRNG entropy with AES-CTR PRNG to provide fast, secure random numbers at CPU speed.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 PRNG Requirements Summary</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Randomness</strong> — The output must pass statistical tests for uniformity, scalability, and consistency. Key tests: frequency test (equal 0/1 distribution), runs test (lengths of runs of identical bits), compressability test.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Unpredictability</strong> — Both forward and backward unpredictability must hold. Even an adversary who knows the algorithm and has seen many outputs must be unable to predict future or past values.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Secure Seed</strong> — The seed itself must be unpredictable. The standard solution is to generate the seed using a TRNG. If the seed is compromised, the entire PRNG output is compromised.</div></div>
+    </div>
+    <div class="alert alert-exam"><strong>⚠ Core Principle</strong>"Hard to determine pseudo-random stream if you don't know the seed — but do know the algorithm." Security rests entirely on seed secrecy, not algorithm secrecy (Kerckhoffs's principle).</div>
+  </div>
+</div>
+
+<!-- ===== TAB 3: PRNG ALGORITHMS ===== -->
+<div id="s-prng" class="section">
+
+  <div class="card">
+    <h2>📐 Linear Congruential Generator (LCG)</h2>
+    <h3>Parameters</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Parameter</th><th>Symbol</th><th>Constraint</th><th>Description</th></tr>
+        <tr><td>Modulus</td><td>m</td><td>m &gt; 0</td><td>Sets the range of output values [0, m−1]</td></tr>
+        <tr><td>Multiplier</td><td>a</td><td>0 &lt; a &lt; m</td><td>Scaling factor</td></tr>
+        <tr><td>Increment</td><td>c</td><td>0 ≤ c &lt; m</td><td>Additive constant (0 = multiplicative congruential)</td></tr>
+        <tr><td>Seed</td><td>X₀</td><td>0 ≤ X₀ &lt; m</td><td>Initial value</td></tr>
+      </table>
+    </div>
+    <h3>Recurrence Formula</h3>
+    <div class="formula">X_{n+1} = (a·X_n + c) mod m
+
+Generate sequence: {X₀, X₁, X₂, X₃, ...}</div>
+    <h3>Parameter Selection Rules</h3>
+    <div class="alert alert-key"><strong>🔑 Key Choices</strong>
+      • m should be large and prime. A common choice: m = 2³¹ − 1 = 2,147,483,647<br>
+      • If c = 0 (multiplicative form), good values of a are limited. Example: a = 7⁵ = 16807<br>
+      • The Hull-Dobell theorem gives conditions for full period m
+    </div>
+    <div class="alert alert-exam"><strong>⚠ Critical Weakness</strong>If an attacker knows the parameters (m, a, c) AND observes even one output value X_n, they can compute ALL subsequent values X_{n+1}, X_{n+2}, ... trivially. LCG is NOT cryptographically secure. It is used for simulation, not encryption.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔐 Blum Blum Shub (BBS) Generator</h2>
+    <h3>Parameters &amp; Setup</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Choose p, q</strong>: two large prime numbers such that p ≡ q ≡ 3 (mod 4). This congruence condition is critical for the security proof.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Compute n = p × q</strong>. This is a Blum integer. Factoring n must be infeasible for security.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Choose s</strong>: a random number relatively prime to n (i.e., gcd(s, n) = 1). This is the seed.</div></div>
+    </div>
+    <h3>Generation Algorithm</h3>
+    <div class="formula">X₀   = s² mod n           ← Initial state (seed squared)
+
+for i = 1 → ∞:
+    X_i  = (X_{i-1})² mod n   ← Square previous state
+    B_i  = X_i mod 2          ← Output bit = LSB of X_i</div>
+    <div class="alert alert-key"><strong>🔑 Security Basis</strong>BBS is cryptographically secure under the assumption that factoring large integers is computationally intractable (equivalent to the Quadratic Residuosity Problem). Even with all outputs B₁, B₂, …, Bₙ, determining the seed or predicting Bₙ₊₁ is as hard as factoring n.</div>
+    <div class="alert alert-info"><strong>Output</strong>Only the least significant bit (parity) of X_i is output as B_i. This extreme restriction is what makes BBS provably secure. One bit per iteration means it is slow but cryptographically strong.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔢 BBS Worked Example — Full Trace</h2>
+    <div class="alert alert-info"><strong>Given</strong> p = 383, q = 503, n = 192649, s = 101355</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">✓</div><div class="step-body">
+        <strong>Verify parameters:</strong><br>
+        383 mod 4 = 3 ✓ &nbsp;&nbsp;&nbsp; 503 mod 4 = 3 ✓<br>
+        n = 383 × 503 = 192,649<br>
+        gcd(101355, 192649) = 1 ✓
+      </div></div>
+      <div class="step"><div class="step-num">0</div><div class="step-body">
+        <strong>X₀ = s² mod n = 101355² mod 192649</strong><br>
+        101355² = 10,272,838,225<br>
+        10,272,838,225 mod 192,649 = <strong>20749</strong> (no output bit for i=0)
+      </div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>i</th><th>X_i</th><th>B_i = X_i mod 2</th><th>i</th><th>X_i</th><th>B_i</th></tr>
+        <tr><td>0</td><td>20749</td><td>—</td><td>11</td><td>137922</td><td>0</td></tr>
+        <tr class="highlight-row"><td>1</td><td>143135</td><td>1</td><td>12</td><td>123175</td><td>1</td></tr>
+        <tr class="highlight-row"><td>2</td><td>177671</td><td>1</td><td>13</td><td>8630</td><td>0</td></tr>
+        <tr><td>3</td><td>97048</td><td>0</td><td>14</td><td>114386</td><td>0</td></tr>
+        <tr><td>4</td><td>89992</td><td>0</td><td>15</td><td>14863</td><td>1</td></tr>
+        <tr class="highlight-row"><td>5</td><td>174051</td><td>1</td><td>16</td><td>133015</td><td>1</td></tr>
+        <tr class="highlight-row"><td>6</td><td>80649</td><td>1</td><td>17</td><td>106065</td><td>1</td></tr>
+        <tr class="highlight-row"><td>7</td><td>45663</td><td>1</td><td>18</td><td>45870</td><td>0</td></tr>
+        <tr><td>8</td><td>69442</td><td>0</td><td>19</td><td>137171</td><td>1</td></tr>
+        <tr><td>9</td><td>186894</td><td>0</td><td>20</td><td>48060</td><td>0</td></tr>
+        <tr><td>10</td><td>177046</td><td>0</td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+    <div class="alert alert-key"><strong>Generated bit stream (i=1 to 20):</strong> 1 1 0 0 1 1 1 0 0 0 0 1 0 0 1 1 1 0 1 0</div>
+    <div class="alert alert-info"><strong>Verify i=1:</strong> X₁ = (20749)² mod 192649 = 430,320,001 mod 192,649 = 143,135. B₁ = 143,135 mod 2 = 1 ✓</div>
+  </div>
+
+  <div class="card">
+    <h2>🔲 PRNG Based on Block Ciphers</h2>
+    <p>Use symmetric block ciphers (AES, DES) to produce pseudorandom bits. The seed consists of the encryption key K and a value V that is updated each round.</p>
+    <div class="grid2">
+      <div>
+        <h3>Counter (CTR) Mode</h3>
+        <div class="formula">V = 1
+loop:
+  V = V + 1         ← Increment counter
+  output = E_K(V)   ← Encrypt counter
+  pseudorandom_bits ← output</div>
+        <div class="alert alert-info"><strong>Mechanism</strong> V starts at 1 and is incremented each iteration. The counter value is encrypted with key K to produce pseudorandom output. V feeds back into itself via the +1 operation.</div>
+      </div>
+      <div>
+        <h3>Output Feedback (OFB) Mode</h3>
+        <div class="formula">V = initial_value
+loop:
+  output = E_K(V)   ← Encrypt current V
+  V = output        ← New V = output
+  pseudorandom_bits ← output</div>
+        <div class="alert alert-info"><strong>Mechanism</strong> V is the current state. After each encryption, V is replaced by the output. Unlike CTR, the feedback is from the cipher output rather than a counter.</div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>Counter Mode</th><th>OFB Mode</th></tr>
+        <tr><td>V Update</td><td>V = V + 1 (arithmetic)</td><td>V = E_K(V) (cipher feedback)</td></tr>
+        <tr><td>Parallelizable</td><td>Yes</td><td>No (serial dependency)</td></tr>
+        <tr><td>Error propagation</td><td>Localized</td><td>Localized</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🏛️ ANSI X9.17 PRNG</h2>
+    <p>A cryptographically secure PRNG standardized by ANSI, using Triple DES (3DES). Historically used in financial applications and PGP key generation.</p>
+    <h3>Inputs</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Input</th><th>Symbol</th><th>Size</th><th>Role</th></tr>
+        <tr><td>Date/time representation</td><td>DT_i</td><td>64-bit</td><td>Timestamp that changes each call — ensures different output even with same seed</td></tr>
+        <tr><td>Seed value</td><td>V_i</td><td>64-bit</td><td>Internal state, updated every round</td></tr>
+        <tr><td>Key pair</td><td>K₁, K₂</td><td>2 × 56-bit DES</td><td>Used in Triple DES (EDE) operations</td></tr>
+      </table>
+    </div>
+    <h3>Operation — Three Triple-DES Steps</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Encrypt the timestamp:</strong> Compute EDE(K₁K₂, DT_i) to get an intermediate value. EDE = Encrypt with K₁, Decrypt with K₂, Encrypt with K₁ (Triple DES).</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Generate R_i:</strong> XOR the result from step 1 with V_i, then apply EDE again: R_i = EDE(K₁K₂, EDE(K₁K₂, DT_i) ⊕ V_i). R_i is the 64-bit pseudorandom output.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Update V_{i+1}:</strong> XOR R_i with the step-1 intermediate, then apply EDE: V_{i+1} = EDE(K₁K₂, R_i ⊕ EDE(K₁K₂, DT_i)). This updates the seed for the next call.</div></div>
+    </div>
+    <h3>Outputs</h3>
+    <div class="grid2">
+      <div class="alert alert-key"><strong>R_i</strong> — 64-bit pseudorandom number output to the application</div>
+      <div class="alert alert-key"><strong>V_{i+1}</strong> — 64-bit updated seed for the next iteration</div>
+    </div>
+    <div class="alert alert-exam"><strong>⚠ Why Three EDE Operations?</strong> The first EDE ensures DT_i is unpredictably mixed. The second produces the output R_i. The third regenerates V to ensure backward unpredictability — knowing R_i should not let you recover V_i.</div>
+  </div>
+</div>
+
+<!-- ===== TAB 4: STREAM CIPHERS ===== -->
+<div id="s-stream" class="section">
+
+  <div class="card">
+    <h2>🌊 Stream Ciphers — Core Concept</h2>
+    <p>A stream cipher encrypts plaintext one byte (or bit) at a time by XOR-ing it with the corresponding byte of a pseudorandom keystream. Both sender and receiver must use the same key K and thus generate identical keystreams.</p>
+    <div class="formula">Encryption:   C = M ⊕ k     (ciphertext = plaintext XOR keystream byte)
+Decryption:   M = C ⊕ k     (plaintext  = ciphertext XOR keystream byte)
+
+Key:          K → Keystream Generator → k₁ k₂ k₃ k₄ ...
+                                         ↓  ↓  ↓  ↓
+Plaintext:    M₁ M₂ M₃ M₄ ...
+Ciphertext:   C₁ C₂ C₃ C₄ ...</div>
+    <div class="alert alert-key"><strong>🔑 Why XOR works for decryption:</strong> (M ⊕ k) ⊕ k = M ⊕ (k ⊕ k) = M ⊕ 0 = M. XOR is its own inverse when the same keystream is used.</div>
+    <div class="alert alert-exam"><strong>⚠ Critical Security Rule</strong>NEVER reuse the same key K (and thus the same keystream) for two different messages. If C₁ = M₁ ⊕ k and C₂ = M₂ ⊕ k, then C₁ ⊕ C₂ = M₁ ⊕ M₂ — the key is eliminated and the messages can be recovered. This destroyed WEP.</div>
+  </div>
+
+  <div class="card">
+    <h2>🎯 Design Criteria for Stream Ciphers</h2>
+    <div class="grid2">
+      <div>
+        <h3>Requirements</h3>
+        <div class="alert alert-key"><strong>Large Period</strong> The encryption sequence (keystream) must have a very large period before it repeats. Repeating keystream = catastrophic vulnerability.</div>
+        <div class="alert alert-key"><strong>Approximate True Randomness</strong> The keystream must be statistically indistinguishable from a true random sequence. Must pass all NIST randomness tests.</div>
+        <div class="alert alert-key"><strong>Long Key</strong> The key must be long enough to withstand brute force attacks. Minimum 128 bits for security today.</div>
+      </div>
+      <div>
+        <h3>Stream Cipher vs Block Cipher</h3>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Property</th><th>Stream</th><th>Block</th></tr>
+            <tr><td>Speed</td><td>Faster in HW</td><td>Slower</td></tr>
+            <tr><td>Implementation</td><td>Simpler</td><td>More complex</td></tr>
+            <tr><td>Key reuse</td><td>NEVER reuse</td><td>Can reuse keys</td></tr>
+            <tr><td>Error propagation</td><td>1 bit = 1 bit error</td><td>Can propagate</td></tr>
+            <tr><td>Parallelism</td><td>Limited</td><td>Highly parallel</td></tr>
+            <tr><td>Use case</td><td>Real-time, embedded</td><td>General purpose</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📡 RC4 — Background &amp; Properties</h2>
+    <div class="grid2">
+      <div>
+        <div class="alert alert-info"><strong>History</strong>
+          • Designed by Ron Rivest at RSA Security in 1987<br>
+          • Initially a trade secret; source code leaked in 1994<br>
+          • Used in SSL/TLS (until 2015), WEP, WPA (TKIP)
+        </div>
+        <div class="alert alert-info"><strong>Key Properties</strong>
+          • Variable-size key: 8 to 2048 bits (slides say 8–2048; algorithm uses 1–256 bytes)<br>
+          • Very simple and efficient implementation<br>
+          • Software-efficient — no lookup tables beyond S-box
+        </div>
+      </div>
+      <div>
+        <div class="alert alert-exam"><strong>⚠ RC4 Security Status</strong>
+          RC4 has several theoretical weaknesses:<br>
+          • Key scheduling algorithm (KSA) has biases<br>
+          • First few bytes of keystream are weakly random<br>
+          <br>
+          <strong>Practical mitigation:</strong> Use 128-bit key + discard first 256 bytes of keystream → no known attacks<br>
+          <br>
+          <strong>WEP failure</strong> was NOT RC4's fault — WEP reused IVs and used short keys incorrectly. The algorithm was fine; the protocol was broken.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 5: RC4 DEEP DIVE ===== -->
+<div id="s-rc4" class="section">
+
+  <div class="card">
+    <h2>🔄 RC4 — Parameters and Data Structures</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Variable</th><th>Size</th><th>Purpose</th></tr>
+        <tr><td>K (key)</td><td>1 to 256 bytes (8–2048 bits)</td><td>Secret key input from user</td></tr>
+        <tr><td>S (state vector)</td><td>256 bytes</td><td>Permutation of {0, 1, …, 255}. Continuously modified during stream generation.</td></tr>
+        <tr><td>T (temporary vector)</td><td>256 bytes</td><td>Used only during initialization to permute S based on K</td></tr>
+        <tr><td>k (keystream byte)</td><td>1 byte</td><td>One byte output per iteration, XORed with plaintext</td></tr>
+        <tr><td>i, j</td><td>byte indices</td><td>Pointers into S array during generation</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ Phase 1: Key Scheduling Algorithm (KSA)</h2>
+    <h3>Step 1 — Initialize S and T</h3>
+    <div class="formula">for i = 0 to 255 do
+    S[i] = i               ← S is identity permutation: [0, 1, 2, ..., 255]
+    T[i] = K[i mod keylen] ← T is key repeated to fill 256 bytes</div>
+    <div class="alert alert-info"><strong>Intuition:</strong> S starts as the identity permutation. T is filled by cycling through the key bytes. If key length is 16 bytes, T = K₀K₁…K₁₅K₀K₁… (repeated 16 times).</div>
+
+    <h3>Step 2 — Initial Permutation of S</h3>
+    <div class="formula">j = 0
+for i = 0 to 255 do
+    j = (j + S[i] + T[i]) mod 256
+    Swap(S[i], S[j])          ← Mix S using T (key-dependent)</div>
+    <div class="alert alert-key"><strong>🔑 What this does:</strong> Performs 256 key-dependent swaps on S. After this loop, S is a complex permutation of {0,…,255} that is entirely determined by K. The same K always produces the same permuted S — this is the setup.</div>
+    <div class="alert alert-exam"><strong>⚠ After KSA:</strong> S is a permutation (still contains all values 0–255, just reordered). T is discarded — it is only used during initialization. The security of RC4 depends entirely on how well K scrambles S.</div>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ Phase 2: Pseudo-Random Generation Algorithm (PRGA)</h2>
+    <div class="formula">i = 0; j = 0
+while (true):
+    i = (i + 1) mod 256         ← Advance i cyclically
+    j = (j + S[i]) mod 256      ← Advance j based on S[i]
+    Swap(S[i], S[j])            ← Swap to continuously evolve S
+    t = (S[i] + S[j]) mod 256   ← Compute index t
+    k = S[t]                    ← Output keystream byte
+
+    C = p XOR k                 ← Encrypt
+    p = C XOR k                 ← Decrypt</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Advance i:</strong> i cycles through 0→1→2→…→255→0→… ensuring every S element is eventually used as the primary index.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Advance j:</strong> j depends on S[i], making the progression non-linear and key-dependent. j does NOT follow a fixed cycle.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Swap S[i] and S[j]:</strong> S is continuously modified after every byte output. This means the internal state evolves with each byte, unlike a simple fixed permutation cipher.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Output k = S[t]:</strong> t = (S[i] + S[j]) mod 256 is a third, indirect index into S. The output k is looked up at position t — not directly at i or j. This indirection prevents predicting k from i and j alone.</div></div>
+    </div>
+    <div class="alert alert-exam"><strong>⚠ Why the state evolves:</strong> After 256 iterations, i has gone through a full cycle, but j has followed a complex, key-dependent path. S has been modified 256 times. The state space is approximately 256! × 256 × 256 — astronomically large, which is why RC4 has a very long period.</div>
+  </div>
+
+  <div class="card">
+    <h2>🧩 RC4 Full Algorithm Summary</h2>
+    <div class="grid2">
+      <div>
+        <h3>KSA</h3>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-body">S[i] = i for all i (identity)</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-body">T[i] = K[i mod keylen] for all i</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-body">j = 0</div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-body">For i=0..255: j=(j+S[i]+T[i]) mod 256; Swap(S[i],S[j])</div></div>
+        </div>
+      </div>
+      <div>
+        <h3>PRGA</h3>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-body">i=0, j=0</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-body">i=(i+1) mod 256</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-body">j=(j+S[i]) mod 256</div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-body">Swap(S[i], S[j])</div></div>
+          <div class="step"><div class="step-num">5</div><div class="step-body">t=(S[i]+S[j]) mod 256; k=S[t]</div></div>
+          <div class="step"><div class="step-num">6</div><div class="step-body">C = p ⊕ k; repeat from step 2</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-key"><strong>Security note:</strong> The entire state of RC4 can be described as the tuple (S, i, j) where S is 256 bytes and i, j are single bytes. That's 256 + 1 + 1 = 258 bytes of state, representing an incredibly large state space that makes RC4 hard to break by state enumeration.</div>
+  </div>
+</div>
+
+<!-- ===== TAB 6: INTERACTIVE TOOL ===== -->
+<div id="s-tool" class="section">
+
+  <div class="card">
+    <h2>🧮 RC4 Stream Cipher Simulator</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px">Enter a key and plaintext. The simulator runs the full RC4 KSA and PRGA, showing intermediate state values at each step.</p>
+    <div class="sim-row">
+      <div class="sim-field">
+        <label>Key (text, 1–16 chars)</label>
+        <input type="text" id="rc4-key" class="sim-input" value="SecretKey" maxlength="16">
+      </div>
+      <div class="sim-field">
+        <label>Plaintext (text, 1–12 chars)</label>
+        <input type="text" id="rc4-plain" class="sim-input" value="Hello" maxlength="12">
+      </div>
+      <div class="sim-field">
+        <label>Show KSA steps</label>
+        <select id="rc4-ksa-steps" class="sim-input" style="width:120px">
+          <option value="8">First 8</option>
+          <option value="16">First 16</option>
+          <option value="256">All 256</option>
+        </select>
+      </div>
+      <button class="pp-btn" onclick="runRC4()">▶ Run RC4</button>
+    </div>
+
+    <div id="sim-output">
+      <div class="card" style="margin-top:0">
+        <h3>Step 1: Initial S and T Vectors (first 16 entries)</h3>
+        <div class="result-header">S[i] = i, T[i] = K[i mod keylen]</div>
+        <div class="tbl-wrap"><table id="init-tbl"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <h3 id="ksa-title">Step 2: KSA — Key Scheduling Algorithm</h3>
+        <div class="result-header">j = (j + S[i] + T[i]) mod 256 → Swap(S[i], S[j])</div>
+        <div class="tbl-wrap"><table id="ksa-tbl"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <h3>Step 3: Final S Vector After KSA (first 32 values)</h3>
+        <div class="tbl-wrap"><table id="sfinal-tbl"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <h3>Step 4: PRGA — Keystream Generation &amp; Encryption</h3>
+        <div class="result-header">i=(i+1) mod 256; j=(j+S[i]) mod 256; Swap; t=(S[i]+S[j]) mod 256; k=S[t]</div>
+        <div class="tbl-wrap"><table id="prga-tbl"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card" style="margin-top:0;background:var(--card2)">
+        <h3>Results Summary</h3>
+        <div id="results-summary" class="formula"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔢 BBS Generator Calculator</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px">Compute BBS output bits using the Blum Blum Shub algorithm. Pre-loaded with the lecture example.</p>
+    <div class="sim-row">
+      <div class="sim-field">
+        <label>p (prime, p ≡ 3 mod 4)</label>
+        <input type="number" id="bbs-p" class="sim-input" value="383" style="width:110px">
+      </div>
+      <div class="sim-field">
+        <label>q (prime, q ≡ 3 mod 4)</label>
+        <input type="number" id="bbs-q" class="sim-input" value="503" style="width:110px">
+      </div>
+      <div class="sim-field">
+        <label>Seed s (gcd(s,n)=1)</label>
+        <input type="number" id="bbs-s" class="sim-input" value="101355" style="width:130px">
+      </div>
+      <div class="sim-field">
+        <label>Iterations</label>
+        <input type="number" id="bbs-iter" class="sim-input" value="20" min="1" max="50" style="width:90px">
+      </div>
+      <button class="pp-btn" onclick="runBBS()">▶ Run BBS</button>
+    </div>
+    <div id="bbs-output" style="display:none;margin-top:16px">
+      <div id="bbs-check" class="alert" style="margin-bottom:12px"></div>
+      <div class="tbl-wrap"><table id="bbs-tbl"><thead></thead><tbody></tbody></table></div>
+      <div id="bbs-bits" class="formula" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 7: QUIZ ===== -->
+<div id="s-quiz" class="section">
+  <div id="score-counter">Score: <span id="score-display">0</span> / <span id="total-display">15</span> answered: <span id="answered-display">0</span></div>
+  <div id="quiz-container"></div>
+  <div style="text-align:center"><button id="quiz-reset" onclick="resetQuiz()">🔄 Reset Quiz</button></div>
+</div>
+
+</main>
+
+<script>
+// ===== TAB SWITCHING =====
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== PROGRESS =====
+function updateProgress(){
+  const items=document.querySelectorAll('#checklist input[type=checkbox]');
+  let done=0;
+  items.forEach((c,i)=>{
+    const li=c.parentElement;
+    if(c.checked){done++;li.classList.add('done');}
+    else{li.classList.remove('done');}
+  });
+  const pct=Math.round(done/items.length*100);
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('prog-text').textContent=done+' / '+items.length+' completed';
+}
+
+// ===== RC4 SIMULATOR =====
+function runRC4(){
+  const keyStr=document.getElementById('rc4-key').value||'Key';
+  const plainStr=document.getElementById('rc4-plain').value||'Hi';
+  const showSteps=parseInt(document.getElementById('rc4-ksa-steps').value);
+
+  const keyBytes=[];
+  for(let c of keyStr)keyBytes.push(c.charCodeAt(0));
+  const keylen=keyBytes.length;
+
+  const plainBytes=[];
+  for(let c of plainStr)plainBytes.push(c.charCodeAt(0));
+
+  // Init S and T
+  const S=[];const T=[];
+  for(let i=0;i<256;i++){S[i]=i;T[i]=keyBytes[i%keylen];}
+
+  // Show init table (first 16)
+  {
+    const thead=document.querySelector('#init-tbl thead');
+    const tbody=document.querySelector('#init-tbl tbody');
+    thead.innerHTML='<tr><th>i</th>'+Array.from({length:16},(_,k)=>`<th>${k}</th>`).join('')+'</tr>';
+    tbody.innerHTML='<tr><td>S[i]</td>'+Array.from({length:16},(_,k)=>`<td>${S[k]}</td>`).join('')+'</tr>'+
+                    '<tr><td>T[i]</td>'+Array.from({length:16},(_,k)=>`<td>${T[k]}</td>`).join('')+'</tr>';
+  }
+
+  // KSA
+  let j=0;
+  const ksaRows=[];
+  for(let i=0;i<256;i++){
+    const Si_before=S[i];
+    j=(j+S[i]+T[i])%256;
+    const Sj_before=S[j];
+    const tmp=S[i];S[i]=S[j];S[j]=tmp;
+    if(i<showSteps){
+      ksaRows.push({i,j,Si_before,Sj_before,Si_after:S[i],Sj_after:S[j],Ti:T[i]});
+    }
+  }
+  {
+    const thead=document.querySelector('#ksa-tbl thead');
+    const tbody=document.querySelector('#ksa-tbl tbody');
+    document.getElementById('ksa-title').textContent=`Step 2: KSA — First ${Math.min(showSteps,256)} of 256 iterations`;
+    thead.innerHTML='<tr><th>i</th><th>T[i]</th><th>j=(j+S[i]+T[i]) mod 256</th><th>S[i] before</th><th>S[j] before</th><th>S[i] after</th><th>S[j] after</th></tr>';
+    tbody.innerHTML=ksaRows.map(r=>`<tr><td>${r.i}</td><td>${r.Ti}</td><td>${r.j}</td><td>${r.Si_before}</td><td>${r.Sj_before}</td><td>${r.Si_after}</td><td>${r.Sj_after}</td></tr>`).join('');
+  }
+
+  // Show final S (first 32)
+  {
+    const thead=document.querySelector('#sfinal-tbl thead');
+    const tbody=document.querySelector('#sfinal-tbl tbody');
+    thead.innerHTML='<tr>'+Array.from({length:16},(_,k)=>`<th>${k}</th>`).join('')+'</tr>'+
+                    '<tr>'+Array.from({length:16},(_,k)=>`<th>${k+16}</th>`).join('')+'</tr>';
+    tbody.innerHTML='<tr>'+Array.from({length:16},(_,k)=>`<td>${S[k]}</td>`).join('')+'</tr>'+
+                    '<tr>'+Array.from({length:16},(_,k)=>`<td>${S[k+16]}</td>`).join('')+'</tr>';
+  }
+
+  // PRGA
+  let pi=0,pj=0;
+  const prgaRows=[];
+  const cipherBytes=[];
+  for(let n=0;n<plainBytes.length;n++){
+    pi=(pi+1)%256;
+    pj=(pj+S[pi])%256;
+    const tmp=S[pi];S[pi]=S[pj];S[pj]=tmp;
+    const t=(S[pi]+S[pj])%256;
+    const k=S[t];
+    const p=plainBytes[n];
+    const c=p^k;
+    cipherBytes.push(c);
+    prgaRows.push({n:n+1,i:pi,j:pj,Si:S[pi],Sj:S[pj],t,k,p,pChar:plainStr[n],c,cHex:c.toString(16).padStart(2,'0').toUpperCase()});
+  }
+  {
+    const thead=document.querySelector('#prga-tbl thead');
+    const tbody=document.querySelector('#prga-tbl tbody');
+    thead.innerHTML='<tr><th>Byte</th><th>i</th><th>j</th><th>S[i]</th><th>S[j]</th><th>t=(S[i]+S[j]) mod 256</th><th>k=S[t]</th><th>Plaintext p</th><th>C=p⊕k</th><th>C (hex)</th></tr>';
+    tbody.innerHTML=prgaRows.map(r=>`<tr><td>${r.n}</td><td>${r.i}</td><td>${r.j}</td><td>${r.Si}</td><td>${r.Sj}</td><td>${r.t}</td><td>${r.k}</td><td>'${r.pChar}' (${r.p})</td><td>${r.c}</td><td>0x${r.cHex}</td></tr>`).join('');
+  }
+
+  // Summary
+  const hexCipher=cipherBytes.map(b=>b.toString(16).padStart(2,'0').toUpperCase()).join(' ');
+  const keyHex=keyBytes.map(b=>b.toString(16).padStart(2,'0').toUpperCase()).join(' ');
+  document.getElementById('results-summary').textContent=
+`Key:        "${keyStr}"
+Key (hex):  ${keyHex}
+Plaintext:  "${plainStr}"
+Plain bytes: [${plainBytes.join(', ')}]
+
+Keystream:  [${prgaRows.map(r=>r.k).join(', ')}]
+Cipher bytes:[${cipherBytes.join(', ')}]
+Cipher hex:  ${hexCipher}
+
+Verify decryption (C XOR k):
+[${cipherBytes.map((c,i)=>c^prgaRows[i].k).join(', ')}] → "${cipherBytes.map((c,i)=>String.fromCharCode(c^prgaRows[i].k)).join('')}"`;
+
+  document.getElementById('sim-output').style.display='block';
+}
+
+// ===== BBS CALCULATOR =====
+function runBBS(){
+  const p=parseInt(document.getElementById('bbs-p').value);
+  const q=parseInt(document.getElementById('bbs-q').value);
+  const s=parseInt(document.getElementById('bbs-s').value);
+  const iter=parseInt(document.getElementById('bbs-iter').value)||20;
+
+  const n=p*q;
+  const checks=[];
+  let ok=true;
+  const pmod=p%4,qmod=q%4;
+  if(pmod!==3){checks.push('⚠ p mod 4 ≠ 3 (got '+pmod+') — BBS security requires p ≡ 3 (mod 4)');ok=false;}
+  else checks.push('✓ p mod 4 = 3');
+  if(qmod!==3){checks.push('⚠ q mod 4 ≠ 3 (got '+qmod+') — BBS security requires q ≡ 3 (mod 4)');ok=false;}
+  else checks.push('✓ q mod 4 = 3');
+
+  function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+  const g=gcd(s,n);
+  if(g!==1){checks.push('⚠ gcd(s,n) = '+g+' ≠ 1 — seed must be relatively prime to n');ok=false;}
+  else checks.push('✓ gcd(s,n) = 1');
+
+  const checkDiv=document.getElementById('bbs-check');
+  checkDiv.className='alert '+(ok?'alert-key':'alert-warn');
+  checkDiv.innerHTML='<strong>'+(ok?'✓ Parameters Valid':'⚠ Parameter Issues')+'</strong>n = '+p+' × '+q+' = '+n+'<br>'+checks.join('<br>');
+
+  // Generate BigInt sequence (JS numbers lose precision for large n² values)
+  const nB=BigInt(n);
+  let X=BigInt(s)*BigInt(s)%nB;
+  const rows=[];
+  const bits=[];
+  rows.push({i:0,X:X.toString(),B:'—'});
+  for(let i=1;i<=iter;i++){
+    X=X*X%nB;
+    const B=Number(X%2n);
+    bits.push(B);
+    rows.push({i,X:X.toString(),B});
+  }
+
+  // Build table
+  const thead=document.querySelector('#bbs-tbl thead');
+  const tbody=document.querySelector('#bbs-tbl tbody');
+  thead.innerHTML='<tr><th>i</th><th>X_i = (X_{i-1})² mod n</th><th>B_i = X_i mod 2</th></tr>';
+  tbody.innerHTML=rows.map(r=>`<tr class="${r.B===1?'highlight-row':''}"><td>${r.i}</td><td>${r.X}</td><td>${r.B}</td></tr>`).join('');
+  document.getElementById('bbs-bits').textContent=
+`n = ${p} × ${q} = ${n}
+s = ${s}
+X_0 = s² mod n = ${rows[0].X}
+
+Generated bit stream (i=1 to ${iter}):
+${bits.join(' ')}
+
+Binary string: ${bits.join('')}`;
+  document.getElementById('bbs-output').style.display='block';
+}
+
+// ===== QUIZ =====
+const questions=[
+  {q:"What is the primary cryptographic use of a TRNG?",opts:["Directly encrypting data","Generating the seed for a PRNG","Replacing symmetric block ciphers","Creating digital signatures"],ans:1,exp:"TRNG produces truly random values from physical sources but in limited quantities. Its primary role in a cryptographic system is to generate the unpredictable seed that is then fed into a PRNG for scalable bit generation."},
+  {q:"In the LCG recurrence X_{n+1} = (aX_n + c) mod m, if an attacker knows m, a, c and observes X_5, what can they compute?",opts:["Only X_6","Only X_4","All subsequent and previous values","Nothing — LCG is cryptographically secure"],ans:2,exp:"LCG is completely deterministic. Given parameters and any output value, an attacker can compute X_6, X_7, … by forward application, and X_4, X_3, … by modular inverse. This is why LCG is NOT cryptographically secure."},
+  {q:"The Blum Blum Shub generator requires p ≡ q ≡ 3 (mod 4). Why?",opts:["To ensure p and q are odd","To make n = pq a Blum integer enabling secure quadratic residuosity","To maximize the output period","To simplify the squaring operation"],ans:1,exp:"When p ≡ q ≡ 3 (mod 4), n = pq is called a Blum integer. This property ensures that the quadratic residuosity problem modulo n is computationally hard, which is the security foundation of BBS."},
+  {q:"In BBS with n=192649, s=101355, what is X_0?",opts:["101355","20749","143135","192649"],ans:1,exp:"X_0 = s² mod n = 101355² mod 192649 = 10,272,838,225 mod 192,649 = 20,749. Note X_0 has no output bit B_0 — the output sequence starts at B_1."},
+  {q:"What does B_i = X_i mod 2 compute in the BBS generator?",opts:["The full X_i value truncated to 8 bits","The most significant bit of X_i","The least significant bit (parity) of X_i","X_i divided by 2"],ans:2,exp:"X_i mod 2 extracts the least significant bit (LSB) of X_i. This is the parity of the number. BBS outputs only 1 bit per iteration — this extreme restriction is fundamental to its cryptographic security proof."},
+  {q:"In block-cipher-based PRNG using Counter Mode, how is the counter V updated?",opts:["V = E_K(V) (feedback from cipher output)","V = V + 1 (arithmetic increment)","V = V XOR previous_output","V = H(V) using a hash function"],ans:1,exp:"In Counter Mode, V is incremented arithmetically by 1 each round: V = V + 1. The counter value is then encrypted with key K to produce pseudorandom output. This is different from OFB mode where V is replaced by the cipher output."},
+  {q:"ANSI X9.17 PRNG uses Triple DES three times. The three operations produce what outputs?",opts:["Three independent pseudorandom values","The pseudorandom output R_i and the updated seed V_{i+1}","Three parts of a 192-bit key","Encrypted and decrypted versions of DT_i"],ans:1,exp:"The three EDE operations work together: first EDE processes DT_i, second EDE produces R_i (the 64-bit pseudorandom output), third EDE updates the seed to V_{i+1}. Both R_i and V_{i+1} are outputs of each call."},
+  {q:"In a stream cipher, why is it catastrophic to reuse the same key for two messages M1 and M2?",opts:["It doubles the encryption time","C1 XOR C2 = M1 XOR M2, removing the key and exposing plaintext structure","The keystream period becomes shorter","The key schedule becomes predictable"],ans:1,exp:"If C1 = M1 ⊕ k and C2 = M2 ⊕ k, then C1 ⊕ C2 = M1 ⊕ M2. The keystream k cancels out. An attacker can then use known-plaintext attacks or exploit linguistic redundancy in natural language to recover both messages."},
+  {q:"In RC4's Key Scheduling Algorithm (KSA), what is the initial state of S?",opts:["S is all zeros","S is filled with the key bytes repeated","S is the identity permutation: S[i] = i","S is randomly generated"],ans:2,exp:"S is initialized as the identity permutation: S[0]=0, S[1]=1, ..., S[255]=255. The temporary vector T is filled with the key bytes repeated cyclically. The KSA then permutes S using T to create a key-dependent scrambled permutation."},
+  {q:"In RC4's KSA, the swapping operation is: j = (j + S[i] + T[i]) mod 256; Swap(S[i], S[j]). After 256 iterations, what property does S have?",opts:["S is all zeros","S is a permutation of {0,…,255} — all values present, key-dependently reordered","S contains only key bytes","S is identical to T"],ans:1,exp:"After the 256-iteration KSA swap loop, S remains a permutation of {0,...,255} — it still contains all values exactly once, but they are reordered based on the key K. Different keys produce different permutations, and this permuted S is the internal state for PRGA."},
+  {q:"In RC4's PRGA stream generation, the keystream byte k is computed as k = S[t] where t = (S[i] + S[j]) mod 256. Why use t as an indirect index rather than directly using S[i] or S[j]?",opts:["To speed up computation","To introduce an additional layer of non-linearity, making k harder to predict from i and j","To reduce memory usage","To ensure k is always even"],ans:1,exp:"Using t = (S[i] + S[j]) as an indirect index adds a third level of indirection. Even if an attacker somehow knew i and j, they would need to know S[i] and S[j] to compute t, and then S[t] to get k. This extra indirection makes cryptanalysis significantly harder."},
+  {q:"RC4 was found to be weak in WEP. The root cause was:",opts:["The RC4 algorithm itself had a fundamental mathematical flaw","WEP reused initialization vectors (IVs) and derived keys incorrectly, not a flaw in RC4","The key length was too short","The KSA was implemented incorrectly"],ans:1,exp:"WEP's failure was a protocol design flaw, not an RC4 algorithm flaw. WEP used short 24-bit IVs and concatenated the IV with the key to derive per-packet keys. The limited IV space caused key reuse, and related-key attacks exploited the weak key derivation. RC4 with 128-bit key and discarded initial bytes has no known practical attacks."},
+  {q:"What is the key difference between a PRNG and a PRF?",opts:["PRNG uses hardware; PRF uses software","PRNG produces an infinite bit stream from a seed; PRF produces a fixed-length output using a seed plus context-specific values","PRF is deterministic; PRNG is non-deterministic","PRNG requires a key; PRF does not"],ans:1,exp:"A PRNG takes a seed and produces an arbitrarily long pseudorandom bit stream (infinite, theoretically). A PRF takes a seed plus context-specific input values and produces a fixed-length pseudorandom output value. PRFs are used in key derivation functions, MACs, and protocols requiring specific-length values."},
+  {q:"Why should the seed of a PRNG be generated by a TRNG?",opts:["TRNGs are faster than algorithmic seed generation","If the seed is predictable, an attacker who knows the algorithm can reproduce the entire output stream; TRNG-generated seeds are genuinely unpredictable","TRNGs produce seeds that guarantee maximum period","It is an optional best practice with no security impact"],ans:1,exp:"The entire security of a PRNG rests on seed secrecy. If an attacker can predict or enumerate seeds (e.g., from system time or a weak PRNG), they can reproduce the entire keystream. Since a TRNG derives entropy from physical phenomena that are genuinely unpredictable, TRNG-generated seeds are the gold standard for secure PRNG seeding."},
+  {q:"A stream cipher has design requirement: 'encryption sequence should have large period.' Why?",opts:["A large period makes encryption faster","If the period is short, the keystream repeats; repeated keystream allows known-plaintext analysis to recover the key","A large period reduces memory requirements","It ensures the key can be reused safely"],ans:1,exp:"The 'period' of a keystream is how many bytes are generated before the sequence repeats. If the period is short, an attacker who observes enough ciphertext can detect the repetition and use it to reveal the keystream and then the plaintext. RC4's state space (~256! × 256²) gives it an astronomically large period in practice."}
+];
+
+let quizScore=0;let answeredCount=0;
+function renderQuiz(){
+  const container=document.getElementById('quiz-container');
+  container.innerHTML='';
+  quizScore=0;answeredCount=0;
+  updateScore();
+  questions.forEach((qObj,idx)=>{
+    const div=document.createElement('div');
+    div.className='quiz-q';
+    div.id='q'+idx;
+    div.innerHTML=`<p>Q${idx+1}. ${qObj.q}</p>
+      <div class="quiz-opts">${qObj.opts.map((o,oi)=>`<button onclick="answerQ(${idx},${oi})" id="q${idx}opt${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}</div>
+      <div class="quiz-exp" id="qexp${idx}"></div>`;
+    container.appendChild(div);
+  });
+}
+function answerQ(qIdx,chosenIdx){
+  const qObj=questions[qIdx];
+  const opts=document.querySelectorAll(`#q${qIdx} .quiz-opts button`);
+  opts.forEach(b=>b.disabled=true);
+  opts[chosenIdx].classList.add(chosenIdx===qObj.ans?'correct':'wrong');
+  if(chosenIdx!==qObj.ans)opts[qObj.ans].classList.add('correct');
+  const exp=document.getElementById('qexp'+qIdx);
+  exp.textContent=(chosenIdx===qObj.ans?'✅ Correct! ':'❌ Wrong. ')+qObj.exp;
+  exp.classList.add('show');
+  if(chosenIdx===qObj.ans)quizScore++;
+  answeredCount++;
+  updateScore();
+}
+function updateScore(){
+  document.getElementById('score-display').textContent=quizScore;
+  document.getElementById('answered-display').textContent=answeredCount;
+}
+function resetQuiz(){renderQuiz();}
+renderQuiz();
+</script>
+</body>
+</html>

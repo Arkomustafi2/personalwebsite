@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EEE-5305 | Lec 6: Number Theory</title>
+<style>
+:root{
+  --bg:#0f1117;--card:#1a1d27;--card2:#22263a;--border:#2e3354;
+  --text:#e2e6f0;--muted:#8892b0;
+  --accent:#38bdf8;--accent2:#0369a1;--accent3:#7dd3fc;
+  --accent4:#f7c948;--green:#10b981;--red:#ef4444;
+  --teal:#2dd4bf;--pink:#f472b6;--purple:#a855f7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6}
+
+header{background:linear-gradient(135deg,#001f3f,#0f1117);border-bottom:1px solid var(--border);padding:18px 24px}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.hdr-title{font-size:1.25rem;font-weight:700;color:var(--accent3)}
+.hdr-sub{font-size:.8rem;color:var(--muted);margin-top:2px}
+.progress-wrap{min-width:220px}
+.progress-label{font-size:.75rem;color:var(--muted);margin-bottom:4px}
+#prog-bar-outer{background:var(--card2);border-radius:20px;height:8px;overflow:hidden}
+#prog-bar{background:linear-gradient(90deg,var(--accent2),var(--accent));height:100%;width:0%;transition:width .4s}
+#prog-text{font-size:.75rem;color:var(--accent3);margin-top:3px}
+
+nav{background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap;padding:0 16px}
+nav button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.82rem;padding:14px 16px;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+nav button.active,nav button:hover{color:var(--accent3);border-bottom-color:var(--accent)}
+
+main{max-width:1100px;margin:0 auto;padding:24px 16px}
+.section{display:none}.section.active{display:block}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px}
+.card h2{font-size:1.1rem;color:var(--accent3);margin-bottom:14px}
+.card h3{font-size:.95rem;color:var(--accent);margin:14px 0 8px}
+.card p{color:var(--text);margin-bottom:10px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+
+.formula{background:#020b14;border-left:3px solid var(--accent4);border-radius:6px;padding:12px 16px;margin:10px 0;font-family:'Courier New',monospace;color:var(--accent4);white-space:pre;font-size:.88rem;overflow-x:auto}
+
+.alert{border-radius:7px;padding:12px 16px;margin:10px 0;font-size:.88rem;line-height:1.6}
+.alert-info{background:#0a1929;border-left:3px solid var(--accent);color:#bae6fd}
+.alert-warn{background:#1c1200;border-left:3px solid #f59e0b;color:#fde68a}
+.alert-key{background:#0d2424;border-left:3px solid var(--teal);color:#99f6e4}
+.alert-exam{background:#2d0a1e;border-left:3px solid var(--pink);color:#fbcfe8}
+.alert strong{display:block;margin-bottom:4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;opacity:.8}
+
+.steps{margin:12px 0}
+.step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.step-num{background:var(--accent2);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-body{flex:1;font-size:.88rem}
+.step-body .formula{margin:6px 0}
+
+.tbl-wrap{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{background:var(--card2);color:var(--accent3);padding:8px 12px;text-align:left;border:1px solid var(--border)}
+td{padding:7px 12px;border:1px solid var(--border);color:var(--text);vertical-align:top}
+tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+.hl td{background:rgba(56,189,248,.1);color:var(--accent3);font-weight:600}
+.hl2 td{background:rgba(45,212,191,.08);color:var(--teal)}
+
+.timeline{margin:16px 0}
+.tl-item{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:38px;height:38px;background:var(--card2);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--accent3);flex-shrink:0}
+.tl-time{font-size:.78rem;color:var(--accent4);font-weight:600;min-width:70px;margin-top:2px}
+.tl-task{font-weight:600;font-size:.9rem}
+.tl-slides{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+.checklist{list-style:none}
+.checklist li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:.2s;font-size:.88rem}
+.checklist li:hover{background:var(--card2)}
+.checklist li input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.checklist li.done{text-decoration:line-through;color:var(--muted)}
+
+.sim-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.sim-field{display:flex;flex-direction:column;gap:4px}
+.sim-field label{font-size:.78rem;color:var(--muted)}
+.sim-input{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 12px;font-family:'Courier New',monospace;font-size:.9rem;width:130px}
+.sim-input:focus{outline:none;border-color:var(--accent)}
+.pp-btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:7px;padding:10px 24px;cursor:pointer;font-size:.88rem;font-weight:600}
+.pp-btn:hover{opacity:.85}
+.tool-out{display:none;margin-top:16px}
+
+.quiz-q{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+.quiz-q p{font-weight:600;margin-bottom:12px}
+.quiz-opts button{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 14px;margin:5px 0;cursor:pointer;font-size:.85rem;transition:.2s}
+.quiz-opts button:hover:not(:disabled){background:var(--card2);border-color:var(--accent)}
+.quiz-opts button.correct{background:#064e3b;border-color:var(--green);color:#6ee7b7}
+.quiz-opts button.wrong{background:#450a0a;border-color:var(--red);color:#fca5a5}
+.quiz-opts button:disabled{cursor:default}
+.quiz-exp{display:none;margin-top:10px;padding:10px 14px;background:#0a1929;border-left:3px solid var(--accent);border-radius:5px;font-size:.83rem;color:#bae6fd}
+.quiz-exp.show{display:block}
+#score-counter{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 20px;text-align:center;margin-bottom:16px;font-size:.9rem;color:var(--muted)}
+#score-counter span{color:var(--accent3);font-weight:700;font-size:1.1rem}
+#quiz-reset{background:var(--accent2);color:#fff;border:none;border-radius:7px;padding:10px 28px;cursor:pointer;font-size:.9rem;margin-top:8px}
+#quiz-reset:hover{background:var(--accent)}
+
+.theorem-box{background:linear-gradient(135deg,#020b14,#051525);border:1px solid var(--accent);border-radius:10px;padding:16px 20px;margin:12px 0}
+.theorem-box .th-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:8px;font-weight:700}
+.theorem-box .th-body{font-size:.9rem;color:var(--text)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-title">EEE-5305: Network &amp; Information Security</div>
+      <div class="hdr-sub">Lecture 6 — Number Theory &nbsp;|&nbsp; University of Dhaka M.Sc.</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label">Study Progress</div>
+      <div id="prog-bar-outer"><div id="prog-bar"></div></div>
+      <div id="prog-text">0 / 10 completed</div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('s-plan',this)">📅 Study Plan</button>
+  <button onclick="showSection('s-core',this)">🔢 Core Concepts</button>
+  <button onclick="showSection('s-mod',this)">⚙️ Modular Arithmetic</button>
+  <button onclick="showSection('s-theorems',this)">📐 Fermat &amp; Euler</button>
+  <button onclick="showSection('s-dlog',this)">🔍 Discrete Logarithms</button>
+  <button onclick="showSection('s-tool',this)">🧮 Interactive Tool</button>
+  <button onclick="showSection('s-quiz',this)">🧠 Quiz</button>
+</nav>
+
+<main>
+
+<!-- ===== TAB 1: STUDY PLAN ===== -->
+<div id="s-plan" class="section active">
+  <div class="card">
+    <h2>📌 What This Lecture Is Really About</h2>
+    <p>Number theory is the mathematical backbone of public-key cryptography. This lecture establishes the foundational tools that make RSA, Diffie-Hellman, and elliptic curve cryptography possible. You will work through divisibility and the GCD, modular arithmetic and its algebraic properties, Fermat's and Euler's theorems (which directly underpin RSA key generation and correctness), and the discrete logarithm problem — the hardness of which is what makes Diffie-Hellman secure. The complexity results at the end tie everything together: integer factorisation, computing Euler's totient, and solving the discrete log are all believed to be computationally intractable for large inputs.</p>
+    <div class="alert alert-exam"><strong>⚠ Exam Focus</strong>Be able to: apply Euler's theorem to reduce large modular exponentiations; compute φ(n) for any n; state both forms of Fermat's and Euler's theorems; identify primitive roots and understand discrete logarithm structure; explain why the three hard problems matter for cryptography.</div>
+  </div>
+
+  <div class="card">
+    <h2>⏱️ 6-Hour Study Timeline</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot">1</div>
+        <div><div class="tl-time">0:00–0:40</div>
+          <div class="tl-task">Divisibility, GCD, Prime Numbers</div>
+          <div class="tl-slides">Slides 2–4 | b|a notation, gcd(a,b), Euclidean algorithm, unique prime factorisation, table of primes under 2000.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">2</div>
+        <div><div class="tl-time">0:40–1:30</div>
+          <div class="tl-task">Modular Arithmetic — Definition &amp; Properties</div>
+          <div class="tl-slides">Slides 5–6 | a mod n, Z_n, congruence, all algebraic laws (commutative, associative, distributive, additive inverse). Work 5 numerical examples yourself.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">3</div>
+        <div><div class="tl-time">1:30–2:15</div>
+          <div class="tl-task">Division in Modular Arithmetic — Multiplicative Inverse</div>
+          <div class="tl-slides">Slide 7 | Additive vs multiplicative inverse, when multiplicative inverse exists (gcd condition), division via MultInverse. Practice finding inverses mod 7, mod 11.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">4</div>
+        <div><div class="tl-time">2:15–3:15</div>
+          <div class="tl-task">Fermat's Theorem — Both Forms</div>
+          <div class="tl-slides">Slide 8 | State and verify both forms: a^{p-1} ≡ 1 (mod p) and a^p ≡ a (mod p). Verify with p=7, a=3. Understand connection to multiplicative inverse.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">5</div>
+        <div><div class="tl-time">3:15–4:30</div>
+          <div class="tl-task">Euler's Totient + Euler's Theorem</div>
+          <div class="tl-slides">Slide 9 | φ(1)=1, φ(prime)=p-1, φ(pq)=(p-1)(q-1). Compute φ for several values. State both Euler theorems. Understand RSA connection: φ(n)=(p-1)(q-1).</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">6</div>
+        <div><div class="tl-time">4:30–5:30</div>
+          <div class="tl-task">Discrete Logarithms &amp; Powers of Integers Mod 19</div>
+          <div class="tl-slides">Slides 10–12 | Exponentiation mod p, primitive roots, dlog_{a,p}(b). Read the powers-of-integers table, read the discrete log tables for bases 2,3,10,13,14,15 mod 19.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">7</div>
+        <div><div class="tl-time">5:30–6:00</div>
+          <div class="tl-task">Complexity + Interactive Tool + Quiz</div>
+          <div class="tl-slides">Slide 13 | Integer factorisation, Euler's totient, discrete log — why hard. Use the Number Theory Calculator, then attempt all 15 quiz questions.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✅ Progress Checklist</h2>
+    <ul class="checklist" id="checklist">
+      <li><input type="checkbox" onchange="updateProgress()"> Define divisibility (b|a) and state the relatively prime condition (gcd=1)</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Recite the three modular arithmetic reduction rules (+, −, ×)</li>
+      <li><input type="checkbox" onchange="updateProgress()"> List all 5 algebraic properties of Z_n: commutative, associative, distributive, identities, additive inverse</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Explain when a multiplicative inverse exists mod n (gcd condition) and compute one example</li>
+      <li><input type="checkbox" onchange="updateProgress()"> State and apply Fermat's Theorem Form 1: a^{p-1} ≡ 1 (mod p)</li>
+      <li><input type="checkbox" onchange="updateProgress()"> State and apply Fermat's Theorem Form 2: a^p ≡ a (mod p)</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Compute φ(n) for prime p, for n=pq, and for composite n using the multiplicative property</li>
+      <li><input type="checkbox" onchange="updateProgress()"> State both Euler theorems: a^φ(n) ≡ 1 (mod n) and a^{φ(n)+1} ≡ a (mod n)</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Define primitive root; explain why a is primitive root if a,a²,…,a^{p-1} are all distinct mod p</li>
+      <li><input type="checkbox" onchange="updateProgress()"> Name the three computationally hard problems and their cryptographic significance</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== TAB 2: CORE CONCEPTS ===== -->
+<div id="s-core" class="section">
+
+  <div class="card">
+    <h2>➗ Divisibility</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Definition</div>
+          <div class="th-body"><strong>b divides a</strong> (written <em>b | a</em>) if there exists an integer m such that a = mb.<br><br>
+          b is called a <strong>divisor</strong> of a.</div>
+        </div>
+        <div class="formula">Example:
+  4 | 12   because  12 = 3 × 4
+  7 | 49   because  49 = 7 × 7
+  5 ∤ 13   because  13 ≠ m × 5 for any integer m</div>
+      </div>
+      <div>
+        <div class="alert alert-key"><strong>🔑 GCD</strong>gcd(a, b) is the <strong>greatest common divisor</strong> of a and b — the largest integer that divides both.<br><br>
+          The <strong>Euclidean algorithm</strong> computes gcd efficiently by repeated division:<br>
+          gcd(a,b) = gcd(b, a mod b) until b=0
+        </div>
+        <div class="alert alert-key"><strong>🔑 Relatively Prime</strong>a and b are <strong>relatively prime</strong> (coprime) if gcd(a,b) = 1.<br><br>
+          This is critical: many cryptographic operations require inputs to be relatively prime to the modulus.
+        </div>
+      </div>
+    </div>
+    <h3>Euclidean Algorithm — Worked Example</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">gcd(252, 105): divide 252 by 105 → 252 = 2×105 + 42</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">gcd(105, 42): divide 105 by 42 → 105 = 2×42 + 21</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">gcd(42, 21): divide 42 by 21 → 42 = 2×21 + 0</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Remainder = 0 → <strong>gcd(252, 105) = 21</strong></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔢 Prime Numbers</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Definition</div>
+          <div class="th-body">An integer p &gt; 1 is <strong>prime</strong> if and only if its only divisors are ±1 and ±p.<br><br>
+          Any composite integer a &gt; 1 can be uniquely expressed as:<br>
+          a = p₁^a₁ × p₂^a₂ × ⋯ × pₜ^aₜ<br>
+          where p₁ &lt; p₂ &lt; … &lt; pₜ are primes (Fundamental Theorem of Arithmetic).</div>
+        </div>
+        <div class="formula">Examples:
+  12 = 2² × 3
+  100 = 2² × 5²
+  315 = 3² × 5 × 7</div>
+      </div>
+      <div>
+        <div class="alert alert-exam"><strong>⚠ Cryptographic Importance</strong>RSA security relies on the fact that given n = pq (a product of two large primes), factoring n back into p and q is computationally intractable when p and q are ~1024 bits each. The slide notes the largest RSA number factored was 768 bits (232 decimal digits) — achieved with massive distributed computation.</div>
+        <div class="alert alert-info"><strong>Primes under 2000</strong>There are 303 primes below 2000. The first few: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, …</div>
+      </div>
+    </div>
+    <h3>Selected Primes Under 2000 (Reference Table)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Range</th><th>Primes</th></tr>
+        <tr><td>1–100</td><td>2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97</td></tr>
+        <tr><td>100–200</td><td>101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199</td></tr>
+        <tr><td>200–300</td><td>211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293</td></tr>
+        <tr><td>300–500</td><td>307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499</td></tr>
+        <tr class="hl2"><td>BBS-relevant (≡3 mod 4)</td><td>3, 7, 11, 19, 23, 31, 43, 47, 59, 67, 71, 79, 83, 103, 107, 127, 131, 139, 151, 163, 167, 179, 191, 199, 211, 227, 239, 251, 263, 271, 283, <strong>383</strong>, <strong>503</strong>, …</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 3: MODULAR ARITHMETIC ===== -->
+<div id="s-mod" class="section">
+
+  <div class="card">
+    <h2>🔄 Modular Arithmetic — Definitions</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Definition: a mod n</div>
+          <div class="th-body">For integer a and positive integer n, <strong>a mod n</strong> is the remainder when a is divided by n.<br><br>
+          n is called the <strong>modulus</strong>.<br><br>
+          The set Z_n = {0, 1, 2, …, n−1} contains all possible remainders mod n.</div>
+        </div>
+        <div class="formula">Examples:
+  7 mod 3  = 1    (7 = 2×3 + 1)
+  11 mod 5 = 1    (11 = 2×5 + 1)
+  -3 mod 5 = 2    (-3 = -1×5 + 2)
+  25 mod 7 = 4    (25 = 3×7 + 4)</div>
+      </div>
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Congruence</div>
+          <div class="th-body">Two integers a and b are <strong>congruent modulo n</strong> if they have the same remainder when divided by n:<br><br>
+          a ≡ b (mod n) iff (a mod n) = (b mod n)<br><br>
+          Equivalently: n | (a − b)</div>
+        </div>
+        <div class="formula">Examples:
+  73 ≡ 4  (mod 23)  [73 = 3×23 + 4]
+  21 ≡ 0  (mod 7)   [7|21]
+  -5 ≡ 9  (mod 7)   [7|(-5-9)? no: 7|14 ✓]</div>
+      </div>
+    </div>
+    <div class="alert alert-key"><strong>🔑 Key Insight</strong>The (mod n) operator maps all integers to the finite set Z_n = {0, 1, …, n−1}. Modular arithmetic performs all arithmetic operations within this set — this is what allows cryptography to work with fixed-size numbers even when the mathematical operations would normally produce astronomically large values.</div>
+  </div>
+
+  <div class="card">
+    <h2>📐 Reduction Rules</h2>
+    <p>The three fundamental reduction rules allow reducing before or after operations:</p>
+    <div class="formula">[(a mod n) + (b mod n)] mod n  =  (a + b) mod n
+[(a mod n) − (b mod n)] mod n  =  (a − b) mod n
+[(a mod n) × (b mod n)] mod n  =  (a × b) mod n</div>
+    <div class="alert alert-info"><strong>Why useful?</strong> When computing a^k mod n for large k, you can reduce at every multiplication step. This prevents numbers from growing to millions of digits during repeated squaring.</div>
+    <h3>Worked Example: Compute 7³ mod 13</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">7² = 49. Reduce: 49 mod 13 = 10 (49 = 3×13 + 10)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">7³ = 7² × 7 = 10 × 7 = 70. Reduce: 70 mod 13 = 5 (70 = 5×13 + 5)</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">7³ mod 13 = <strong>5</strong></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Properties of Z_n</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>Expression</th><th>Meaning</th></tr>
+        <tr><td><strong>Commutative (add)</strong></td><td>(w + x) mod n = (x + w) mod n</td><td>Addition order doesn't matter</td></tr>
+        <tr><td><strong>Commutative (mult)</strong></td><td>(w × x) mod n = (x × w) mod n</td><td>Multiplication order doesn't matter</td></tr>
+        <tr><td><strong>Associative (add)</strong></td><td>[(w+x)+y] mod n = [w+(x+y)] mod n</td><td>Grouping of addition irrelevant</td></tr>
+        <tr><td><strong>Associative (mult)</strong></td><td>[(w×x)×y] mod n = [w×(x×y)] mod n</td><td>Grouping of multiplication irrelevant</td></tr>
+        <tr><td><strong>Distributive</strong></td><td>[w×(x+y)] mod n = [(w×x)+(w×y)] mod n</td><td>Mult distributes over add</td></tr>
+        <tr><td><strong>Additive Identity</strong></td><td>(0 + w) mod n = w mod n</td><td>0 is identity for addition</td></tr>
+        <tr><td><strong>Multiplicative Identity</strong></td><td>(1 × w) mod n = w mod n</td><td>1 is identity for multiplication</td></tr>
+        <tr class="hl"><td><strong>Additive Inverse (−w)</strong></td><td>For each w ∈ Z_n, ∃ z: w + z ≡ 0 (mod n)</td><td>Every element has an additive inverse; z = n − w</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-exam"><strong>⚠ Z_n is a Ring</strong>Because Z_n has all these properties (except not all elements have multiplicative inverses), Z_n forms a commutative ring. When n is prime, every non-zero element has a multiplicative inverse — Z_p becomes a field. This is why prime moduli are preferred in cryptography.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔀 Division in Modular Arithmetic</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Additive Inverse</div>
+          <div class="th-body">a is the <strong>additive inverse</strong> of b if:<br>
+          a + b ≡ 0 (mod n)<br><br>
+          <strong>Every</strong> integer w ∈ Z_n has an additive inverse.<br>
+          The additive inverse of w is simply n − w.<br><br>
+          Example: additive inverse of 3 in Z_7 is 4, since 3+4 = 7 ≡ 0 (mod 7)</div>
+        </div>
+      </div>
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Multiplicative Inverse</div>
+          <div class="th-body">a is the <strong>multiplicative inverse</strong> of b if:<br>
+          a × b ≡ 1 (mod n)<br><br>
+          <strong>NOT</strong> all integers have a multiplicative inverse mod n.<br><br>
+          a has a multiplicative inverse in (mod n) <strong>if and only if gcd(a, n) = 1</strong> (a is relatively prime to n).</div>
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-key"><strong>🔑 Division</strong>Division by b mod n is defined as multiplication by the multiplicative inverse of b:<br>
+    a ÷ b ≡ a × MultInverse(b) (mod n)</div>
+    <h3>Multiplicative Inverse Table — mod 9</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>a</th><th>gcd(a,9)</th><th>Inverse exists?</th><th>a⁻¹ mod 9</th><th>Verification</th></tr>
+        <tr><td>1</td><td>1</td><td>Yes</td><td>1</td><td>1×1=1 ≡ 1</td></tr>
+        <tr><td>2</td><td>1</td><td>Yes</td><td>5</td><td>2×5=10 ≡ 1</td></tr>
+        <tr><td>3</td><td>3</td><td><span style="color:var(--red)">No</span></td><td>—</td><td>3×?=9k+1 has no solution</td></tr>
+        <tr><td>4</td><td>1</td><td>Yes</td><td>7</td><td>4×7=28 ≡ 1</td></tr>
+        <tr><td>5</td><td>1</td><td>Yes</td><td>2</td><td>5×2=10 ≡ 1</td></tr>
+        <tr><td>6</td><td>3</td><td><span style="color:var(--red)">No</span></td><td>—</td><td>gcd(6,9)=3≠1</td></tr>
+        <tr><td>7</td><td>1</td><td>Yes</td><td>4</td><td>7×4=28 ≡ 1</td></tr>
+        <tr><td>8</td><td>1</td><td>Yes</td><td>8</td><td>8×8=64 ≡ 1</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-exam"><strong>⚠ RSA Connection</strong>In RSA, the private key d is the multiplicative inverse of e modulo φ(n). This requires gcd(e, φ(n)) = 1 — which is why RSA requires e to be chosen coprime to φ(n). The extended Euclidean algorithm computes this inverse efficiently.</div>
+  </div>
+</div>
+
+<!-- ===== TAB 4: FERMAT & EULER ===== -->
+<div id="s-theorems" class="section">
+
+  <div class="card">
+    <h2>⚡ Fermat's Theorem</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Fermat's Theorem (Form 1)</div>
+          <div class="th-body">If p is <strong>prime</strong> and a is a positive integer <strong>not divisible by p</strong>, then:<br><br>
+          <span style="font-size:1.05rem;color:var(--accent4)">a^{p-1} ≡ 1 (mod p)</span></div>
+        </div>
+        <div class="formula">Verify: p=7, a=3
+  3^1 = 3
+  3^2 = 9  ≡ 2 (mod 7)
+  3^3 = 27 ≡ 6 (mod 7)
+  3^4 = 81 ≡ 4 (mod 7)
+  3^5 = 243 ≡ 5 (mod 7)
+  3^6 = 729 ≡ 1 (mod 7) ✓ (p-1 = 6)</div>
+      </div>
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Fermat's Theorem (Form 2)</div>
+          <div class="th-body">If p is <strong>prime</strong> and a is <strong>any</strong> positive integer, then:<br><br>
+          <span style="font-size:1.05rem;color:var(--accent4)">a^p ≡ a (mod p)</span><br><br>
+          This holds even when p | a (in which case both sides are 0 mod p).</div>
+        </div>
+        <div class="formula">Verify: p=7, a=3
+  3^7 = 2187
+  2187 mod 7 = 3 ✓  (3 ≡ a)
+
+Verify: p=7, a=7 (divisible case)
+  7^7 mod 7 = 0 ≡ 7 mod 7 = 0 ✓</div>
+      </div>
+    </div>
+    <div class="alert alert-key"><strong>🔑 Cryptographic Use of Fermat's Theorem</strong>
+    Form 1 gives us: a × a^{p-2} ≡ 1 (mod p). Therefore, the <strong>multiplicative inverse of a mod p</strong> is a^{p-2} mod p. This provides an alternative to the extended Euclidean algorithm when p is prime — just compute a^{p-2} mod p using fast exponentiation.</div>
+    <div class="alert alert-info"><strong>Connection to Form 2</strong>Form 2 is derived from Form 1: a^{p-1} ≡ 1 (mod p), multiply both sides by a → a^p ≡ a (mod p). Form 2 is more general as it holds even when p|a.</div>
+    <h3>Fermat's Theorem — Extended Example</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>p</th><th>a</th><th>p-1</th><th>a^{p-1} mod p</th><th>Confirms ≡ 1?</th></tr>
+        <tr><td>5</td><td>2</td><td>4</td><td>16 mod 5 = 1</td><td>✅ Yes</td></tr>
+        <tr><td>7</td><td>4</td><td>6</td><td>4096 mod 7 = 1</td><td>✅ Yes</td></tr>
+        <tr><td>11</td><td>3</td><td>10</td><td>59049 mod 11 = 1</td><td>✅ Yes</td></tr>
+        <tr><td>13</td><td>6</td><td>12</td><td>2176782336 mod 13 = 1</td><td>✅ Yes</td></tr>
+        <tr class="hl"><td>7</td><td>7</td><td>—</td><td>Theorem doesn't apply (7|7)</td><td>⚠ Use Form 2</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🌀 Euler's Totient Function φ(n)</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Definition</div>
+          <div class="th-body">φ(n) = the number of positive integers less than n that are relatively prime to n (i.e., gcd(k,n)=1 for k=1,2,…,n-1).</div>
+        </div>
+        <h3>Formulas</h3>
+        <div class="formula">φ(1)     = 1   (by definition)
+
+For prime p:
+  φ(p)   = p − 1
+  (all 1 to p-1 are coprime to p)
+
+For n = p × q (distinct primes):
+  φ(n)   = (p−1) × (q−1)
+
+For a and b coprime, n = ab:
+  φ(n)   = φ(a) × φ(b)  (multiplicative)</div>
+      </div>
+      <div>
+        <h3>Computation Examples</h3>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>n</th><th>Coprime integers</th><th>φ(n)</th></tr>
+            <tr><td>1</td><td>{1}</td><td>1</td></tr>
+            <tr><td>4</td><td>{1,3}</td><td>2</td></tr>
+            <tr><td>6</td><td>{1,5}</td><td>2</td></tr>
+            <tr><td>7</td><td>{1,2,3,4,5,6}</td><td>6 = 7−1</td></tr>
+            <tr><td>10</td><td>{1,3,7,9}</td><td>4</td></tr>
+            <tr class="hl"><td>15</td><td>{1,2,4,7,8,11,13,14}</td><td>8 = (3−1)(5−1)</td></tr>
+            <tr class="hl"><td>35</td><td>φ(5×7)</td><td>24 = 4×6</td></tr>
+            <tr class="hl"><td>pq (RSA)</td><td>all except multiples of p or q</td><td>(p−1)(q−1)</td></tr>
+          </table>
+        </div>
+        <div class="alert alert-exam"><strong>⚠ RSA Key</strong>For RSA with n = p×q:<br>φ(n) = (p−1)(q−1)<br>The private key d satisfies:<br>d × e ≡ 1 (mod φ(n))<br>This is why keeping p, q secret means φ(n) is also secret.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚡ Euler's Theorem</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Euler's Theorem (Form 1)</div>
+          <div class="th-body">For every a and n that are <strong>relatively prime</strong> (gcd(a,n)=1):<br><br>
+          <span style="font-size:1.05rem;color:var(--accent4)">a^{φ(n)} ≡ 1 (mod n)</span><br><br>
+          This is a <strong>generalization of Fermat's theorem</strong>: when n=p is prime, φ(p)=p−1, so it reduces to Fermat's Form 1.</div>
+        </div>
+        <div class="formula">Verify: a=3, n=10, gcd(3,10)=1
+  φ(10) = φ(2)×φ(5) = 1×4 = 4
+  3^4 = 81
+  81 mod 10 = 1 ✓</div>
+      </div>
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Euler's Theorem (Form 2)</div>
+          <div class="th-body">For <strong>positive integers</strong> a and n:<br><br>
+          <span style="font-size:1.05rem;color:var(--accent4)">a^{φ(n)+1} ≡ a (mod n)</span><br><br>
+          This form is used directly in the <strong>RSA correctness proof</strong>: encrypt with e, decrypt with d where e×d = φ(n)+1, and you recover a.</div>
+        </div>
+        <div class="formula">RSA Correctness:
+  n = pq,  φ(n) = (p-1)(q-1)
+  Choose e,d: e×d ≡ 1 (mod φ(n))
+                → e×d = k×φ(n) + 1
+
+  Decrypt((Encrypt(M))) 
+  = (M^e)^d mod n
+  = M^{e×d} mod n
+  = M^{k×φ(n)+1} mod n
+  = M × (M^φ(n))^k mod n
+  = M × 1^k mod n   [by Euler's Thm 1]
+  = M  ✓</div>
+      </div>
+    </div>
+    <div class="alert alert-exam"><strong>⚠ Fermat vs Euler Comparison</strong>Fermat's theorem is the special case where n = p is prime. Euler's theorem generalizes to any n. In RSA, n = pq is composite — so you must use Euler's theorem, not Fermat's, for the correctness proof.</div>
+  </div>
+</div>
+
+<!-- ===== TAB 5: DISCRETE LOGARITHMS ===== -->
+<div id="s-dlog" class="section">
+
+  <div class="card">
+    <h2>📈 Logarithms in Modular Arithmetic</h2>
+    <div class="grid2">
+      <div>
+        <div class="theorem-box">
+          <div class="th-title">Ordinary Logarithm (Recall)</div>
+          <div class="th-body">If b = aⁱ, then i = log_a(b).<br><br>Given a and b, find i. Easy with real numbers.</div>
+        </div>
+        <div class="theorem-box">
+          <div class="th-title">Discrete Logarithm</div>
+          <div class="th-body">If b ≡ aⁱ (mod p), then i = dlog_{a,p}(b).<br><br>Given b, a, p, find i.<br><br><strong>This is computationally hard for large p.</strong></div>
+        </div>
+      </div>
+      <div>
+        <div class="alert alert-exam"><strong>⚠ Why Discrete Log is Hard</strong>In ordinary arithmetic, logarithm is easy because the function b = aⁱ is monotonically increasing. In modular arithmetic, b = aⁱ mod p jumps unpredictably — there is no known polynomial-time algorithm for the general discrete log problem. This hardness is the security basis of:<br>• Diffie-Hellman key exchange<br>• ElGamal encryption<br>• DSA (Digital Signature Algorithm)<br>• Elliptic Curve Cryptography</div>
+        <div class="alert alert-key"><strong>🔑 Primitive Root</strong>a is a <strong>primitive root</strong> of prime p if the sequence a¹, a², …, a^{p-1} are all distinct (mod p), generating all non-zero elements of Z_p.<br><br>Only integers with primitive roots: 2, 4, pᵅ, 2pᵅ where p is an odd prime.</div>
+      </div>
+    </div>
+    <h3>Powers of Integers mod 19 — Full Table</h3>
+    <div class="alert alert-info"><strong>Key observation:</strong> Rows for a=2, 3, 10, 13, 14, 15 are <strong>primitive roots</strong> of 19 — their power sequences contain all values {1,2,…,18}. Non-primitive roots (a=4,5,6,…) have shorter sub-cycles. φ(19) = 18.</div>
+    <div class="tbl-wrap">
+      <table style="font-size:.78rem">
+        <tr><th>a</th><th>a¹</th><th>a²</th><th>a³</th><th>a⁴</th><th>a⁵</th><th>a⁶</th><th>a⁷</th><th>a⁸</th><th>a⁹</th><th>a¹⁰</th><th>a¹¹</th><th>a¹²</th><th>a¹³</th><th>a¹⁴</th><th>a¹⁵</th><th>a¹⁶</th><th>a¹⁷</th><th>a¹⁸</th></tr>
+        <tr class="hl"><td>2</td><td>2</td><td>4</td><td>8</td><td>16</td><td>13</td><td>7</td><td>14</td><td>9</td><td>18</td><td>17</td><td>15</td><td>11</td><td>3</td><td>6</td><td>12</td><td>5</td><td>10</td><td>1</td></tr>
+        <tr class="hl"><td>3</td><td>3</td><td>9</td><td>8</td><td>5</td><td>15</td><td>7</td><td>2</td><td>6</td><td>18</td><td>16</td><td>10</td><td>11</td><td>14</td><td>4</td><td>12</td><td>17</td><td>13</td><td>1</td></tr>
+        <tr><td>4</td><td>4</td><td>16</td><td>7</td><td>9</td><td>17</td><td>11</td><td>6</td><td>5</td><td>1</td><td>4</td><td>16</td><td>7</td><td>9</td><td>17</td><td>11</td><td>6</td><td>5</td><td>1</td></tr>
+        <tr><td>5</td><td>5</td><td>6</td><td>11</td><td>17</td><td>9</td><td>7</td><td>16</td><td>4</td><td>1</td><td>5</td><td>6</td><td>11</td><td>17</td><td>9</td><td>7</td><td>16</td><td>4</td><td>1</td></tr>
+        <tr><td>6</td><td>6</td><td>17</td><td>7</td><td>4</td><td>5</td><td>11</td><td>9</td><td>16</td><td>1</td><td>6</td><td>17</td><td>7</td><td>4</td><td>5</td><td>11</td><td>9</td><td>16</td><td>1</td></tr>
+        <tr><td>7</td><td>7</td><td>11</td><td>1</td><td>7</td><td>11</td><td>1</td><td>7</td><td>11</td><td>1</td><td>7</td><td>11</td><td>1</td><td>7</td><td>11</td><td>1</td><td>7</td><td>11</td><td>1</td></tr>
+        <tr><td>8</td><td>8</td><td>7</td><td>18</td><td>11</td><td>12</td><td>1</td><td>8</td><td>7</td><td>18</td><td>11</td><td>12</td><td>1</td><td>8</td><td>7</td><td>18</td><td>11</td><td>12</td><td>1</td></tr>
+        <tr><td>9</td><td>9</td><td>5</td><td>7</td><td>6</td><td>16</td><td>11</td><td>4</td><td>17</td><td>1</td><td>9</td><td>5</td><td>7</td><td>6</td><td>16</td><td>11</td><td>4</td><td>17</td><td>1</td></tr>
+        <tr><td>10</td><td>10</td><td>5</td><td>12</td><td>6</td><td>3</td><td>11</td><td>15</td><td>17</td><td>18</td><td>9</td><td>14</td><td>7</td><td>13</td><td>16</td><td>8</td><td>4</td><td>2</td><td>1</td></tr>
+        <tr><td>18</td><td>18</td><td>1</td><td>18</td><td>1</td><td>18</td><td>1</td><td>18</td><td>1</td><td>18</td><td>1</td><td>18</td><td>1</td><td>18</td><td>1</td><td>18</td><td>1</td><td>18</td><td>1</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-info"><strong>Note on a=7:</strong> 7 has period 3 (cycles: 7,11,1,7,11,1,…) — it is NOT a primitive root of 19. a=18 has period 2 — also not a primitive root.</div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Discrete Logarithm Tables mod 19</h2>
+    <p style="color:var(--muted);font-size:.88rem">dlog_{a,19}(b) = i means aⁱ ≡ b (mod 19). These are the inverse of the power table above.</p>
+    <div class="grid2">
+      <div>
+        <h3>Base 2, Modulo 19</h3>
+        <div class="tbl-wrap">
+          <table style="font-size:.8rem">
+            <tr><th>b</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+            <tr><td>dlog₂</td><td>18</td><td>1</td><td>13</td><td>2</td><td>16</td><td>14</td><td>6</td><td>3</td><td>8</td></tr>
+            <tr><th>b</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th></tr>
+            <tr><td>dlog₂</td><td>17</td><td>12</td><td>15</td><td>5</td><td>7</td><td>11</td><td>4</td><td>10</td><td>9</td></tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3>Base 3, Modulo 19</h3>
+        <div class="tbl-wrap">
+          <table style="font-size:.8rem">
+            <tr><th>b</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+            <tr><td>dlog₃</td><td>18</td><td>7</td><td>1</td><td>14</td><td>4</td><td>8</td><td>6</td><td>3</td><td>2</td></tr>
+            <tr><th>b</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th></tr>
+            <tr><td>dlog₃</td><td>11</td><td>12</td><td>15</td><td>17</td><td>13</td><td>5</td><td>10</td><td>16</td><td>9</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-key"><strong>🔑 Reading the Table</strong>To find dlog_{2,19}(7): read row "dlog₂", column b=7 → answer is 6. Verify: 2⁶ = 64 = 3×19 + 7 → 64 mod 19 = 7 ✓</div>
+    <div class="alert alert-exam"><strong>⚠ DH Key Exchange Connection</strong>In Diffie-Hellman: Alice sends gᵃ mod p, Bob sends g^b mod p. The shared secret is g^{ab} mod p. An eavesdropper knows g, p, gᵃ, g^b but must compute a = dlog_{g,p}(gᵃ) — the discrete logarithm problem. For p ~ 2048 bits, this is infeasible.</div>
+  </div>
+
+  <div class="card">
+    <h2>🏋️ Computational Complexity — Hard Problems</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Hard Problem</th><th>Statement</th><th>Difficulty vs Factoring</th><th>Cryptographic Application</th></tr>
+        <tr class="hl"><td><strong>Integer Factorisation</strong></td><td>Given n = pq, find p and q</td><td>Baseline</td><td>RSA security: breaking RSA requires factoring n</td></tr>
+        <tr class="hl2"><td><strong>Euler's Totient</strong></td><td>Given composite n, find φ(n)</td><td>At least as hard as factoring</td><td>RSA: knowing φ(n) lets attacker compute private key d</td></tr>
+        <tr><td><strong>Discrete Logarithm</strong></td><td>Given b, a, p, find i = dlog_{a,p}(b)</td><td>Comparable to factoring</td><td>Diffie-Hellman, ElGamal, DSA, ECC</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-info"><strong>Current Records</strong>The largest RSA number factored into two primes was 768 bits (RSA-768, 232 decimal digits), achieved in 2009. RSA-2048 is currently considered secure. The best known general-purpose factoring algorithm (General Number Field Sieve) runs in sub-exponential but super-polynomial time: exp(O(n^{1/3})).</div>
+    <div class="alert alert-warn"><strong>⚠ Quantum Threat</strong>Shor's algorithm can solve integer factorisation and discrete logarithm in polynomial time on a quantum computer. This would break RSA, DH, and ECC simultaneously. Post-quantum cryptography (lattice-based, hash-based, code-based) is being standardized by NIST to address this future threat.</div>
+  </div>
+</div>
+
+<!-- ===== TAB 6: INTERACTIVE TOOL ===== -->
+<div id="s-tool" class="section">
+
+  <div class="card">
+    <h2>🧮 Number Theory Calculator</h2>
+
+    <!-- GCD & Inverse -->
+    <h3>① GCD &amp; Multiplicative Inverse</h3>
+    <div class="sim-row">
+      <div class="sim-field"><label>a</label><input type="number" id="gcd-a" class="sim-input" value="252" style="width:100px"></div>
+      <div class="sim-field"><label>b (or modulus n for inverse)</label><input type="number" id="gcd-b" class="sim-input" value="105" style="width:120px"></div>
+      <button class="pp-btn" onclick="runGCD()">▶ Compute GCD &amp; Inverse</button>
+    </div>
+    <div id="gcd-out" class="tool-out">
+      <div id="gcd-result" class="formula"></div>
+    </div>
+
+    <!-- Euler Totient -->
+    <h3>② Euler's Totient φ(n)</h3>
+    <div class="sim-row">
+      <div class="sim-field"><label>n</label><input type="number" id="phi-n" class="sim-input" value="60" style="width:120px"></div>
+      <button class="pp-btn" onclick="runPhi()">▶ Compute φ(n)</button>
+    </div>
+    <div id="phi-out" class="tool-out"><div id="phi-result" class="formula"></div></div>
+
+    <!-- Modular Exponentiation -->
+    <h3>③ Modular Exponentiation (Fast)</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px">Computes a^k mod n using repeated squaring. Tests Fermat's and Euler's theorems.</p>
+    <div class="sim-row">
+      <div class="sim-field"><label>base a</label><input type="number" id="me-a" class="sim-input" value="3" style="width:100px"></div>
+      <div class="sim-field"><label>exponent k</label><input type="number" id="me-k" class="sim-input" value="100" style="width:100px"></div>
+      <div class="sim-field"><label>modulus n</label><input type="number" id="me-n" class="sim-input" value="19" style="width:100px"></div>
+      <button class="pp-btn" onclick="runModExp()">▶ Compute a^k mod n</button>
+    </div>
+    <div id="me-out" class="tool-out"><div id="me-result" class="formula"></div></div>
+
+    <!-- Discrete Log Finder -->
+    <h3>④ Discrete Log Finder (Small Moduli)</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px">Finds i such that a^i ≡ b (mod p) by brute force. Only feasible for small p (≤ 10000).</p>
+    <div class="sim-row">
+      <div class="sim-field"><label>base a</label><input type="number" id="dl-a" class="sim-input" value="2" style="width:90px"></div>
+      <div class="sim-field"><label>target b</label><input type="number" id="dl-b" class="sim-input" value="7" style="width:90px"></div>
+      <div class="sim-field"><label>prime p</label><input type="number" id="dl-p" class="sim-input" value="19" style="width:90px"></div>
+      <button class="pp-btn" onclick="runDLog()">▶ Find dlog</button>
+    </div>
+    <div id="dl-out" class="tool-out"><div id="dl-result" class="formula"></div></div>
+
+    <!-- Power Table Generator -->
+    <h3>⑤ Powers-of-a Table (mod p)</h3>
+    <div class="sim-row">
+      <div class="sim-field"><label>base a</label><input type="number" id="pt-a" class="sim-input" value="2" style="width:90px"></div>
+      <div class="sim-field"><label>modulus p</label><input type="number" id="pt-p" class="sim-input" value="19" style="width:90px"></div>
+      <button class="pp-btn" onclick="runPowerTable()">▶ Generate Table</button>
+    </div>
+    <div id="pt-out" class="tool-out">
+      <div id="pt-info" class="formula"></div>
+      <div class="tbl-wrap"><table id="pt-tbl"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 7: QUIZ ===== -->
+<div id="s-quiz" class="section">
+  <div id="score-counter">Score: <span id="score-display">0</span> / 15 &nbsp;|&nbsp; Answered: <span id="answered-display">0</span></div>
+  <div id="quiz-container"></div>
+  <div style="text-align:center"><button id="quiz-reset" onclick="resetQuiz()">🔄 Reset Quiz</button></div>
+</div>
+
+</main>
+
+<script>
+// ===== NAVIGATION =====
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== PROGRESS =====
+function updateProgress(){
+  const items=document.querySelectorAll('#checklist input');
+  let done=0;
+  items.forEach(c=>{c.parentElement.classList.toggle('done',c.checked);if(c.checked)done++;});
+  const pct=Math.round(done/items.length*100);
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('prog-text').textContent=done+' / '+items.length+' completed';
+}
+
+// ===== MATH UTILITIES =====
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+
+function extGCD(a,b){
+  if(b===0)return{g:a,x:1,y:0};
+  const r=extGCD(b,a%b);
+  return{g:r.g,x:r.y,y:r.x-Math.floor(a/b)*r.y};
+}
+
+function modInverse(a,n){
+  const r=extGCD(((a%n)+n)%n,n);
+  if(r.g!==1)return null;
+  return((r.x%n)+n)%n;
+}
+
+function modPow(base,exp,mod){
+  if(mod===1)return 0;
+  let result=1;base=((base%mod)+mod)%mod;
+  while(exp>0){
+    if(exp%2===1)result=result*base%mod;
+    exp=Math.floor(exp/2);base=base*base%mod;
+  }
+  return result;
+}
+
+function eulerPhi(n){
+  let result=n;
+  for(let p=2;p*p<=n;p++){
+    if(n%p===0){
+      while(n%p===0)n=Math.floor(n/p);
+      result-=Math.floor(result/p);
+    }
+  }
+  if(n>1)result-=Math.floor(result/n);
+  return result;
+}
+
+function isPrime(n){
+  if(n<2)return false;
+  if(n<4)return true;
+  if(n%2===0||n%3===0)return false;
+  for(let i=5;i*i<=n;i+=6)if(n%i===0||n%(i+2)===0)return false;
+  return true;
+}
+
+function factorize(n){
+  const factors={};let d=2;
+  while(d*d<=n){while(n%d===0){factors[d]=(factors[d]||0)+1;n=Math.floor(n/d);}d++;}
+  if(n>1)factors[n]=(factors[n]||0)+1;
+  return factors;
+}
+
+// ===== TOOL 1: GCD =====
+function runGCD(){
+  const a=parseInt(document.getElementById('gcd-a').value);
+  const b=parseInt(document.getElementById('gcd-b').value);
+  // Euclidean algorithm trace
+  let lines=[];
+  let x=Math.abs(a),y=Math.abs(b);
+  lines.push(`GCD(${a}, ${b}) via Euclidean Algorithm:`);
+  lines.push('─'.repeat(40));
+  const orig_x=x,orig_y=y;
+  while(y>0){
+    const q=Math.floor(x/y),r=x%y;
+    lines.push(`  ${x} = ${q} × ${y} + ${r}`);
+    [x,y]=[y,r];
+  }
+  lines.push(`  → GCD(${a}, ${b}) = ${x}`);
+  lines.push('');
+  // Relative primality
+  if(x===1){
+    lines.push(`gcd = 1 → ${a} and ${b} are RELATIVELY PRIME`);
+  } else {
+    lines.push(`gcd = ${x} → NOT relatively prime`);
+  }
+  lines.push('');
+  // Multiplicative inverse of a mod b
+  const inv=modInverse(a,b);
+  if(inv!==null){
+    lines.push(`Multiplicative inverse of ${a} mod ${b}:`);
+    lines.push(`  ${a}⁻¹ mod ${b} = ${inv}`);
+    lines.push(`  Verify: ${a} × ${inv} = ${a*inv} ≡ ${(a*inv)%b} (mod ${b}) ✓`);
+  } else {
+    lines.push(`Multiplicative inverse of ${a} mod ${b}:`);
+    lines.push(`  Does not exist (gcd(${a},${b}) = ${x} ≠ 1)`);
+  }
+  document.getElementById('gcd-result').textContent=lines.join('\n');
+  document.getElementById('gcd-out').style.display='block';
+}
+
+// ===== TOOL 2: PHI =====
+function runPhi(){
+  const n=parseInt(document.getElementById('phi-n').value);
+  const phi=eulerPhi(n);
+  const factors=factorize(n);
+  const factorStr=Object.entries(factors).map(([p,e])=>e>1?`${p}^${e}`:p).join(' × ');
+  const lines=[];
+  lines.push(`φ(${n}):`);
+  lines.push('─'.repeat(40));
+  lines.push(`Factorization: ${n} = ${factorStr}`);
+  lines.push('');
+  if(isPrime(n)){
+    lines.push(`${n} is PRIME → φ(${n}) = ${n} - 1 = ${phi}`);
+  } else {
+    lines.push(`Using multiplicative property of φ:`);
+    for(const [p,e] of Object.entries(factors)){
+      const pe=Math.pow(parseInt(p),parseInt(e));
+      const pePhi=parseInt(p)===1?1:pe-pe/parseInt(p);
+      lines.push(`  φ(${pe}) = ${pe} × (1 - 1/${p}) = ${pePhi}`);
+    }
+    lines.push(`  φ(${n}) = ${Object.entries(factors).map(([p,e])=>{const pe=Math.pow(parseInt(p),parseInt(e));return parseInt(p)===1?1:pe-pe/parseInt(p);}).join(' × ')} = ${phi}`);
+  }
+  lines.push('');
+  // RSA context
+  if(Object.keys(factors).length===2&&Object.values(factors).every(e=>e===1)){
+    const [p,q]=Object.keys(factors).map(Number);
+    lines.push(`RSA context: n = ${p} × ${q}`);
+    lines.push(`φ(n) = (${p}-1) × (${q}-1) = ${p-1} × ${q-1} = ${(p-1)*(q-1)}`);
+  }
+  document.getElementById('phi-result').textContent=lines.join('\n');
+  document.getElementById('phi-out').style.display='block';
+}
+
+// ===== TOOL 3: MOD EXP =====
+function runModExp(){
+  const a=parseInt(document.getElementById('me-a').value);
+  const k=parseInt(document.getElementById('me-k').value);
+  const n=parseInt(document.getElementById('me-n').value);
+  const result=modPow(a,k,n);
+  const phi=eulerPhi(n);
+  const lines=[];
+  lines.push(`${a}^${k} mod ${n} = ${result}`);
+  lines.push('');
+  lines.push(`Fast Exponentiation (repeated squaring):`);
+  // Show squaring steps
+  let base=((a%n)+n)%n,exp=k,step=1;
+  lines.push(`  base = ${base}, exp = ${exp} (binary: ${exp.toString(2)})`);
+  lines.push('');
+  // Fermat check
+  if(isPrime(n)&&k%(n-1)!==undefined){
+    lines.push(`Fermat's Theorem check (n=${n} is prime):`);
+    lines.push(`  a^${n-1} mod ${n} = ${modPow(a,n-1,n)} ${modPow(a,n-1,n)===1?'≡ 1 ✓ (confirms Fermat)':gcd(a,n)===1?'≠ 1 ✗':'(gcd(a,n)≠1, theorem N/A)'}`);
+  }
+  lines.push('');
+  lines.push(`Euler's Theorem check: φ(${n}) = ${phi}`);
+  if(gcd(a,n)===1){
+    lines.push(`  gcd(${a},${n}) = 1 → Euler applies`);
+    lines.push(`  a^φ(n) = ${a}^${phi} mod ${n} = ${modPow(a,phi,n)} ≡ 1 ✓`);
+    const kmod=((k%phi)+phi)%phi;
+    lines.push(`  Simplify exponent: ${k} mod φ(${n}) = ${k} mod ${phi} = ${kmod}`);
+    lines.push(`  So ${a}^${k} mod ${n} = ${a}^${kmod} mod ${n} = ${modPow(a,kmod,n)} (should match ${result})`);
+  } else {
+    lines.push(`  gcd(${a},${n}) = ${gcd(a,n)} ≠ 1 → Euler's theorem (Form 1) doesn't apply directly`);
+  }
+  document.getElementById('me-result').textContent=lines.join('\n');
+  document.getElementById('me-out').style.display='block';
+}
+
+// ===== TOOL 4: DISCRETE LOG =====
+function runDLog(){
+  const a=parseInt(document.getElementById('dl-a').value);
+  const b=parseInt(document.getElementById('dl-b').value);
+  const p=parseInt(document.getElementById('dl-p').value);
+  if(p>10000){document.getElementById('dl-result').textContent='p too large (max 10000 for brute force)';document.getElementById('dl-out').style.display='block';return;}
+  const lines=[];
+  lines.push(`Find i such that ${a}^i ≡ ${b} (mod ${p})`);
+  lines.push('i.e. dlog_{'+a+','+p+'}('+b+')');
+  lines.push('─'.repeat(40));
+  let cur=1,found=-1;
+  const first10=[];
+  for(let i=1;i<p;i++){
+    cur=cur*a%p;
+    if(i<=10)first10.push({i,val:cur});
+    if(cur===b&&found===-1)found=i;
+  }
+  lines.push('First 10 powers:');
+  first10.forEach(r=>lines.push(`  ${a}^${r.i} mod ${p} = ${r.val}${r.val===b?' ← FOUND':'  '}`));
+  if(found>10)lines.push(`  ...`);
+  lines.push('');
+  if(found!==-1){
+    lines.push(`dlog_{${a},${p}}(${b}) = ${found}`);
+    lines.push(`Verify: ${a}^${found} mod ${p} = ${modPow(a,found,p)} ≡ ${b} ✓`);
+  } else {
+    lines.push(`No solution found (${a} may not be a primitive root, or b not in its subgroup)`);
+  }
+  // Primitive root check
+  const phi=p-1;
+  let isPrimRoot=true;
+  for(let i=1;i<phi;i++){if(modPow(a,i,p)===1){isPrimRoot=false;break;}}
+  lines.push('');
+  lines.push(`${a} is ${isPrimRoot?'':'NOT '}a primitive root of ${p}`);
+  document.getElementById('dl-result').textContent=lines.join('\n');
+  document.getElementById('dl-out').style.display='block';
+}
+
+// ===== TOOL 5: POWER TABLE =====
+function runPowerTable(){
+  const a=parseInt(document.getElementById('pt-a').value);
+  const p=parseInt(document.getElementById('pt-p').value);
+  if(p>200){document.getElementById('pt-info').textContent='p too large for table display (max 200)';document.getElementById('pt-out').style.display='block';return;}
+  const maxExp=Math.min(p-1,18);
+  const rows=[];
+  for(let base=1;base<p;base++){
+    const vals=[];
+    let cur=1,period=-1;
+    for(let i=1;i<=maxExp;i++){
+      cur=cur*base%p;
+      vals.push(cur);
+      if(cur===1&&period===-1)period=i;
+    }
+    rows.push({base,vals,period});
+  }
+  const phi=p-1;
+  const primRoots=rows.filter(r=>r.period===phi).map(r=>r.base);
+  const info=[];
+  info.push(`Powers of integers mod ${p}`);
+  info.push(`φ(${p}) = ${phi}`);
+  info.push(`Primitive roots: [${primRoots.join(', ')}]`);
+  document.getElementById('pt-info').textContent=info.join('\n');
+  // Build table
+  const thead=document.querySelector('#pt-tbl thead');
+  const tbody=document.querySelector('#pt-tbl tbody');
+  thead.innerHTML='<tr><th>a</th>'+Array.from({length:maxExp},(_,i)=>`<th>a^${i+1}</th>`).join('')+'<th>Period</th></tr>';
+  tbody.innerHTML=rows.map(r=>{
+    const isPrim=r.period===phi;
+    const tds=r.vals.map(v=>`<td>${v}</td>`).join('');
+    return `<tr class="${isPrim?'hl':''}"><td>${r.base}</td>${tds}<td>${r.period}</td></tr>`;
+  }).join('');
+  document.getElementById('pt-out').style.display='block';
+}
+
+// ===== QUIZ =====
+const questions=[
+  {q:"b|a (b divides a) means:",opts:["a is a multiple of b; i.e., a = mb for some integer m","b is greater than a","gcd(a,b) = b","a mod b = 0 always"],ans:0,exp:"b divides a if a = mb for some integer m. Written b|a. This is the fundamental definition of divisibility. Note a mod b = 0 is equivalent (choice D is also logically correct but choice A is the definitional statement). Actually both A and D say the same thing — the exam expects the 'a = mb' definition."},
+  {q:"Two integers a and b are relatively prime if:",opts:["a = b","a and b are both prime","gcd(a,b) = 1","a/b is an integer"],ans:2,exp:"Two integers are relatively prime (coprime) when their greatest common divisor is 1 — they share no common factors other than 1. Neither needs to be prime individually; e.g., 8 and 9 are coprime even though neither is prime."},
+  {q:"23 mod 7 = ?",opts:["2","3","4","1"],ans:0,exp:"23 = 3×7 + 2. So 23 mod 7 = 2. Verify: 3×7=21, 23-21=2. ✓"},
+  {q:"Which is the correct modular reduction rule for multiplication?",opts:["(a mod n) × (b mod n) = (a×b) mod n (no final mod needed)","[(a mod n) × (b mod n)] mod n = (a×b) mod n","(a mod n) × (b mod n) mod n = (a+b) mod n","a × b mod n = (a mod n) + (b mod n) mod n"],ans:1,exp:"The correct rule is [(a mod n) × (b mod n)] mod n = (a×b) mod n. The final mod n is required after multiplying the reduced values, because the product of two values in Z_n can be as large as (n-1)² which exceeds n."},
+  {q:"a has a multiplicative inverse modulo n if and only if:",opts:["a < n","a is prime","gcd(a, n) = 1","a + n is even"],ans:2,exp:"The multiplicative inverse of a (mod n) exists if and only if gcd(a,n) = 1 (a and n are relatively prime). This is a fundamental theorem of modular arithmetic. When n is prime, every non-zero element has a multiplicative inverse."},
+  {q:"Fermat's Theorem (Form 1): if p is prime and p does not divide a, then:",opts:["a^p ≡ 1 (mod p)","a^{p-1} ≡ 1 (mod p)","a^{p+1} ≡ a (mod p)","a^{p-1} ≡ a (mod p)"],ans:1,exp:"Fermat's Theorem Form 1: a^{p-1} ≡ 1 (mod p), when p is prime and gcd(a,p) = 1 (equivalently p does not divide a). Verify: 2^6 mod 7 = 64 mod 7 = 1. ✓"},
+  {q:"For φ(n) where n = pq (p, q distinct primes), the formula is:",opts:["φ(n) = p × q","φ(n) = (p+1)(q+1)","φ(n) = (p−1)(q−1)","φ(n) = p + q − 1"],ans:2,exp:"For n = pq where p and q are distinct primes, φ(n) = (p−1)(q−1). This counts integers from 1 to n−1 that are coprime to n — all except multiples of p (there are q−1 of those) and multiples of q (there are p−1). This formula is central to RSA: φ(n) = (p−1)(q−1) defines the group order for the key generation."},
+  {q:"φ(7) = ?",opts:["5","6","7","4"],ans:1,exp:"7 is prime. For prime p, φ(p) = p − 1 = 7 − 1 = 6. The 6 integers {1,2,3,4,5,6} are all relatively prime to 7 (since 7 is prime and shares no factors with any of them)."},
+  {q:"Euler's Theorem (Form 1) states: for gcd(a,n) = 1,",opts:["a^n ≡ 1 (mod n)","a^{φ(n)} ≡ a (mod n)","a^{φ(n)} ≡ 1 (mod n)","a^{φ(n)+1} ≡ 1 (mod n)"],ans:2,exp:"Euler's Theorem Form 1: a^{φ(n)} ≡ 1 (mod n), provided gcd(a,n) = 1. This generalizes Fermat's theorem (when n=p prime, φ(p) = p-1, so it becomes Fermat's Form 1). Euler's Form 2 is a^{φ(n)+1} ≡ a (mod n)."},
+  {q:"What is the discrete logarithm dlog_{2,19}(7)?",opts:["3","5","6","14"],ans:2,exp:"From the discrete log table (base 2, mod 19), dlog_{2,19}(7) = 6. Verify: 2^6 = 64. 64 mod 19 = 64 − 3×19 = 64−57 = 7 ✓. This means 6 is the discrete log of 7 to base 2 modulo 19."},
+  {q:"A primitive root a of prime p means:",opts:["a = 1","a² ≡ 1 (mod p)","a, a², …, a^{p-1} are all distinct (mod p), generating all of {1,…,p-1}","a is less than √p"],ans:2,exp:"a is a primitive root of prime p if its successive powers a¹, a², …, a^{p-1} (mod p) are all distinct and produce every element of {1, 2, …, p-1}. The order of a (the smallest i for which aⁱ ≡ 1) equals φ(p) = p−1. Only primitive roots generate the full multiplicative group."},
+  {q:"Why is the discrete logarithm problem cryptographically important?",opts:["It proves primes are infinite","Computing dlog_{a,p}(b) is easy, enabling encryption","Computing dlog_{a,p}(b) for large p is computationally intractable, securing Diffie-Hellman","It provides a method to factor large integers"],ans:2,exp:"The hardness of the discrete logarithm — given b = aⁱ mod p, find i — is the security foundation of Diffie-Hellman key exchange, ElGamal, DSA, and ECC. In DH, Alice sends gᵃ mod p; an eavesdropper must solve dlog to recover a. For p ~ 2048 bits, this is currently infeasible."},
+  {q:"The multiplicative inverse of 3 mod 7 is:",opts:["2","3","5","4"],ans:2,exp:"We need x such that 3x ≡ 1 (mod 7). Test: 3×1=3, 3×2=6, 3×3=9≡2, 3×4=12≡5, 3×5=15≡1 ✓. So 3⁻¹ mod 7 = 5. Alternatively, by Fermat's theorem: 3⁻¹ ≡ 3^{7-2} = 3^5 mod 7 = 243 mod 7 = 5. ✓"},
+  {q:"Computing Euler's totient φ(n) for a composite n is considered:",opts:["Easy — just count coprime integers","Equivalent to integer factorisation in difficulty","Harder than the discrete logarithm problem","Easier than finding a GCD"],ans:2,exp:"According to the lecture's complexity analysis, finding φ(n) for composite n is at least as hard as integer factorisation — and may be harder. This is why knowing φ(n) in RSA is equivalent to knowing the factorisation: if an attacker can compute φ(n) = (p-1)(q-1), they can easily find p and q and thus break RSA."},
+  {q:"Euler's Theorem (Form 2): a^{φ(n)+1} ≡ a (mod n) is used in:",opts:["Proving RC4 is secure","Proving RSA correctness: that decryption recovers the original plaintext","Generating pseudo-random numbers","Performing the Euclidean algorithm"],ans:1,exp:"RSA correctness: Encrypt M → C = Mᵉ mod n. Decrypt C → M' = C^d mod n = M^{ed} mod n. Since ed ≡ 1 (mod φ(n)), we have ed = kφ(n)+1 for some integer k. So M^{ed} = M^{kφ(n)+1} = M × (M^{φ(n)})^k ≡ M × 1^k = M (mod n), by Euler's Theorem Form 1. This is the direct application of Euler's Theorem Form 2."}
+];
+
+let quizScore=0,answeredCount=0;
+function renderQuiz(){
+  quizScore=0;answeredCount=0;
+  document.getElementById('score-display').textContent=0;
+  document.getElementById('answered-display').textContent=0;
+  const c=document.getElementById('quiz-container');
+  c.innerHTML='';
+  questions.forEach((q,idx)=>{
+    const d=document.createElement('div');
+    d.className='quiz-q';
+    d.innerHTML=`<p>Q${idx+1}. ${q.q}</p>
+    <div class="quiz-opts">${q.opts.map((o,oi)=>`<button onclick="answerQ(${idx},${oi})" id="q${idx}o${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}</div>
+    <div class="quiz-exp" id="qe${idx}"></div>`;
+    c.appendChild(d);
+  });
+}
+function answerQ(qi,ci){
+  const q=questions[qi];
+  const btns=document.querySelectorAll(`#q${qi}o0,#q${qi}o1,#q${qi}o2,#q${qi}o3`);
+  btns.forEach(b=>b.disabled=true);
+  btns[ci].classList.add(ci===q.ans?'correct':'wrong');
+  if(ci!==q.ans)btns[q.ans].classList.add('correct');
+  const exp=document.getElementById('qe'+qi);
+  exp.textContent=(ci===q.ans?'✅ Correct! ':'❌ Wrong. ')+q.exp;
+  exp.classList.add('show');
+  if(ci===q.ans)quizScore++;
+  answeredCount++;
+  document.getElementById('score-display').textContent=quizScore;
+  document.getElementById('answered-display').textContent=answeredCount;
+}
+function resetQuiz(){renderQuiz();}
+renderQuiz();
+</script>
+</body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-rate DSP — ADSP Mid Study Guide</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card2: #22263a;
+    --border: #2e3354;
+    --accent: #5b8dee;
+    --accent2: #e05c8a;
+    --accent3: #4ecdc4;
+    --accent4: #f7c948;
+    --text: #e2e6f0;
+    --muted: #8892b0;
+    --green: #43d9ad;
+    --red: #ff6b6b;
+    --orange: #ffaa5e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.6; }
+  
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #1a1d27, #0f1117); border-bottom: 1px solid var(--border); padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .progress-bar { background: var(--card2); border-radius: 999px; height: 8px; width: 200px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent3)); border-radius: 999px; transition: width 0.4s; width: 0%; }
+  .prog-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right; }
+
+  /* NAV */
+  .nav { display: flex; gap: 8px; padding: 16px 32px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .nav-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .nav-btn:hover, .nav-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* SECTIONS */
+  .section { display: none; padding: 28px 32px; max-width: 960px; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 16px; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .card h3 { font-size: 14px; color: var(--accent3); margin: 14px 0 8px; }
+  .card p { color: var(--text); margin-bottom: 8px; }
+
+  /* FORMULA BOX */
+  .formula { background: var(--card2); border-left: 3px solid var(--accent); border-radius: 6px; padding: 12px 16px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 14px; color: var(--accent4); overflow-x: auto; }
+
+  /* TWO COLUMNS */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media(max-width:640px){ .two-col { grid-template-columns: 1fr; } }
+
+  /* COMPARISON TABLE */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: var(--card2); color: var(--accent); padding: 10px 12px; text-align: left; border: 1px solid var(--border); }
+  td { padding: 9px 12px; border: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  tr:nth-child(even) td { background: #1c1f2e; }
+
+  /* TAGS */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .tag-key { background: #2a3a6a; color: var(--accent); }
+  .tag-warn { background: #3a2020; color: var(--red); }
+  .tag-tip { background: #1e3a2a; color: var(--green); }
+  .tag-exam { background: #3a2e10; color: var(--orange); }
+
+  /* QUIZ */
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .quiz-q { font-size: 14px; color: var(--text); margin-bottom: 12px; font-weight: 500; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card2); cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.2s; }
+  .quiz-opt:hover { border-color: var(--accent); color: var(--text); }
+  .quiz-opt.correct { background: #1a3a28; border-color: var(--green); color: var(--green); }
+  .quiz-opt.wrong { background: #3a1a1a; border-color: var(--red); color: var(--red); }
+  .quiz-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 13px; display: none; }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: #1a3a28; color: var(--green); border: 1px solid var(--green); }
+  .quiz-feedback.bad { background: #3a1a1a; color: var(--red); border: 1px solid var(--red); }
+  .quiz-score { font-size: 14px; color: var(--accent4); font-weight: 600; margin-bottom: 16px; }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content:''; position:absolute; left:8px; top:0; bottom:0; width:2px; background:var(--border); }
+  .tl-item { position: relative; margin-bottom: 18px; }
+  .tl-dot { position:absolute; left:-20px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--accent); }
+  .tl-time { font-size: 11px; color: var(--accent4); font-weight: 700; margin-bottom: 2px; }
+  .tl-text { font-size: 13px; color: var(--text); }
+  .tl-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; cursor: pointer; }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-top: 1px; }
+  .checklist li.done .check-box { background: var(--green); border-color: var(--green); }
+  .checklist li.done .check-box::after { content: '✓'; font-size: 11px; color: #000; font-weight: 700; }
+  .checklist li.done span { text-decoration: line-through; color: var(--muted); }
+
+  /* CALC */
+  .calc-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  .calc-input { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px; width: 100px; }
+  .calc-input:focus { outline: none; border-color: var(--accent); }
+  .calc-label { font-size: 12px; color: var(--muted); min-width: 80px; }
+  .calc-btn { padding: 8px 16px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .calc-btn:hover { background: #4a7de6; }
+  .calc-result { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-top: 10px; font-size: 13px; color: var(--accent4); }
+
+  /* SUMMARY BOX */
+  .summary { background: linear-gradient(135deg, #1a2040, #1a2030); border: 1px solid var(--accent); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .summary h3 { color: var(--accent4); font-size: 14px; margin-bottom: 10px; }
+
+  /* ALERT */
+  .alert { border-radius: 8px; padding: 12px 16px; margin: 10px 0; font-size: 13px; }
+  .alert-info { background: #1a2540; border-left: 3px solid var(--accent); color: var(--text); }
+  .alert-warn { background: #2a1e10; border-left: 3px solid var(--orange); color: var(--text); }
+  .alert-danger { background: #2a1010; border-left: 3px solid var(--red); color: var(--text); }
+
+  /* STEP BOX */
+  .steps { counter-reset: step; }
+  .step { counter-increment: step; display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+  .step-num { background: var(--accent); color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .step-body { font-size: 13px; color: var(--text); padding-top: 3px; }
+  .step-body strong { color: var(--accent3); }
+
+  /* RESET BTN */
+  .reset-btn { padding: 6px 14px; background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 12px; margin-top: 12px; }
+  .reset-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Multi-rate DSP — MICE-5301</h1>
+    <p>One-Day Mid Prep · 30 Slides Covered</p>
+  </div>
+  <div>
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+    <div class="prog-label" id="progLabel">0 / 6 topics done</div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('plan')">📅 Study Plan</button>
+  <button class="nav-btn" onclick="showSection('concepts')">📐 Core Concepts</button>
+  <button class="nav-btn" onclick="showSection('freq')">📊 Freq Domain</button>
+  <button class="nav-btn" onclick="showSection('design')">🔧 Filter Design</button>
+  <button class="nav-btn" onclick="showSection('structures')">🏗️ Structures</button>
+  <button class="nav-btn" onclick="showSection('quiz')">🧠 Quiz</button>
+</div>
+
+<!-- ============================================================ PLAN -->
+<div class="section active" id="sec-plan">
+
+  <div class="summary">
+    <h3>⚡ What this topic is really about</h3>
+    <p>Multi-rate DSP is about <strong>changing the sampling rate</strong> of a digital signal — either up (interpolation) or down (decimation) — and doing it <em>efficiently</em> without aliasing or imaging artifacts. The exam will test: definitions, frequency-domain effects, filter design (single vs multi-stage), and efficient structures.</p>
+  </div>
+
+  <div class="card">
+    <h2>📅 One-Day Study Schedule</h2>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 1</div><div class="tl-text">Core Concepts tab — up/down-sampler time domain, LTI check, perfect reconstruction</div><div class="tl-sub">Slides 2–8</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 2</div><div class="tl-text">Frequency Domain tab — z-transform, DTFT effects, imaging, aliasing</div><div class="tl-sub">Slides 9–13</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 3</div><div class="tl-text">Filter Design tab — fractional rate, cascade order, multi-stage theory</div><div class="tl-sub">Slides 14–21</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 4</div><div class="tl-text">Solve Q.1 and Q.2 from slides 22–25 by hand, then verify with the Calculator here</div><div class="tl-sub">Slides 22–25</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 5</div><div class="tl-text">Structures tab — efficient transversal for decimator & interpolator (draw from memory)</div><div class="tl-sub">Slides 27–30</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Hour 6</div><div class="tl-text">Quiz tab — all 15 questions. Review any wrong answers. Redo Exercise-1 (slide 26)</div><div class="tl-sub">Full revision</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✅ Topic Checklist <span style="font-size:12px;color:var(--muted)">(click to check off)</span></h2>
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Define single-rate vs multi-rate system, give real examples (audio, video)</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Up-sampler: time domain, I/O relation, zero insertion, z-transform X(z^L), DTFT compression + imaging</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Down-sampler: time domain, I/O relation, linear but TIME-VARIANT proof, z-transform with W_M^k formula</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Perfect reconstruction multi-rate system — trace samples through the table</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Anti-imaging LPF (after ↑L, cutoff π/L) and anti-aliasing LPF (before ↓M, cutoff π/M)</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Fractional rate L/M: cascade condition (gcd=1), which order (↑L then ↓M) is efficient and why</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Multi-stage vs single-stage: advantages, MPS/TSR formulas</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Kaiser filter length formula: N = [−10log(δp·δs)−13] / (14.6·Δf) + 1</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Solve the 96kHz→1kHz example: single-stage, two-stage (32×3)</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Efficient transversal structure of decimator: why direct form is wasteful, how it's fixed</span></li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Efficient transversal structure of interpolator: transposed form + embedded upsampler</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ CONCEPTS -->
+<div class="section" id="sec-concepts">
+
+  <div class="card">
+    <h2>📐 Up-Sampler vs Down-Sampler</h2>
+    <div class="two-col">
+      <div>
+        <h3>↑L Up-Sampler (Interpolation)</h3>
+        <div class="formula">x_u[n] = x[n/L]  if n = 0, ±L, ±2L, ...
+       = 0         otherwise
+
+Z-domain:   X_u(z) = X(z^L)
+Freq domain: X_u(e^jω) = X(e^jωL)
+→ spectrum COMPRESSED by L</div>
+        <p><span class="tag tag-warn">⚠ Imaging</span> L-1 extra copies of spectrum appear. Remove with LPF at <strong>π/L</strong> after upsampler.</p>
+      </div>
+      <div>
+        <h3>↓M Down-Sampler (Decimation)</h3>
+        <div class="formula">x_d[n] = x[nM]
+
+Z-domain: X_d(z) = (1/M) Σ X(z^(1/M) · W_M^(-k))
+          k = 0 to M-1
+where W_M^k = e^(-j2πk/M)
+
+For M=2:
+X_d(e^jω) = ½[X(e^jω/2) + X(-e^jω/2)]
+→ spectrum EXPANDED by M</div>
+        <p><span class="tag tag-warn">⚠ Aliasing</span> if signal BW > π/M. Apply LPF at <strong>π/M</strong> before downsampler.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚖️ Is the Down-Sampler an LTI System?</h2>
+    <div class="two-col">
+      <div>
+        <h3>Linearity — YES ✓</h3>
+        <div class="formula">T{ax₁[n] + bx₂[n]}
+= ax₁[nM] + bx₂[nM]
+= ay₁[n] + by₂[n]   ✓ superposition</div>
+      </div>
+      <div>
+        <h3>Time-Invariance — NO ✗</h3>
+        <div class="formula">Delayed input: x₁[n] = x[n-k]
+→ y₁[n] = x[nM - k]
+
+Delayed output: y[n-k] = x[(n-k)M]
+             = x[nM - kM]
+
+y₁[n] ≠ y[n-k]  since k ≠ kM generally
+∴ TIME-VARIANT</div>
+      </div>
+    </div>
+    <div class="alert alert-warn">Conclusion: Down-sampler is <strong>Linear Time-Variant (LTV)</strong>. Same holds for up-sampler. This is a very common exam question.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔄 Perfect Reconstruction System (Slide 8)</h2>
+    <p>The system: x[n] → split into two paths (direct and z⁻¹ delayed), each ↓2 → ↑2, then recombine with z⁻¹ shifts → y[n].</p>
+    <div class="alert alert-info"><strong>Key insight:</strong> y[n] = x[n−1], which is just a one-sample delay. The system reconstructs the original signal perfectly. Verify by tracing: v[n] takes odd-indexed samples of x, w[n] takes even-indexed. After ↑2 and re-interleaving with the z⁻¹ shifts, all samples are recovered.</div>
+    <div class="formula">x[n] = [1 2 3 4 5 6 7 8 9 ...]  (origin at n=0 → value 1)
+v[n] = x_d[n] = [1 3 5 7 9 11 13 15 17 ...]   (↓2 of x)
+w[n] = x_d[n-1] = [0 2 4 6 8 10 12 14 16 ...]  (↓2 of x[n-1])
+After ↑2 and combining:
+y[n] = [0 1 2 3 4 5 6 7 8 ...] = x[n-1]  ✓</div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Sampling Rate Alteration Ratio</h2>
+    <div class="formula">R = F'_T / F_T
+
+R > 1  →  Up-sampling / Interpolation
+R < 1  →  Down-sampling / Decimation</div>
+    <table>
+      <tr><th>Parameter</th><th>Up-sampler (↑L)</th><th>Down-sampler (↓M)</th></tr>
+      <tr><td>Output sampling freq</td><td>F'_T = L·F_T</td><td>F'_T = F_T / M</td></tr>
+      <tr><td>Output period</td><td>T' = T/L</td><td>T' = M·T</td></tr>
+      <tr><td>Spectral effect</td><td>Compressed + imaging</td><td>Expanded + aliasing risk</td></tr>
+      <tr><td>Required filter</td><td>LPF after (π/L) — anti-imaging</td><td>LPF before (π/M) — anti-aliasing</td></tr>
+      <tr><td>LTI?</td><td>Linear, Time-Variant</td><td>Linear, Time-Variant</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ FREQ -->
+<div class="section" id="sec-freq">
+
+  <div class="card">
+    <h2>📊 Frequency Domain: Up-Sampler</h2>
+    <div class="formula">Z-transform derivation:
+X_u(z) = Σ x_u[n] z^(-n)    (only non-zero at n=0,±L,...)
+        = Σ x[m] z^(-mL)     (substitute m = n/L)
+        = X(z^L)
+
+On unit circle (z = e^jω):
+X_u(e^jω) = X(e^jωL)</div>
+    <div class="alert alert-info">
+      <strong>What does this mean visually?</strong> The DTFT of x[n] spans [−π, π]. After ↑L, X(e^jωL) is a compressed version spanning [−π/L, π/L], and this pattern repeats L times in [−π, π]. The extra copies = <strong>images</strong>. The LPF at π/L removes them.
+    </div>
+    <div class="formula">Equivalent structure (Noble Identity):
+x[n] → ↑L → H(z) → y[n]
+     ≡ x[n] → ↑L → H(z^L) → y[n]
+(filter can be moved before the upsampler with z^L substitution)</div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Frequency Domain: Down-Sampler</h2>
+    <p>Direct Z-transform of x_d[n] = x[nM] can't be expressed directly in terms of X(z). Trick: define an intermediate sequence x_int[n] that equals x[n] at multiples of M, zero elsewhere.</p>
+    <div class="formula">x_int[n] = c[n]·x[n]
+where c[n] = (1/M) Σ W_M^(kn),  k=0..M-1
+and W_M^(kn) = e^(-j2πkn/M)
+
+This gives:
+X_int(z) = (1/M) Σ X(z·W_M^(-k)),  k=0..M-1
+
+Since X_d(z) = X_int(z^(1/M)):
+X_d(z) = (1/M) Σ X(z^(1/M) · W_M^(-k))</div>
+    <div class="formula">On unit circle, M=2:
+X_d(e^jω) = ½[X(e^jω/2) + X(-e^jω/2)]
+           = ½[X(e^jω/2) + X(e^j(ω-2π)/2)]
+
+The −e^jω/2 term is just X(e^jω/2) shifted right by 2π → ALIASING where they overlap.</div>
+    <div class="alert alert-warn"><strong>Aliasing condition:</strong> If signal has components above π/M, the two shifted copies overlap → aliasing. Apply anti-aliasing LPF (cutoff π/M) BEFORE downsampling.</div>
+    <div class="formula">Noble Identity for down-sampler:
+x[n] → H(z) → ↓M → y[n]
+     ≡ x[n] → H(z^M) → ↓M → y[n]</div>
+  </div>
+
+  <div class="card">
+    <h2>🔀 Fractional Rate Conversion L/M</h2>
+    <div class="two-col">
+      <div>
+        <h3>Config (a) — LESS EFFICIENT</h3>
+        <div class="formula">→ H_d(z) → ↓M → ↑L → H_u(z) →</div>
+        <p>Decimation happens first → loses signal content before interpolation. Two separate filters needed.</p>
+      </div>
+      <div>
+        <h3>Config (b) — MORE EFFICIENT ✓</h3>
+        <div class="formula">→ ↑L → H_u(z)·H_d(z) → ↓M →
+≡ → ↑L → H(z) → ↓M →</div>
+        <p>Single combined LPF H(z) serves as both anti-imaging and anti-aliasing filter.</p>
+      </div>
+    </div>
+    <div class="alert alert-info">
+      <strong>Cutoff of H(z):</strong> ω_c = min(π/L, π/M). This ensures both imaging and aliasing are suppressed.
+    </div>
+    <div class="formula">Cascade commutativity condition:
+↑L followed by ↓M  ≡  ↓M followed by ↑L
+IF AND ONLY IF gcd(L, M) = 1  (L and M are relatively prime)</div>
+  </div>
+</div>
+
+<!-- ============================================================ DESIGN -->
+<div class="section" id="sec-design">
+
+  <div class="card">
+    <h2>🔧 Multi-stage Decimation Design</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Specify overall filter requirements</strong> — passband (0 to f_p), stopband (F_s/2M to F_s/2), ripples δ_p, δ_s</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Find all factorizations of M</strong> — e.g. M=96: (96), (32×3), (8×6×2), (4×4×3×2)</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>For each stage i, compute filter specs:</strong><br>Passband: 0 to f_p | Stopband: F_i − F_s/2M &lt; f &lt; F_(i-1)/2<br>δ_pi = δ_p/I | δ_si = δ_s</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Compute N_i using Kaiser's formula:</strong><br>N_i = [−10·log(δ_pi·δ_si) − 13] / (14.6·Δf_i) + 1</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Compute MPS and TSR, pick minimum:</strong><br>MPS = Σ N_i·F_i | TSR = Σ N_i</div></div>
+    </div>
+    <div class="alert alert-warn"><strong>Key formula detail:</strong> Δf_i = (f_stopband_i − f_passband_i) / F_(i-1). The normalization is w.r.t. the INPUT sampling rate of that stage, not the output.</div>
+  </div>
+
+  <div class="card">
+    <h2>🧮 Multi-Stage MPS/TSR Calculator</h2>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Enter up to 4 stages. Computes filter lengths using Kaiser's formula then MPS & TSR.</p>
+    <div style="margin-bottom:12px">
+      <div class="calc-row">
+        <span class="calc-label">δ_p (overall)</span>
+        <input class="calc-input" id="cdp" value="0.01" type="number" step="0.001">
+        <span class="calc-label">δ_s (overall)</span>
+        <input class="calc-input" id="cds" value="0.001" type="number" step="0.001">
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Stages (I)</span>
+        <input class="calc-input" id="cI" value="2" type="number" min="1" max="4">
+      </div>
+      <div id="stage-inputs"></div>
+    </div>
+    <button class="calc-btn" onclick="calcMPS()">Calculate MPS &amp; TSR</button>
+    <div class="calc-result" id="calc-out" style="display:none"></div>
+  </div>
+
+  <div class="card">
+    <h2>📋 96kHz→1kHz Worked Results Summary</h2>
+    <table>
+      <tr><th>Design</th><th>Factors</th><th>Filter Lengths</th><th>MPS</th><th>TSR</th></tr>
+      <tr><td>Single-stage</td><td>96</td><td>N₁ = 4881</td><td style="color:var(--red)">4,881,000</td><td style="color:var(--red)">4881</td></tr>
+      <tr><td>Two-stage</td><td>32 × 3</td><td>N₁=131, N₂=167</td><td style="color:var(--green)">560,000</td><td style="color:var(--green)">298</td></tr>
+    </table>
+    <p style="color:var(--muted);font-size:12px;margin-top:8px">Two-stage is ~8.7× less compute and ~16× less storage. Multi-stage wins for large M.</p>
+    <div class="alert alert-info"><strong>Exercise-1 (slide 26):</strong> Try 240kHz ↓30 with δ_p=0.05, δ_s=0.01, f_p=3.4kHz. Test factorizations 15×2, 10×3, 6×5 using the calculator above.</div>
+  </div>
+
+  <div class="card">
+    <h2>❓ FIR preferred over IIR — why?</h2>
+    <p>From slide 19 — the slide asks this as a "(why?)" question. Expected answer:</p>
+    <ul style="padding-left:18px;font-size:13px;color:var(--text);margin-top:8px">
+      <li style="margin-bottom:6px">FIR filters have <strong>linear phase</strong> — critical for audio/communications to avoid phase distortion</li>
+      <li style="margin-bottom:6px">FIR filters are inherently <strong>stable</strong> (all poles at z=0)</li>
+      <li style="margin-bottom:6px">Easy to implement efficient polyphase structures for multirate use</li>
+      <li>IIR filters with non-linear phase would distort signal reconstruction in multi-rate systems</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ STRUCTURES -->
+<div class="section" id="sec-structures">
+
+  <div class="card">
+    <h2>🏗️ Direct-Form Decimator — The Problem</h2>
+    <div class="formula">Structure: x[n] → H(z) → ↓M → y[n]
+
+Filter computes v[n] for ALL n at high rate F_i.
+Down-sampler then DISCARDS (M-1) out of every M outputs.
+→ We computed M-1 useless multiplications per output sample!</div>
+    <div class="alert alert-danger"><strong>Inefficiency:</strong> For M=8, you compute 7 multiply-add results that are immediately thrown away. The filter runs at the HIGH rate F_i — worst case.</div>
+  </div>
+
+  <div class="card">
+    <h2>🏗️ Efficient Transversal Decimator — The Fix</h2>
+    <div class="formula">Key idea: Move ↓M INSIDE the filter.
+Each tap of the FIR filter has its own ↓M downsampler.
+The delay elements (z^-1) operate at the HIGH rate (to shift input correctly),
+but the multiplications happen at the LOW rate F_i/M.
+
+Result: Only N multiplications per OUTPUT sample (not per input sample)
+→ M× reduction in multiply rate</div>
+    <div class="alert alert-tip"><strong>Structure (Fig b, slide 29):</strong> Input x(n) feeds a delay line (z⁻¹ at high rate). After each delay, a ↓M block picks every Mth sample, feeds into multiplier h(k), then sums. All adds/multiplies at F_i/M.</div>
+  </div>
+
+  <div class="card">
+    <h2>🏗️ Efficient Transversal Interpolator — The Fix</h2>
+    <div class="formula">Direct form problem: x[n] → ↑L → H(z) → y[n]
+Filter runs at HIGH rate L·F_i. But L-1 out of every L input samples
+to the filter are ZERO (inserted by upsampler) → wasted multiplications.
+
+Fix — two steps:
+Step 1: Use TRANSPOSED form of FIR (flip signal flow)
+Step 2: Move ↑L INSIDE the filter at each tap
+
+Result: Multiplications happen at LOW input rate F_i.
+The ↑L blocks in each branch introduce zeros between accumulator adds,
+but the mults themselves never see those zeros.
+→ L× reduction in multiply rate</div>
+    <div class="alert alert-tip"><strong>Structure (Fig c, slide 30):</strong> Input x(n) feeds all taps. Each tap multiplies h(k) at low rate, then ↑L expands the result. The adder tree (transposed direct form) accumulates into the output delay line at high rate. Output y(n) at rate L·F_i.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔁 Comparison: Direct vs Efficient</h2>
+    <table>
+      <tr><th>Property</th><th>Direct Form</th><th>Efficient Transversal</th></tr>
+      <tr><td>Multiplications per output</td><td>N × M (decimator) or N × L (interpolator)</td><td>N (only)</td></tr>
+      <tr><td>Filter operates at</td><td>High rate F_i</td><td>Low rate F_i/M or F_i</td></tr>
+      <tr><td>Wasted computation</td><td>High — M-1 discarded outputs</td><td>None</td></tr>
+      <tr><td>Implementation complexity</td><td>Simple</td><td>Moderate (embedded sampler)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ QUIZ -->
+<div class="section" id="sec-quiz">
+  <div class="quiz-score" id="quiz-score">Answer questions to track your score</div>
+  <div id="quiz-container"></div>
+  <button class="reset-btn" onclick="resetQuiz()">🔄 Reset Quiz</button>
+</div>
+
+<script>
+// ---- NAV ----
+const sectionIds = ['plan','concepts','freq','design','structures','quiz'];
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ---- CHECKLIST ----
+function toggleCheck(li) {
+  li.classList.toggle('done');
+  updateProgress();
+}
+function updateProgress() {
+  const total = document.querySelectorAll('#checklist li').length;
+  const done = document.querySelectorAll('#checklist li.done').length;
+  document.getElementById('progFill').style.width = (done/total*100)+'%';
+  document.getElementById('progLabel').textContent = done+' / '+total+' topics done';
+}
+
+// ---- STAGE INPUTS ----
+function renderStageInputs() {
+  const I = parseInt(document.getElementById('cI').value) || 2;
+  let html = '';
+  for(let i=1;i<=I;i++){
+    html += `<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="font-size:12px;color:var(--accent3);font-weight:600;margin-bottom:8px">Stage ${i}</div>
+      <div class="calc-row">
+        <span class="calc-label">F_in (Hz)</span>
+        <input class="calc-input" id="sf_in_${i}" value="${i===1?96000:''}" type="number">
+        <span class="calc-label">F_out (Hz)</span>
+        <input class="calc-input" id="sf_out_${i}" value="" type="number">
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">f_p (Hz)</span>
+        <input class="calc-input" id="sf_p_${i}" value="450" type="number">
+        <span class="calc-label">f_s_start (Hz)</span>
+        <input class="calc-input" id="sf_s_${i}" value="" type="number" placeholder="stopband start">
+      </div>
+    </div>`;
+  }
+  document.getElementById('stage-inputs').innerHTML = html;
+}
+document.getElementById('cI').addEventListener('change', renderStageInputs);
+renderStageInputs();
+
+function calcMPS() {
+  const I = parseInt(document.getElementById('cI').value)||2;
+  const dp = parseFloat(document.getElementById('cdp').value);
+  const ds = parseFloat(document.getElementById('cds').value);
+  let totalMPS=0, totalTSR=0;
+  let rows='';
+  let valid=true;
+  for(let i=1;i<=I;i++){
+    const fin = parseFloat(document.getElementById('sf_in_'+i)?.value);
+    const fout = parseFloat(document.getElementById('sf_out_'+i)?.value);
+    const fp = parseFloat(document.getElementById('sf_p_'+i)?.value);
+    const fs_start = parseFloat(document.getElementById('sf_s_'+i)?.value);
+    if(!fin||!fout||!fp||!fs_start){valid=false;break;}
+    const dpi = dp/I;
+    const dsi = ds;
+    const delta_f = (fs_start - fp)/fin;
+    if(delta_f<=0){rows+=`<p style="color:var(--red)">Stage ${i}: stopband start must be > passband end</p>`;valid=false;break;}
+    const Ni = Math.ceil((-10*Math.log10(dpi*dsi)-13)/(14.6*delta_f)+1);
+    totalMPS += Ni*fout;
+    totalTSR += Ni;
+    rows+=`<tr><td>Stage ${i}</td><td>${fin}→${fout} Hz</td><td>Δf=${delta_f.toFixed(5)}</td><td>δ_pi=${dpi.toFixed(4)}</td><td><strong>${Ni}</strong></td><td>${(Ni*fout).toLocaleString()}</td></tr>`;
+  }
+  const out = document.getElementById('calc-out');
+  out.style.display='block';
+  if(!valid){out.innerHTML='<span style="color:var(--red)">Please fill all fields for each stage.</span>'+rows;return;}
+  out.innerHTML=`<table style="margin:0"><tr><th>Stage</th><th>Rate</th><th>Δf_norm</th><th>δ_pi</th><th>N_i</th><th>N_i×F_i</th></tr>${rows}</table>
+  <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+    <span style="color:var(--accent4);font-weight:700">MPS = ${totalMPS.toLocaleString()}</span> &nbsp;|&nbsp;
+    <span style="color:var(--accent3);font-weight:700">TSR = ${totalTSR}</span>
+  </div>`;
+}
+
+// ---- QUIZ ----
+const questions = [
+  { q: "What is the Z-transform of the output of a factor-L up-sampler?", opts: ["X(z/L)","X(z^L)","X(z)^L","L·X(z)"], ans: 1, exp: "Up-sampling by L: x_u[n]=x[n/L] for multiples of L, else 0. Substituting m=n/L gives X_u(z) = X(z^L)." },
+  { q: "A down-sampler is:", opts: ["Linear and time-invariant","Nonlinear and time-invariant","Linear and time-variant","Nonlinear and time-variant"], ans: 2, exp: "Down-sampler satisfies superposition (linear) but T{x[n-k]} = x[nM-k] ≠ x[(n-k)M] = y[n-k], so time-variant." },
+  { q: "To avoid aliasing when downsampling by M, a LPF with cutoff __ must be applied BEFORE the downsampler:", opts: ["π/2","π·M","π/M","2π/M"], ans: 2, exp: "The downsampled spectrum expands by M. Any content above π/M will alias. The anti-aliasing LPF cutoff must be π/M." },
+  { q: "After up-sampling by L=3, how many additional spectral images appear?", opts: ["1","2 (i.e., L-1)","3","L+1"], ans: 1, exp: "Factor-L upsampling introduces L-1 images. For L=3, that's 2 additional images." },
+  { q: "The condition for interchanging the order of ↑L and ↓M in a cascade is:", opts: ["L > M","L and M are coprime (gcd=1)","L and M are both prime","L = M"], ans: 1, exp: "The two orderings produce the same output IFF L and M share no common factor greater than 1, i.e., gcd(L,M)=1." },
+  { q: "In fractional rate conversion (L/M), the preferred cascade order is:", opts: ["↓M → ↑L (decimate first)","↑L → ↓M (interpolate first)","Either, they're equivalent","Depends on M only"], ans: 1, exp: "↑L first (then ↓M) is preferred: the combined filter H(z) operates after upsampling, avoiding signal loss. Decimating first loses frequency content before interpolation." },
+  { q: "Kaiser's formula for FIR filter length is N = [−10log(δ_p·δ_s)−13]/(14.6·Δf) + 1. If δ_p=0.01 and δ_s=0.001, what is −10log(δ_p·δ_s)?", opts: ["40","50","30","60"], ans: 1, exp: "δ_p·δ_s = 0.01×0.001 = 10^(-5). −10·log10(10^(-5)) = −10·(−5) = 50." },
+  { q: "The main advantage of multi-stage over single-stage decimation is:", opts: ["Fewer filter stages","Relaxed filter requirements per stage, lower MPS and TSR","Higher output sampling rate","Better stopband attenuation"], ans: 1, exp: "Multi-stage allows gradual rate reduction; each stage has a wider transition band → shorter filter → lower MPS and TSR." },
+  { q: "In the efficient transversal structure of a decimator, multiplications are performed at:", opts: ["The input (high) rate F_i","The output (low) rate F_i/M","An intermediate rate","Twice the output rate"], ans: 1, exp: "By embedding ↓M inside the filter, each tap only computes at the low rate F_i/M. This is the whole point of the efficient structure." },
+  { q: "In the efficient interpolator structure, the key technique used is:", opts: ["Embedding ↑L before the filter","Using IIR instead of FIR","Using transposed direct form FIR + embedding ↑L inside","Polyphase decomposition"], ans: 2, exp: "First convert to transposed FIR form, then move ↑L inside. This ensures mults happen at low rate F_i, not L·F_i." },
+  { q: "For 96kHz→1kHz single-stage decimation (M=96, δ_p=0.01, δ_s=0.001, f_p=450Hz), the normalized Δf is approximately:", opts: ["5.2×10⁻⁴","5.2×10⁻³","5.2×10⁻²","0.5"], ans: 0, exp: "Δf = (500−450)/96000 = 50/96000 ≈ 5.208×10⁻⁴. The stopband begins at 500Hz = F_i/2−F_s/2M = 1000−500 = 500Hz." },
+  { q: "In the 96kHz→1kHz two-stage design (M1=32, M2=3), what is the intermediate sampling rate F₁?", opts: ["3 kHz","32 kHz","48 kHz","1 kHz"], ans: 0, exp: "After first decimation by 32: F₁ = 96kHz/32 = 3kHz. After second decimation by 3: F₂ = 3kHz/3 = 1kHz." },
+  { q: "The Noble Identity for the down-sampler says:", opts: ["H(z) → ↓M ≡ ↓M → H(z^M)","↓M → H(z) ≡ H(z) → ↓M","H(z) → ↓M ≡ H(z^(1/M)) → ↓M","H(z^M) → ↓M ≡ ↓M → H(z)"], ans: 0, exp: "Noble Identity: a filter H(z) followed by ↓M is equivalent to H(z^M) followed by ↓M. This is used to move filters across rate-change devices." },
+  { q: "FIR filters are preferred over IIR in multirate systems primarily because:", opts: ["They have fewer coefficients","They have linear phase and guaranteed stability","They are faster to compute","They require no anti-aliasing filter"], ans: 1, exp: "FIR: linear phase (no phase distortion), always stable (all poles at z=0), and easy to implement in polyphase/efficient transversal structures." },
+  { q: "What does 'imaging' mean in the context of up-sampling?", opts: ["The signal is duplicated in time","Spectral copies of the baseband signal appear at multiples of 2π/L","The amplitude is scaled by L","The signal is mirrored around π"], ans: 1, exp: "Up-sampling compresses the spectrum; the X(z^L) formula means the DTFT repeats L times in [0,2π]. The extra copies are called images. An LPF at π/L removes them." },
+];
+
+let answers = new Array(questions.length).fill(null);
+let quizRendered = false;
+
+function renderQuiz() {
+  if(quizRendered) return;
+  quizRendered = true;
+  let html = '';
+  questions.forEach((q,i)=>{
+    html += `<div class="quiz-card" id="qcard-${i}">
+      <div class="quiz-q">${i+1}. ${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o,j)=>`<div class="quiz-opt" id="qopt-${i}-${j}" onclick="answerQ(${i},${j})">${String.fromCharCode(65+j)}) ${o}</div>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qfb-${i}"></div>
+    </div>`;
+  });
+  document.getElementById('quiz-container').innerHTML = html;
+}
+
+function answerQ(qi, oi) {
+  if(answers[qi] !== null) return;
+  answers[qi] = oi;
+  const correct = questions[qi].ans;
+  const fb = document.getElementById('qfb-'+qi);
+  document.querySelectorAll(`#qcard-${qi} .quiz-opt`).forEach(el => el.style.pointerEvents='none');
+  document.getElementById(`qopt-${qi}-${correct}`).classList.add('correct');
+  if(oi !== correct) document.getElementById(`qopt-${qi}-${oi}`).classList.add('wrong');
+  fb.textContent = (oi===correct ? '✓ Correct! ' : '✗ Wrong. ') + questions[qi].exp;
+  fb.className = 'quiz-feedback show ' + (oi===correct?'ok':'bad');
+  updateScore();
+}
+
+function updateScore() {
+  const done = answers.filter(a=>a!==null).length;
+  const correct = answers.filter((a,i)=>a===questions[i].ans).length;
+  document.getElementById('quiz-score').textContent = `Score: ${correct} / ${done} answered (${questions.length} total)`;
+}
+
+function resetQuiz() {
+  answers = new Array(questions.length).fill(null);
+  quizRendered = false;
+  document.getElementById('quiz-container').innerHTML = '';
+  renderQuiz();
+  document.getElementById('quiz-score').textContent = 'Answer questions to track your score';
+}
+
+// Render quiz when tab clicked
+document.querySelectorAll('.nav-btn').forEach((btn,i)=>{
+  if(i===5) btn.addEventListener('click', renderQuiz);
+});
+</script>
+</body>
+</html>

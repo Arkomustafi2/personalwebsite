@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EEE-5305 | Block Ciphers and DES</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #1a1d27;
+  --card2: #22263a;
+  --border: #2e3354;
+  --text: #e2e6f0;
+  --muted: #8892b0;
+  --accent: #64ffda;
+  --accent2: #ff79c6;
+  --accent3: #bd93f9;
+  --accent4: #f7c948;
+  --accent5: #8be9fd;
+  --red: #ff5555;
+  --green: #50fa7b;
+  --orange: #ffb86c;
+  --radius: 10px;
+  --font-mono: 'Courier New', Courier, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 15px; line-height: 1.7; }
+
+header {
+  background: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #0f1117 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 24px 0;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-bottom: 12px; }
+.header-title { font-size: 1.1rem; font-weight: 700; color: var(--accent3); letter-spacing: 0.05em; }
+.header-sub { font-size: 0.8rem; color: var(--muted); }
+.progress-wrap { display: flex; align-items: center; gap: 10px; }
+.progress-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+.progress-bar-outer { width: 160px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-bar-inner { height: 100%; background: linear-gradient(90deg, var(--accent3), var(--accent5)); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+
+nav { display: flex; gap: 2px; overflow-x: auto; padding-bottom: 0; }
+.tab-btn {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  padding: 10px 14px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: all 0.2s; border-radius: 6px 6px 0 0;
+  letter-spacing: 0.03em;
+}
+.tab-btn:hover { color: var(--text); background: var(--card2); }
+.tab-btn.active { color: var(--accent3); border-bottom-color: var(--accent3); background: var(--card2); }
+
+main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 20px; }
+.card-title { font-size: 1.05rem; font-weight: 700; color: var(--accent3); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.card-title::before { content: ''; display: inline-block; width: 3px; height: 18px; background: var(--accent3); border-radius: 2px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.alert { border-left: 4px solid; border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin-bottom: 14px; background: var(--card2); }
+.alert-info { border-color: var(--accent5); }
+.alert-warn { border-color: var(--orange); }
+.alert-key { border-color: var(--accent); }
+.alert-exam { border-color: var(--accent2); }
+.alert-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+.alert-info .alert-label { color: var(--accent5); }
+.alert-warn .alert-label { color: var(--orange); }
+.alert-key .alert-label { color: var(--accent); }
+.alert-exam .alert-label { color: var(--accent2); }
+
+.formula {
+  background: #0a0d14; border-left: 4px solid var(--accent4);
+  padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0;
+  font-family: var(--font-mono); font-size: 0.88rem; color: var(--accent4);
+  white-space: pre; overflow-x: auto; line-height: 1.8;
+}
+
+.steps { margin: 14px 0; }
+.step { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+.step-num { background: var(--accent3); color: #000; font-weight: 800; font-size: 0.75rem;
+  width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.step-body { flex: 1; }
+.step-body strong { color: var(--accent4); }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 12px 0; }
+.tbl th { background: var(--card2); color: var(--accent3); padding: 9px 12px; text-align: left; border-bottom: 2px solid var(--accent3); font-size: 0.78rem; letter-spacing: 0.05em; }
+.tbl td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.tbl tr:hover td { background: var(--card2); }
+.tbl-center td, .tbl-center th { text-align: center; }
+
+.summary-box { background: linear-gradient(135deg, var(--card2), var(--card)); border: 1px solid var(--accent3); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 22px; }
+.tl-item { display: flex; gap: 16px; margin-bottom: 16px; position: relative; }
+.tl-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent3); flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 8px var(--accent3); }
+.tl-content { flex: 1; }
+.tl-time { font-size: 0.72rem; color: var(--accent4); font-weight: 700; letter-spacing: 0.08em; }
+.tl-task { font-weight: 600; color: var(--text); }
+.tl-slide { font-size: 0.78rem; color: var(--muted); }
+.tl-item::before { content: ''; position: absolute; left: 6px; top: 18px; width: 2px; height: calc(100% + 4px); background: var(--border); }
+.tl-item:last-child::before { display: none; }
+
+.checklist { list-style: none; margin: 14px 0; }
+.checklist li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.checklist li:last-child { border-bottom: none; }
+.chk { width: 18px; height: 18px; border: 2px solid var(--accent3); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.chk.done { background: var(--accent3); border-color: var(--accent3); }
+.chk.done::after { content: '✓'; color: #000; font-size: 0.75rem; font-weight: 900; }
+.chk-text { color: var(--muted); transition: color 0.2s; }
+.checklist li.done .chk-text { color: var(--text); text-decoration: line-through; }
+
+.q-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 18px; }
+.q-num { font-size: 0.72rem; color: var(--accent4); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.q-text { font-weight: 600; margin-bottom: 14px; color: var(--text); }
+.q-options { display: grid; gap: 8px; }
+.q-opt { background: var(--card2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; text-align: left; color: var(--text); width: 100%; }
+.q-opt:hover:not(:disabled) { border-color: var(--accent3); color: var(--accent3); }
+.q-opt.correct { background: rgba(80,250,123,0.15); border-color: var(--green); color: var(--green); }
+.q-opt.wrong { background: rgba(255,85,85,0.15); border-color: var(--red); color: var(--red); }
+.q-opt:disabled { cursor: default; }
+.q-explain { margin-top: 12px; padding: 10px 14px; background: var(--card2); border-left: 3px solid var(--accent4); border-radius: 0 7px 7px 0; font-size: 0.85rem; color: var(--muted); display: none; }
+.q-explain.show { display: block; }
+.score-bar { background: var(--card2); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); }
+.score-val { font-size: 1.5rem; font-weight: 800; color: var(--accent3); }
+.reset-btn { background: var(--accent2); color: #000; border: none; padding: 10px 20px; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: opacity 0.2s; }
+.reset-btn:hover { opacity: 0.85; }
+
+.tool-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 20px; }
+.inp-label { font-size: 0.8rem; color: var(--accent4); font-weight: 600; margin-bottom: 5px; display: block; }
+.pp-input { background: var(--card2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 7px; font-size: 0.88rem; width: 100%; font-family: var(--font-mono); margin-bottom: 14px; transition: border-color 0.2s; outline: none; }
+.pp-input:focus { border-color: var(--accent3); }
+.pp-btn { background: linear-gradient(135deg, var(--accent3), var(--accent5)); color: #000; border: none; padding: 11px 28px; border-radius: 7px; cursor: pointer; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.04em; transition: opacity 0.2s; margin-top: 6px; }
+.pp-btn:hover { opacity: 0.85; }
+.tool-result { display: none; margin-top: 18px; background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.tool-result.show { display: block; }
+.result-title { color: var(--accent3); font-weight: 700; margin-bottom: 12px; font-size: 0.95rem; }
+
+.sbox-grid { display: grid; grid-template-columns: repeat(4,1fr); gap:3px; margin:8px 0; }
+.sbox-cell { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:5px; text-align:center; font-family:var(--font-mono); font-size:0.82rem; }
+.sbox-cell.highlight { background:rgba(100,255,218,0.15); border-color:var(--accent); color:var(--accent); font-weight:700; }
+
+.bit-row { display:flex; gap:3px; flex-wrap:wrap; margin:6px 0; font-family:var(--font-mono); }
+.bit-cell { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:4px 7px; font-size:0.85rem; min-width:28px; text-align:center; }
+.bit-cell.purple { color:var(--accent3); border-color:var(--accent3); }
+.bit-cell.teal { color:var(--accent); border-color:var(--accent); }
+.bit-cell.yellow { color:var(--accent4); border-color:var(--accent4); }
+.bit-cell.pink { color:var(--accent2); border-color:var(--accent2); }
+
+h2 { color: var(--text); font-size: 1.1rem; margin: 20px 0 10px; }
+h3 { color: var(--accent4); font-size: 0.95rem; margin: 14px 0 8px; }
+p { margin-bottom: 10px; color: var(--muted); }
+ul, ol { padding-left: 20px; color: var(--muted); }
+li { margin-bottom: 4px; }
+strong { color: var(--text); }
+code { font-family: var(--font-mono); background: var(--card2); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: var(--accent4); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="header-title">EEE-5305 · Network &amp; Information Security</div>
+      <div class="header-sub">Block Ciphers and DES — Dr. Mosabber Uddin Ahmed</div>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-label">Study Progress: <span id="prog-pct">0</span>%</span>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="prog-bar"></div></div>
+    </div>
+  </div>
+  <nav>
+    <button class="tab-btn active" onclick="showSection('plan',this)">📅 Study Plan</button>
+    <button class="tab-btn" onclick="showSection('block',this)">🧱 Block Cipher Fundamentals</button>
+    <button class="tab-btn" onclick="showSection('feistel',this)">⚙️ Feistel &amp; S-DES</button>
+    <button class="tab-btn" onclick="showSection('des',this)">🔒 Full DES</button>
+    <button class="tab-btn" onclick="showSection('attacks',this)">⚔️ Attacks &amp; Variants</button>
+    <button class="tab-btn" onclick="showSection('tool',this)">🧮 Interactive Tool</button>
+    <button class="tab-btn" onclick="showSection('quiz',this)">🧠 Quiz</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ==================== TAB 1: STUDY PLAN ==================== -->
+<div class="section active" id="plan">
+  <div class="summary-box">
+    <h2 style="color:var(--accent3);margin-top:0;margin-bottom:12px;">What is this lecture really about?</h2>
+    <p>This lecture moves from classical ciphers to the first modern symmetric encryption standard: DES. The central engineering insight is the <strong>Feistel structure</strong> — a generic framework that uses alternating substitution (confusion) and permutation (diffusion) across multiple rounds to build a cipher far stronger than either operation alone. You will first understand why an "ideal" block cipher is impractical, then how Feistel solved this, then trace every step of S-DES (an 8-bit teaching cipher) before scaling up to full 64-bit DES. The lecture closes with DES's weaknesses and the transition to 3DES and AES — topics that appear directly in exam questions.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">6-Hour Study Timeline</div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 1 — 0:00–1:00</div>
+        <div class="tl-task">Stream vs Block Ciphers, Reversible Mappings, Ideal Block Cipher, General Block Substitution</div>
+        <div class="tl-slide">Slides 2–7 · Tab: Block Cipher Fundamentals</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 2 — 1:00–2:00</div>
+        <div class="tl-task">Feistel Structure: diffusion/confusion, encryption/decryption rounds, worked Feistel example</div>
+        <div class="tl-slide">Slides 8–12 · Tab: Feistel &amp; S-DES</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 3 — 2:00–3:00</div>
+        <div class="tl-task">S-DES: all operations (P10, P8, P4, EP, IP, IP⁻¹, LS-1, LS-2), S-Boxes, key generation, worked example</div>
+        <div class="tl-slide">Slides 13–22 · Tab: Feistel &amp; S-DES</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 4 — 3:00–4:00</div>
+        <div class="tl-task">Full DES: structure, permutation tables (IP, IP⁻¹, E, P), F(R,K) function, DES S-Boxes (S1–S8), key schedule (PC-1, PC-2, left shifts)</div>
+        <div class="tl-slide">Slides 23–31 · Tab: Full DES</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 5 — 4:00–5:00</div>
+        <div class="tl-task">Avalanche effect (tables), DES attacks, Double DES, Meet-in-the-Middle, Triple DES, AES overview, cryptanalysis comparison table</div>
+        <div class="tl-slide">Slides 32–44 · Tab: Attacks &amp; Variants</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 6 — 5:00–6:00</div>
+        <div class="tl-task">Run S-DES Interactive Tool, trace key generation manually, complete 15-question quiz, review weak areas</div>
+        <div class="tl-slide">Tabs: Interactive Tool + Quiz</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Exam Readiness Checklist</div>
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Distinguish stream cipher vs block cipher; know the keystream model cᵢ = pᵢ ⊕ kᵢ</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Explain why an n-bit block cipher requires 2ⁿ! reversible mappings and why this is impractical for large n</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Define diffusion and confusion (Shannon) and explain which Feistel component provides each</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Trace one Feistel encryption round: LE_i = RE_{i-1}, RE_i = LE_{i-1} ⊕ F(RE_{i-1}, K_i)</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Apply S-DES key generation: P10 → LS-1 → P8 (K₁), then LS-2 → P8 (K₂)</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Know all S-DES permutation tables: P10, P8, P4, EP, IP, IP⁻¹</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Use S-DES S-Box lookup: row = bit₁bit₄ (outer bits), column = bit₂bit₃ (inner bits)</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">State DES parameters: 64-bit block, 56-bit key (64 input, 8 parity), 16 rounds, 48-bit subkeys</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Explain the Avalanche Effect with the DES example: 1-bit change → ~32-bit ciphertext difference</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Explain the Meet-in-the-Middle attack on Double DES and why it reduces security to ≈2⁵⁶ (not 2¹¹²)</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: BLOCK CIPHER FUNDAMENTALS ==================== -->
+<div class="section" id="block">
+  <div class="alert alert-key"><div class="alert-label">Core Distinction</div>Stream ciphers encrypt one bit/byte at a time using a keystream. Block ciphers encrypt an entire fixed-length block as a unit. Most modern practical ciphers are block ciphers.</div>
+
+  <div class="card">
+    <div class="card-title">Stream Ciphers</div>
+    <p>A stream cipher uses a shared key K to drive a bit-stream generator algorithm. The output is a pseudorandom keystream kᵢ, XOR'd with plaintext pᵢ to produce ciphertext cᵢ.</p>
+    <div class="formula">Encryption:  cᵢ = pᵢ ⊕ kᵢ
+Decryption:  pᵢ = cᵢ ⊕ kᵢ   (XOR is self-inverse)
+
+Key K  →  Bit-stream generator  →  keystream kᵢ
+                                         ⊕ pᵢ = cᵢ  (encrypt)
+                                         ⊕ cᵢ = pᵢ  (decrypt)</div>
+    <p>The One-Time Pad is a theoretically perfect stream cipher. Practical stream ciphers (RC4, ChaCha20) generate a deterministic but long keystream from a short key.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Block Ciphers</div>
+    <p>A block cipher takes a b-bit plaintext block and a key K, and produces a b-bit ciphertext block. Typical block sizes: <strong>64 bits</strong> (DES) or <strong>128 bits</strong> (AES).</p>
+    <div class="formula">Plaintext (b bits)  +  Key K  →  [Encryption Algorithm]  →  Ciphertext (b bits)
+
+Input size = Output size = b bits (fixed block)</div>
+    <p>Modes of operation (ECB, CBC, CFB, OFB, CTR) extend block ciphers to arbitrary-length messages.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Reversible and Irreversible Mappings</div>
+    <div class="alert alert-exam"><div class="alert-label">Exam Critical</div>Block ciphers MUST use reversible (bijective) mappings. Each plaintext block must produce a UNIQUE ciphertext block — otherwise decryption is impossible.</div>
+    <div class="grid-2">
+      <div>
+        <h3>Reversible Mapping (Valid for Block Cipher)</h3>
+        <table class="tbl tbl-center">
+          <tr><th>Plaintext</th><th>Ciphertext</th></tr>
+          <tr><td>00</td><td>11</td></tr>
+          <tr><td>01</td><td>10</td></tr>
+          <tr><td>10</td><td>00</td></tr>
+          <tr><td>11</td><td>01</td></tr>
+        </table>
+        <p style="font-size:0.82rem;color:var(--green);">✓ All ciphertexts distinct — reversible</p>
+      </div>
+      <div>
+        <h3>Irreversible Mapping (Invalid)</h3>
+        <table class="tbl tbl-center">
+          <tr><th>Plaintext</th><th>Ciphertext</th></tr>
+          <tr><td>00</td><td>11</td></tr>
+          <tr><td>01</td><td>10</td></tr>
+          <tr><td>10</td><td>01</td></tr>
+          <tr><td>11</td><td>01</td></tr>
+        </table>
+        <p style="font-size:0.82rem;color:var(--red);">✗ Two inputs map to 01 — ambiguous decryption</p>
+      </div>
+    </div>
+
+    <h3>Key Mathematics</h3>
+    <div class="formula">An n-bit block cipher has 2ⁿ possible plaintext blocks.
+Each block must map to a UNIQUE ciphertext block.
+
+→ Total number of valid (reversible) mappings = (2ⁿ)!
+
+Example n=4: 2⁴ = 16 possible blocks → 16! ≈ 2 × 10¹³ possible keys
+Example n=64: 2⁶⁴ possible blocks → key = a permutation of 2⁶⁴ values
+              Key size = 64 × 2⁶⁴ bits ≈ ASTRONOMICALLY LARGE</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ideal Block Cipher</div>
+    <div class="grid-2">
+      <div>
+        <h3>What it would be</h3>
+        <ul>
+          <li>n-bit input → 2ⁿ possible input states</li>
+          <li>Substitution produces 2ⁿ output states</li>
+          <li>Key selects one of (2ⁿ)! possible mappings</li>
+          <li>Maximum possible cryptographic strength</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Why it fails in practice</h3>
+        <div class="alert alert-warn" style="margin:0;"><div class="alert-label">Problem 1: Small n</div>Small block size → equivalent to classical substitution cipher → frequency analysis attack feasible.</div>
+        <div class="alert alert-warn" style="margin-top:8px;"><div class="alert-label">Problem 2: Large n</div>Large block size → key must specify a mapping over 2ⁿ values → key size becomes astronomically large, impossible to store/transmit.</div>
+      </div>
+    </div>
+    <p>Solution: Use a <strong>product cipher</strong> (Feistel structure) — achieve near-ideal security with a small, manageable key by iterating simple operations many rounds.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">General Block Substitution — 4-Bit Example</div>
+    <p>A 4-bit input is decoded by a 4-to-16 decoder (selecting one of 16 lines), the selected line is cross-connected (permuted) to one of 16 output lines, then a 16-to-4 encoder produces the 4-bit output. The permutation wiring IS the key.</p>
+    <div class="alert alert-info"><div class="alert-label">Takeaway</div>For a 4-bit cipher: 16! ≈ 2×10¹³ possible keys. This is far more than 2³² but still much weaker than modern standards. Scaling to 64 bits makes the key itself intractable. This motivates the Feistel approach.</div>
+
+    <h3>Encryption/Decryption Tables (4-bit Example from Slides)</h3>
+    <div class="grid-2">
+      <div>
+        <table class="tbl tbl-center">
+          <tr><th>Plaintext</th><th>→ Ciphertext</th></tr>
+          <tr><td>0000</td><td>1110</td></tr>
+          <tr><td>0001</td><td>0100</td></tr>
+          <tr><td>0010</td><td>1101</td></tr>
+          <tr><td>0011</td><td>0001</td></tr>
+          <tr><td>0100</td><td>0010</td></tr>
+          <tr><td>0101</td><td>1111</td></tr>
+          <tr><td>0110</td><td>1011</td></tr>
+          <tr><td>0111</td><td>1000</td></tr>
+          <tr><td>1000</td><td>0011</td></tr>
+          <tr><td>1001</td><td>1010</td></tr>
+          <tr><td>1010</td><td>0110</td></tr>
+          <tr><td>1011</td><td>1100</td></tr>
+          <tr><td>1100</td><td>0101</td></tr>
+          <tr><td>1101</td><td>1001</td></tr>
+          <tr><td>1110</td><td>0000</td></tr>
+          <tr><td>1111</td><td>0111</td></tr>
+        </table>
+      </div>
+      <div>
+        <table class="tbl tbl-center">
+          <tr><th>Ciphertext</th><th>→ Plaintext</th></tr>
+          <tr><td>0000</td><td>1110</td></tr>
+          <tr><td>0001</td><td>0011</td></tr>
+          <tr><td>0010</td><td>0100</td></tr>
+          <tr><td>0011</td><td>1000</td></tr>
+          <tr><td>0100</td><td>0001</td></tr>
+          <tr><td>0101</td><td>1100</td></tr>
+          <tr><td>0110</td><td>1010</td></tr>
+          <tr><td>0111</td><td>1111</td></tr>
+          <tr><td>1000</td><td>0111</td></tr>
+          <tr><td>1001</td><td>1101</td></tr>
+          <tr><td>1010</td><td>1001</td></tr>
+          <tr><td>1011</td><td>0110</td></tr>
+          <tr><td>1100</td><td>1011</td></tr>
+          <tr><td>1101</td><td>0010</td></tr>
+          <tr><td>1110</td><td>0000</td></tr>
+          <tr><td>1111</td><td>0101</td></tr>
+        </table>
+      </div>
+    </div>
+    <p style="font-size:0.82rem;color:var(--muted);">Note: The decryption table is the inverse permutation. To decrypt 1110 (=0 in decimal from the right table), look up ciphertext 1110 → plaintext 0000. ✓</p>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: FEISTEL & S-DES ==================== -->
+<div class="section" id="feistel">
+  <div class="card">
+    <div class="card-title">Feistel Structure — The Foundation of Modern Block Ciphers</div>
+    <div class="alert alert-key"><div class="alert-label">Key Insight</div>Feistel (IBM, 1973) showed that two or more simple ciphers applied in sequence can produce a composite cipher cryptographically stronger than any individual component. The structure uses n-bit blocks with k-bit keys (2ᵏ possible transformations).</div>
+
+    <h3>Feistel Approach — Round Structure</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Split:</strong> Divide the 2w-bit plaintext into two w-bit halves: Left half LE₀ and Right half RE₀.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Subkey generation:</strong> Derive round keys K₁, K₂, ..., K_n from the master key using a key schedule algorithm.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Round function F:</strong> Apply complex round function F to the right half RE_{i-1} and round key Kᵢ to produce F(RE_{i-1}, Kᵢ).</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>XOR (Substitution):</strong> XOR the left half with F output: new right half RE_i = LE_{i-1} ⊕ F(RE_{i-1}, Kᵢ).</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Swap (Permutation):</strong> The old right half becomes the new left half: LE_i = RE_{i-1}.</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Repeat</strong> for all n rounds. After the final round, combine LE_n and RE_n as the ciphertext.</div></div>
+    </div>
+
+    <div class="formula">Feistel Round Equations:
+LE_i = RE_{i-1}
+RE_i = LE_{i-1} ⊕ F(RE_{i-1}, K_i)
+
+After n rounds, ciphertext = RE_n || LE_n  (note: halves are swapped once more)</div>
+
+    <div class="alert alert-exam"><div class="alert-label">Critical Property — Self-Inverting Decryption</div>
+      The Feistel structure uses EXACTLY the same algorithm for decryption — just apply the round keys in REVERSE order (K_n, K_{n-1}, ..., K₁). This is elegant and practical: no need for a separate decryption algorithm.<br><br>
+      Decryption round i (using key K_{n+1-i}):<br>
+      &nbsp;&nbsp;RD_i = LD_{i-1} ⊕ F(RD_{i-1}, K_{n+1-i})<br>
+      &nbsp;&nbsp;LD_i = RD_{i-1}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Diffusion and Confusion (Shannon's Principles)</div>
+    <div class="grid-2">
+      <div class="alert alert-key" style="margin:0;"><div class="alert-label">Diffusion</div>
+        Spreads the influence of plaintext bits across many ciphertext bits, reducing statistical structure.<br><br>
+        <strong>Effect:</strong> One plaintext bit affects many ciphertext bits.<br>
+        <strong>How:</strong> Permutation (transposition) operations — the P-box and the Feistel swap.<br>
+        <strong>Larger block size → more diffusion.</strong>
+      </div>
+      <div class="alert alert-key" style="margin:0;"><div class="alert-label">Confusion</div>
+        Makes the relationship between ciphertext and key as complex as possible.<br><br>
+        <strong>Effect:</strong> Even knowing ciphertext statistics, the key remains hidden.<br>
+        <strong>How:</strong> Complex non-linear substitution — the S-boxes.<br>
+        <strong>Larger key → more confusion, more brute-force resistance.</strong>
+      </div>
+    </div>
+
+    <table class="tbl" style="margin-top:16px;">
+      <tr><th>Feistel Design Parameter</th><th>Effect on Security</th><th>Effect on Performance</th></tr>
+      <tr><td>Block size (larger, e.g. 128 bits)</td><td>More diffusion → stronger</td><td>Slower</td></tr>
+      <tr><td>Key size (larger, e.g. 128 bits)</td><td>More confusion, brute-force harder</td><td>Slightly slower</td></tr>
+      <tr><td>Number of rounds (more, e.g. 16)</td><td>Much stronger (avalanche)</td><td>Slower</td></tr>
+      <tr><td>Subkey generation (complex)</td><td>Harder cryptanalysis</td><td>More computation</td></tr>
+      <tr><td>Round function F (complex)</td><td>Harder cryptanalysis</td><td>More computation</td></tr>
+    </table>
+    <div class="alert alert-info" style="margin-top:12px;"><div class="alert-label">Trade-off</div>Security vs. performance. DES chose 16 rounds as a balance. AES uses 10/12/14 rounds depending on key size.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Feistel Example (from Slides — Round 15)</div>
+    <p>Given Round 15 inputs: Left = <code>DE7F</code>, Right = <code>03A6</code>, Key = <code>12DE52</code></p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Encryption Round 15:</strong> Apply F(03A6, 12DE52) to get some value, then XOR with DE7F.<br>→ New left = 03A6, New right = F(03A6, 12DE52) ⊕ DE7F</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Decryption Round 2 (mirror):</strong> Given left = <code>F(03A6, 12DE52) ⊕ DE7F</code> and right = <code>03A6</code>, key = <code>12DE52</code>.<br>Apply F(03A6, 12DE52) ⊕ [F(03A6, 12DE52) ⊕ DE7F]</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Cancellation (self-inverse XOR):</strong> F(03A6,12DE52) ⊕ F(03A6,12DE52) = 0, so result = <span style="color:var(--green);">DE7F</span>. The original left half is recovered perfectly.</div></div>
+    </div>
+    <div class="alert alert-key"><div class="alert-label">Why Feistel Decryption Always Works</div>XOR is self-inverse: A ⊕ B ⊕ B = A. Since decryption applies the same F function with the same round key, the XOR cancels exactly, recovering the original half — regardless of how complex F is. F doesn't even need to be invertible.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Simplified DES (S-DES) — Educational Cipher</div>
+    <div class="alert alert-info"><div class="alert-label">Purpose</div>S-DES was created for educational use — NOT for real security. It uses the same structural principles as DES but with tiny parameters to make hand-tracing feasible.</div>
+
+    <table class="tbl">
+      <tr><th>Parameter</th><th>S-DES</th><th>Full DES</th></tr>
+      <tr><td>Block size</td><td>8 bits</td><td>64 bits</td></tr>
+      <tr><td>Key size</td><td>10 bits</td><td>56 bits (64 input, 8 parity)</td></tr>
+      <tr><td>Round key size</td><td>2 × 8-bit keys</td><td>16 × 48-bit keys</td></tr>
+      <tr><td>IP size</td><td>8 bits</td><td>64 bits</td></tr>
+      <tr><td>F operates on</td><td>4 bits</td><td>32 bits</td></tr>
+      <tr><td>S-Boxes</td><td>2</td><td>8</td></tr>
+      <tr><td>Rounds</td><td>2</td><td>16</td></tr>
+    </table>
+
+    <div class="formula">S-DES Encryption (functional form):
+ciphertext = IP⁻¹( f_{K₂}( SW( f_{K₁}( IP(plaintext) ) ) ) )
+
+S-DES Decryption (same structure, keys reversed):
+plaintext  = IP⁻¹( f_{K₁}( SW( f_{K₂}( IP(ciphertext) ) ) ) )
+
+Where:
+  IP  = Initial Permutation
+  IP⁻¹= Inverse of IP
+  f_K = Feistel round function with key K
+  SW  = Switch (swap left and right halves)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">S-DES Operations — All Permutation Tables</div>
+
+    <h3>P10 (Permutate 10 bits → 10 bits)</h3>
+    <p>Takes 10-bit input, reorders bits in positions: <strong>3,5,2,7,4,10,1,9,8,6</strong></p>
+    <div class="formula">Input positions : 1  2  3  4  5  6  7  8  9  10
+Output positions: 3  5  2  7  4  10  1  9  8  6
+
+Example: input = k₁k₂k₃k₄k₅k₆k₇k₈k₉k₁₀
+         output = k₃k₅k₂k₇k₄k₁₀k₁k₉k₈k₆</div>
+
+    <h3>P8 (Select and Permutate 10 bits → 8 bits)</h3>
+    <p>Selects 8 of 10 bits (drops positions 1 and 6) and permutes: <strong>6,3,7,4,8,5,10,9</strong></p>
+    <div class="formula">Input positions : 1  2  3  4  5  6  7  8  9  10
+Output (8 bits) : pos6 pos3 pos7 pos4 pos8 pos5 pos10 pos9</div>
+
+    <h3>P4 (Permutate 4 bits → 4 bits)</h3>
+    <p>Output positions: <strong>2,4,3,1</strong></p>
+    <div class="formula">Input positions : 1  2  3  4
+Output positions: 2  4  3  1</div>
+
+    <h3>EP — Expand and Permutate (4 bits → 8 bits)</h3>
+    <p>Expands right half from 4 to 8 bits by repeating some bits. Output positions: <strong>4,1,2,3,2,3,4,1</strong></p>
+    <div class="formula">Input positions  : 1  2  3  4
+Output (8 bits)  : 4  1  2  3  2  3  4  1
+                   (bits 1 and 4 appear twice — expansion)</div>
+
+    <h3>IP — Initial Permutation (8 bits → 8 bits)</h3>
+    <p>Output positions: <strong>2,6,3,1,4,8,5,7</strong></p>
+    <div class="formula">Input positions : 1  2  3  4  5  6  7  8
+Output positions: 2  6  3  1  4  8  5  7</div>
+
+    <h3>IP⁻¹ — Inverse Initial Permutation (8 bits → 8 bits)</h3>
+    <p>The inverse of IP. Output positions: <strong>4,1,3,5,7,2,8,6</strong></p>
+    <div class="formula">Input positions : 1  2  3  4  5  6  7  8
+Output positions: 4  1  3  5  7  2  8  6</div>
+
+    <h3>LS-1 and LS-2 (Circular Left Shifts)</h3>
+    <div class="formula">LS-1: Left circular shift by 1 position
+      e.g., 10110 → 01101
+
+LS-2: Left circular shift by 2 positions
+      e.g., 10110 → 11010</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">S-DES Key Generation</div>
+    <div class="alert alert-exam"><div class="alert-label">Exam Critical — Trace Every Step</div>Given a 10-bit key, generate K₁ and K₂ following this exact sequence.</div>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>P10:</strong> Apply P10 permutation to the 10-bit key. Output: 10 bits reordered as [k₃k₅k₂k₇k₄k₁₀k₁k₉k₈k₆]</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Split:</strong> Divide the 10-bit P10 output into two 5-bit halves: Left₅ and Right₅.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>LS-1 on both halves:</strong> Apply circular left shift by 1 to both Left₅ and Right₅ independently.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>P8 → K₁:</strong> Concatenate the shifted halves (10 bits) and apply P8. The 8-bit output is round key <strong>K₁</strong>.</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>LS-2 on both halves:</strong> Apply circular left shift by 2 to the LS-1 output halves (i.e., 3 total shifts from the original P10 output).</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><strong>P8 → K₂:</strong> Concatenate the LS-2 shifted halves and apply P8. The 8-bit output is round key <strong>K₂</strong>.</div></div>
+    </div>
+
+    <div class="formula">Key Schedule Summary:
+10-bit key → P10 → [split] → LS-1(L) || LS-1(R) → P8 = K₁
+                            → LS-2(L) || LS-2(R) → P8 = K₂
+
+(LS-2 applied to the LS-1 shifted halves, not to the original P10 output directly)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">S-DES S-Boxes</div>
+    <div class="alert alert-exam"><div class="alert-label">S-Box Lookup Rule</div>
+      4-bit input: bit₁, bit₂, bit₃, bit₄<br>
+      Row = <strong>bit₁bit₄</strong> (outer bits, interpreted as 2-bit binary → 0,1,2,3)<br>
+      Column = <strong>bit₂bit₃</strong> (inner bits, → 0,1,2,3)<br>
+      Output: 2-bit value from the selected cell
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <h3>S0</h3>
+        <table class="tbl tbl-center">
+          <tr><th></th><th>Col 0</th><th>Col 1</th><th>Col 2</th><th>Col 3</th></tr>
+          <tr><th>Row 0</th><td>01</td><td>00</td><td>11</td><td>10</td></tr>
+          <tr><th>Row 1</th><td>11</td><td>10</td><td>01</td><td>00</td></tr>
+          <tr><th>Row 2</th><td>00</td><td>10</td><td>01</td><td>11</td></tr>
+          <tr><th>Row 3</th><td>11</td><td>01</td><td>11</td><td>10</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>S1</h3>
+        <table class="tbl tbl-center">
+          <tr><th></th><th>Col 0</th><th>Col 1</th><th>Col 2</th><th>Col 3</th></tr>
+          <tr><th>Row 0</th><td>00</td><td>01</td><td>10</td><td>11</td></tr>
+          <tr><th>Row 1</th><td>10</td><td>00</td><td>01</td><td>11</td></tr>
+          <tr><th>Row 2</th><td>11</td><td>00</td><td>01</td><td>00</td></tr>
+          <tr><th>Row 3</th><td>10</td><td>01</td><td>00</td><td>11</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <h3>Worked S-Box Lookup Example</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">Input to S0: <strong>1011</strong> → bit₁=1, bit₂=0, bit₃=1, bit₄=1</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">Row = bit₁bit₄ = <strong>11</strong> = 3 (decimal)</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">Column = bit₂bit₃ = <strong>01</strong> = 1 (decimal)</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">S0[Row 3][Col 1] = <strong style="color:var(--green);">01</strong></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">S-DES Worked Example (from Slides)</div>
+    <div class="alert alert-exam"><div class="alert-label">Full Example</div>
+      Plaintext: <code>01110010</code> &nbsp;|&nbsp; Key: <code>1010000010</code> &nbsp;|&nbsp; Ciphertext: <code>01110111</code>
+    </div>
+
+    <p>This example from the slides is the target for the Interactive Tool in Tab 6. The step-by-step trace (key generation + both rounds) is fully automated in the simulator.</p>
+
+    <h3>S-DES fK Round Function — Detailed</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Split 8-bit input:</strong> Left 4 bits (L) and Right 4 bits (R).</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>EP on R:</strong> Expand R from 4 to 8 bits using the EP table (4→8 bit expansion/permutation).</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>XOR with round key:</strong> 8-bit EP(R) ⊕ 8-bit Kᵢ. Split result into left 4 bits (p) and right 4 bits (q).</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>S-Box lookup:</strong> p → S0 lookup → 2-bit output. q → S1 lookup → 2-bit output. Concatenate: 4 bits total.</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>P4:</strong> Permute the 4-bit S-Box output using P4 table.</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><strong>XOR with L:</strong> P4 output ⊕ L = new Left half. Right half unchanged = old R.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: FULL DES ==================== -->
+<div class="section" id="des">
+  <div class="card">
+    <div class="card-title">Data Encryption Standard (DES) — Overview</div>
+    <div class="alert alert-key"><div class="alert-label">DES Parameters</div>
+      Symmetric block cipher · 64-bit input block · 56-bit effective key (64-bit key input, 8 bits used for parity) · 64-bit output block · 16 rounds · Developed 1977 by NBS/NIST · Designed by IBM (Lucifer) with NSA input
+    </div>
+    <div class="formula">DES Encryption (functional form):
+ciphertext = IP⁻¹( f_{K₁₆}( SW( f_{K₁₅}( SW( ... f_{K₁}( IP(plaintext) ) ... ) ) ) ) )
+
+More compactly:
+ciphertext = IP⁻¹ ∘ (16 Feistel rounds with keys K₁₆...K₁) ∘ IP (plaintext)
+
+Key schedule: 64-bit key → PC-1 (discard 8 parity bits) → 56 bits
+              Split into C₀(28 bits) and D₀(28 bits)
+              Each round: Cᵢ = LS(Cᵢ₋₁), Dᵢ = LS(Dᵢ₋₁)
+              Round key Kᵢ = PC-2(Cᵢ || Dᵢ)  [48 bits]</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">DES Initial Permutation (IP) and Inverse (IP⁻¹)</div>
+    <div class="alert alert-info"><div class="alert-label">Reading the Table</div>The value at position i in the table tells you which input bit goes to output position i. E.g., IP[1]=58 means bit 58 of the input goes to position 1 of the output.</div>
+
+    <h3>IP Table (64 bits → 64 bits)</h3>
+    <table class="tbl tbl-center" style="font-family:var(--font-mono);font-size:0.8rem;">
+      <tr><td>58</td><td>50</td><td>42</td><td>34</td><td>26</td><td>18</td><td>10</td><td>2</td></tr>
+      <tr><td>60</td><td>52</td><td>44</td><td>36</td><td>28</td><td>20</td><td>12</td><td>4</td></tr>
+      <tr><td>62</td><td>54</td><td>46</td><td>38</td><td>30</td><td>22</td><td>14</td><td>6</td></tr>
+      <tr><td>64</td><td>56</td><td>48</td><td>40</td><td>32</td><td>24</td><td>16</td><td>8</td></tr>
+      <tr><td>57</td><td>49</td><td>41</td><td>33</td><td>25</td><td>17</td><td>9</td><td>1</td></tr>
+      <tr><td>59</td><td>51</td><td>43</td><td>35</td><td>27</td><td>19</td><td>11</td><td>3</td></tr>
+      <tr><td>61</td><td>53</td><td>45</td><td>37</td><td>29</td><td>21</td><td>13</td><td>5</td></tr>
+      <tr><td>63</td><td>55</td><td>47</td><td>39</td><td>31</td><td>23</td><td>15</td><td>7</td></tr>
+    </table>
+    <p style="font-size:0.8rem;color:var(--muted);margin-top:6px;">Pattern: The IP interleaves even-numbered and odd-numbered input bits separately into the output.</p>
+
+    <h3>IP⁻¹ Table</h3>
+    <table class="tbl tbl-center" style="font-family:var(--font-mono);font-size:0.8rem;">
+      <tr><td>40</td><td>8</td><td>48</td><td>16</td><td>56</td><td>24</td><td>64</td><td>32</td></tr>
+      <tr><td>39</td><td>7</td><td>47</td><td>15</td><td>55</td><td>23</td><td>63</td><td>31</td></tr>
+      <tr><td>38</td><td>6</td><td>46</td><td>14</td><td>54</td><td>22</td><td>62</td><td>30</td></tr>
+      <tr><td>37</td><td>5</td><td>45</td><td>13</td><td>53</td><td>21</td><td>61</td><td>29</td></tr>
+      <tr><td>36</td><td>4</td><td>44</td><td>12</td><td>52</td><td>20</td><td>60</td><td>28</td></tr>
+      <tr><td>35</td><td>3</td><td>43</td><td>11</td><td>51</td><td>19</td><td>59</td><td>27</td></tr>
+      <tr><td>34</td><td>2</td><td>42</td><td>10</td><td>50</td><td>18</td><td>58</td><td>26</td></tr>
+      <tr><td>33</td><td>1</td><td>41</td><td>9</td><td>49</td><td>17</td><td>57</td><td>25</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">DES Round Function F(R, K) — Single Round Detail</div>
+    <p>Each of the 16 DES rounds applies this function to the 32-bit right half R using 48-bit round key Kᵢ:</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Expansion E:</strong> Expand 32-bit R to 48 bits using the E/Expansion table. Some input bits appear twice, providing inter-S-box diffusion.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>XOR with Kᵢ:</strong> 48-bit E(R) ⊕ 48-bit Kᵢ → 48-bit result. Split into eight 6-bit groups B₁, B₂, ..., B₈.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>S-Box substitution:</strong> Each 6-bit group Bⱼ → S-Box Sⱼ → 4-bit output. Eight groups → 32 bits total. (S-Boxes provide confusion — the only non-linear operation in DES.)</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Permutation P:</strong> Apply the 32-bit P permutation to the 32 S-Box output bits. This provides diffusion — each S-Box output bit affects multiple S-Boxes in the next round.</div></div>
+    </div>
+
+    <div class="formula">F(R, K):
+  32-bit R  →  [E table]  →  48 bits
+                              ⊕
+                         48-bit K
+                              ↓
+                    split into 8×6-bit groups
+                              ↓
+              [S₁][S₂][S₃][S₄][S₅][S₆][S₇][S₈]
+           each 6-bit → 4-bit output (non-linear!)
+                              ↓  (32 bits)
+                         [P permutation]
+                              ↓  (32 bits output)</div>
+
+    <h3>Expansion Permutation E (32 → 48 bits)</h3>
+    <table class="tbl tbl-center" style="font-family:var(--font-mono);font-size:0.8rem;">
+      <tr><th colspan="6">E Table (read row-by-row: 8 rows of 6 = 48 bits)</th></tr>
+      <tr><td>32</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>
+      <tr><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+      <tr><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td></tr>
+      <tr><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td></tr>
+      <tr><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
+      <tr><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td>25</td></tr>
+      <tr><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td></tr>
+      <tr><td>28</td><td>29</td><td>30</td><td>31</td><td>32</td><td>1</td></tr>
+    </table>
+    <p style="font-size:0.8rem;color:var(--muted);">Note: Bits 1, 4, 5, 8, 9, ..., 28, 29, 32 each appear twice. This is how 32 bits expand to 48.</p>
+
+    <h3>Permutation Function P (32 → 32 bits)</h3>
+    <table class="tbl tbl-center" style="font-family:var(--font-mono);font-size:0.8rem;">
+      <tr><td>16</td><td>7</td><td>20</td><td>21</td><td>29</td><td>12</td><td>28</td><td>17</td></tr>
+      <tr><td>1</td><td>15</td><td>23</td><td>26</td><td>5</td><td>18</td><td>31</td><td>10</td></tr>
+      <tr><td>2</td><td>8</td><td>24</td><td>14</td><td>32</td><td>27</td><td>3</td><td>9</td></tr>
+      <tr><td>19</td><td>13</td><td>30</td><td>6</td><td>22</td><td>11</td><td>4</td><td>25</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">DES S-Boxes (S₁ through S₄ shown; S₅–S₈ in slides pp.29–30)</div>
+    <div class="alert alert-exam"><div class="alert-label">S-Box Lookup Rule (same as S-DES)</div>
+      6-bit input: b₁b₂b₃b₄b₅b₆<br>
+      Row = <strong>b₁b₆</strong> (first and last bits → 0,1,2,3)<br>
+      Column = <strong>b₂b₃b₄b₅</strong> (middle 4 bits → 0..15)<br>
+      Output: 4-bit decimal value from table cell
+    </div>
+
+    <h3>S₁</h3>
+    <table class="tbl tbl-center" style="font-family:var(--font-mono);font-size:0.78rem;">
+      <tr><th>Row\Col</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th></tr>
+      <tr><th>0</th><td>14</td><td>4</td><td>13</td><td>1</td><td>2</td><td>15</td><td>11</td><td>8</td><td>3</td><td>10</td><td>6</td><td>12</td><td>5</td><td>9</td><td>0</td><td>7</td></tr>
+      <tr><th>1</th><td>0</td><td>15</td><td>7</td><td>4</td><td>14</td><td>2</td><td>13</td><td>1</td><td>10</td><td>6</td><td>12</td><td>11</td><td>9</td><td>5</td><td>3</td><td>8</td></tr>
+      <tr><th>2</th><td>4</td><td>1</td><td>14</td><td>8</td><td>13</td><td>6</td><td>2</td><td>11</td><td>15</td><td>12</td><td>9</td><td>7</td><td>3</td><td>10</td><td>5</td><td>0</td></tr>
+      <tr><th>3</th><td>15</td><td>12</td><td>8</td><td>2</td><td>4</td><td>9</td><td>1</td><td>7</td><td>5</td><td>11</td><td>3</td><td>14</td><td>10</td><td>0</td><td>6</td><td>13</td></tr>
+    </table>
+
+    <h3>DES Key Schedule — PC-1, PC-2, Left Shift Schedule</h3>
+    <p>The 64-bit input key has 8 parity bits (positions 8,16,24,32,40,48,56,64). PC-1 selects and permutes the remaining 56 bits into two 28-bit halves C₀ and D₀.</p>
+
+    <div class="formula">Left Shift Schedule (rounds 1–16):
+Round:  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16
+Shifts: 1  1  2  2  2  2  2  2  1   2   2   2   2   2   2   1
+
+Total shifts after round 16: 28 = one full rotation → C₁₆ = C₀ (correct)</div>
+
+    <p>PC-2 selects 48 of the 56 bits (from Cᵢ||Dᵢ) and permutes them to form the 48-bit round key Kᵢ.</p>
+
+    <div class="alert alert-key"><div class="alert-label">DES Algorithm Design Philosophy</div>
+      S-Boxes → non-linearity → <strong>confusion</strong><br>
+      Permutation P → spread S-Box outputs across the block → <strong>diffusion</strong><br>
+      16 rounds → avalanche effect — a single bit change propagates to ~half of all output bits by round 5+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 5: ATTACKS & VARIANTS ==================== -->
+<div class="section" id="attacks">
+  <div class="card">
+    <div class="card-title">The Avalanche Effect in DES</div>
+    <div class="alert alert-key"><div class="alert-label">Definition</div>A small change in plaintext or key (even 1 bit) should produce a LARGE change in the ciphertext — ideally flipping approximately half (32) of the 64 output bits. This is a desirable security property.</div>
+
+    <h3>Example: 1-bit change in Plaintext</h3>
+    <p>Plaintext 1: <code>02468aceeca86420</code> | Plaintext 2: <code>12468aceeca86420</code> (differ by 1 bit)</p>
+    <table class="tbl">
+      <tr><th>Round</th><th>Ciphertext from P₁</th><th>Ciphertext from P₂</th><th>δ (bits differ)</th></tr>
+      <tr><td>0 (input)</td><td>02468aceeca86420</td><td>12468aceeca86420</td><td style="color:var(--accent4)">1</td></tr>
+      <tr><td>1</td><td>3cf03c0fbad22845</td><td>3cf03c0fbad32845</td><td>1</td></tr>
+      <tr><td>2</td><td>bad2284599e9b723</td><td>bad3284539a9b7a3</td><td>5</td></tr>
+      <tr><td>3</td><td>99e9b7230bae3b9e</td><td>39a9b7a3171cb8b3</td><td>18</td></tr>
+      <tr><td>4</td><td>0bae3b9e42415649</td><td>171cb8b3ccaca55e</td><td>34</td></tr>
+      <tr><td>5</td><td>4241564918b3fa41</td><td>ccaca55ed16c3653</td><td>37</td></tr>
+      <tr><td>8</td><td>67117cf2c11bfc09</td><td>2b2cefbc99f91153</td><td>33</td></tr>
+      <tr><td>16 (IP⁻¹)</td><td>da02ce3a89ecac3b</td><td>057cde97d7683f2a</td><td style="color:var(--green)">32</td></tr>
+    </table>
+
+    <h3>Example: 1-bit change in Key</h3>
+    <p>Key 1: <code>0f1571c947d9e859</code> | Key 2: <code>1f1571c947d9e859</code> (differ by 1 bit, same plaintext)</p>
+    <table class="tbl">
+      <tr><th>Round</th><th>With Key 1</th><th>With Key 2</th><th>δ</th></tr>
+      <tr><td>0</td><td colspan="2">Same plaintext</td><td>0</td></tr>
+      <tr><td>1</td><td>3cf03c0fbad22845</td><td>3cf03c0f9ad628c5</td><td>3</td></tr>
+      <tr><td>2</td><td>bad2284599e9b723</td><td>9ad628c59939136b</td><td>11</td></tr>
+      <tr><td>6</td><td>18b3fa419616fe23</td><td>488dbe94aba7fe53</td><td>26</td></tr>
+      <tr><td>10</td><td>887fbc6c600f7e8b</td><td>71f64dfd4279876c</td><td>36</td></tr>
+      <tr><td>16 (IP⁻¹)</td><td>da02ce3a89ecac3b</td><td>ee92b50606b62b0b</td><td style="color:var(--green)">30</td></tr>
+    </table>
+    <div class="alert alert-exam"><div class="alert-label">Key Observation</div>By round 3–5, the difference δ has grown to ~half (32 bits). This demonstrates that DES has excellent diffusion — local changes spread globally within a few rounds. This makes differential cryptanalysis very hard.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Attacks on DES</div>
+
+    <h3>1. Brute Force (Key Exhaustion)</h3>
+    <p>DES has a 56-bit key: 2⁵⁶ = 7.2 × 10¹⁶ possible keys.</p>
+    <table class="tbl">
+      <tr><th>Year</th><th>Machine</th><th>Cost</th><th>Break Time</th></tr>
+      <tr><td>1977 (estimated)</td><td>Hypothetical</td><td>$20 million</td><td>10 hours</td></tr>
+      <tr><td>1998</td><td>EFF "Deep Crack"</td><td>$250,000</td><td>3 days</td></tr>
+      <tr><td>Today</td><td>Distributed/FPGA</td><td>Cheap</td><td>Hours</td></tr>
+    </table>
+    <div class="alert alert-warn"><div class="alert-label">Conclusion</div>56 bits is considered too short for modern security. DES is deprecated. 3DES and AES replaced it.</div>
+
+    <h3>2. Timing Attacks</h3>
+    <p>Observe how long an implementation takes to decrypt different ciphertexts. Timing variations can leak information about the key or plaintext. No known successful timing attacks exist against properly implemented DES.</p>
+
+    <h3>3. Differential Cryptanalysis</h3>
+    <p>Observe how pairs of plaintext blocks with chosen XOR differences evolve through the cipher rounds. Can break DES with 2⁴⁷ chosen-plaintext pairs (vs. 2⁵⁵ for brute force) — but requires 2⁴⁷ chosen plaintexts, making it impractical in most scenarios.</p>
+
+    <h3>4. Linear Cryptanalysis</h3>
+    <p>Find linear approximations (XOR equations) of the DES transformations that hold with probability ≠ 0.5. Can break DES with 2⁴³ known plaintexts — more practical than differential, but still requires enormous data.</p>
+
+    <div class="alert alert-key"><div class="alert-label">DES Algorithm Design Note</div>DES was designed in private (IBM + NSA). The S-Boxes were specifically designed to resist differential cryptanalysis — though this was not publicly stated at the time. This was later confirmed. The design is generally considered sound; the weakness is the 56-bit key length, not the algorithm structure.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Multiple Encryption with DES</div>
+
+    <h3>Double DES — and Why It Fails</h3>
+    <div class="formula">Double DES Encryption:   C = E(K₂, E(K₁, P))
+Double DES Decryption:   P = D(K₁, D(K₂, C))
+
+Apparent key space: 2 × 56 = 112 bits → appears to need 2¹¹¹ brute force
+Reality: Meet-in-the-Middle attack reduces this to ≈ 2⁵⁶</div>
+
+    <h3>Meet-in-the-Middle (MITM) Attack — Full Derivation</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Observation:</strong> C = E(K₂, E(K₁, P)) → define X = E(K₁, P) = D(K₂, C). X is the intermediate value between the two encryptions.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Forward pass:</strong> Attacker knows plaintext-ciphertext pair (Pₐ, Cₐ). Encrypt Pₐ with ALL 2⁵⁶ values of K₁ → 2⁵⁶ values of X. Store in a sorted table indexed by X.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Backward pass:</strong> Decrypt Cₐ with ALL 2⁵⁶ values of K₂ → 2⁵⁶ values of X from the other direction.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Match:</strong> When a decrypted value matches a stored encrypted value, that (K₁, K₂) pair is a candidate. Verify against a second plaintext-ciphertext pair (P_b, C_b).</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Result:</strong> Total work ≈ 2⁵⁶ + 2⁵⁶ = 2⁵⁷ ≈ 2⁵⁶ operations — barely better than single DES brute force! The 112-bit apparent security collapses to 56-bit effective security.</div></div>
+    </div>
+
+    <div class="formula">MITM Attack Cost:
+Encrypt/decrypt operations: 2⁵⁶ (each direction)
+Memory: 2⁵⁶ entries (very large but finite)
+Known plaintext required: 2 pairs is sufficient (probability ≈ 1)
+
+Double DES provides NO meaningful security improvement over single DES.</div>
+
+    <h3>Triple DES (3DES) — The Solution</h3>
+    <div class="formula">3DES with 2 keys (Encrypt-Decrypt-Encrypt, EDE):
+  Encryption: C = E(K₁, D(K₂, E(K₁, P)))
+  Decryption: P = D(K₁, E(K₂, D(K₁, C)))
+
+  Key space: 2 × 56 = 112 bits effective
+  Brute force: 2¹¹² operations
+
+3DES with 3 keys:
+  Encryption: C = E(K₃, D(K₂, E(K₁, P)))
+  Key space: 3 × 56 = 168 bits
+  Brute force: 2¹⁶⁸ operations
+
+Compatibility: If K₁ = K₂ = K: E(K, D(K, E(K, P))) = E(K, P) = single DES
+               → 3DES is backward-compatible with single DES</div>
+
+    <div class="alert alert-exam"><div class="alert-label">Why E-D-E?</div>The reason for the E-D-E (Encrypt, Decrypt, Encrypt) structure rather than E-E-E is <strong>backward compatibility</strong>: when K₁ = K₂, the middle D cancels the first E, leaving single DES. This allowed a smooth transition from DES to 3DES using the same hardware.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Advanced Encryption Standard (AES)</div>
+    <p>NIST called for proposals in 1997. The Belgian Rijndael algorithm was selected. AES became the standard in 2001.</p>
+    <table class="tbl">
+      <tr><th>Parameter</th><th>AES-128</th><th>AES-192</th><th>AES-256</th></tr>
+      <tr><td>Block size</td><td>128 bits</td><td>128 bits</td><td>128 bits</td></tr>
+      <tr><td>Key size</td><td>128 bits</td><td>192 bits</td><td>256 bits</td></tr>
+      <tr><td>Rounds</td><td>10</td><td>12</td><td>14</td></tr>
+      <tr><td>Operations</td><td colspan="3">XOR with round key, S-Box substitution, row shift, column mix (Galois Field arithmetic)</td></tr>
+    </table>
+    <div class="alert alert-info"><div class="alert-label">AES vs DES</div>AES is NOT a Feistel cipher — it uses a Substitution-Permutation Network (SPN). It operates on the entire 128-bit block simultaneously (no halving), making it faster and more secure than DES or 3DES.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cryptanalysis Comparison Table (from Slides)</div>
+    <table class="tbl">
+      <tr><th>Cipher</th><th>Attack Method</th><th>Key Space</th><th>Time</th><th>Memory</th><th>Known Data</th></tr>
+      <tr><td>DES</td><td>Brute force</td><td>2⁵⁶</td><td>2⁵⁶</td><td>—</td><td>—</td></tr>
+      <tr><td>3DES (2-key)</td><td>MITM</td><td>2¹⁶⁸</td><td>2¹¹¹</td><td>2⁵⁶</td><td>2² pairs</td></tr>
+      <tr><td>3DES (2-key)</td><td>Lucks (1998)</td><td>2¹⁶⁸</td><td>2¹¹³</td><td>2⁸⁸</td><td>2³² known</td></tr>
+      <tr><td>AES-128</td><td>Biclique</td><td>2¹²⁸</td><td>2¹²⁶·¹</td><td>2⁸</td><td>2⁸⁸ known</td></tr>
+      <tr><td>AES-256</td><td>Biclique</td><td>2²⁵⁶</td><td>2²⁵⁴·⁴</td><td>2⁸</td><td>2⁴⁰ known</td></tr>
+    </table>
+    <div class="alert alert-key"><div class="alert-label">Interpretation</div>The Biclique attack on AES-128 requires 2¹²⁶·¹ operations — only marginally less than brute force (2¹²⁸). AES is considered secure; no practically exploitable attack is known. DES is broken; 3DES is acceptable for legacy use but slow.</div>
+
+    <h3>Other Symmetric Algorithms (from Slides)</h3>
+    <table class="tbl">
+      <tr><th>Algorithm</th><th>Block (bits)</th><th>Key (bits)</th><th>Structure</th></tr>
+      <tr><td>Blowfish (Schneier 1993)</td><td>64</td><td>32–448</td><td>Feistel</td></tr>
+      <tr><td>Twofish (Schneier 1998)</td><td>128</td><td>128/192/256</td><td>Feistel</td></tr>
+      <tr><td>Serpent (Anderson 1998)</td><td>128</td><td>128/192/256</td><td>SPN</td></tr>
+      <tr><td>Camellia (Mitsubishi 2000)</td><td>128</td><td>128/192/256</td><td>Feistel</td></tr>
+      <tr><td>IDEA (Lai &amp; Massey 1991)</td><td>64</td><td>128</td><td>Mixed ops</td></tr>
+      <tr><td>RC5 (Rivest 1994)</td><td>32/64/128</td><td>Up to 2040</td><td>Feistel-like</td></tr>
+      <tr><td>RC6 (Rivest 1998)</td><td>128</td><td>128/192/256</td><td>Feistel</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== TAB 6: INTERACTIVE TOOL ==================== -->
+<div class="section" id="tool">
+  <div class="card">
+    <div class="card-title">🧮 S-DES Complete Simulator</div>
+    <p style="color:var(--muted);margin-bottom:16px;">Enter an 8-bit plaintext and 10-bit key. The simulator runs the full S-DES algorithm and shows every intermediate step: key generation, IP, both Feistel rounds, IP⁻¹. Pre-loaded with the slide example.</p>
+
+    <div class="tool-section">
+      <label class="inp-label">8-bit Plaintext (binary, e.g. 01110010)</label>
+      <input class="pp-input" id="inp-plain" value="01110010" maxlength="8" placeholder="8 binary digits">
+      <label class="inp-label">10-bit Key (binary, e.g. 1010000010)</label>
+      <input class="pp-input" id="inp-key" value="1010000010" maxlength="10" placeholder="10 binary digits">
+      <label class="inp-label">Mode</label>
+      <select class="pp-input" id="inp-mode" style="cursor:pointer;">
+        <option value="enc">Encrypt</option>
+        <option value="dec">Decrypt</option>
+      </select>
+      <button class="pp-btn" onclick="runSDES()">▶ Run S-DES</button>
+    </div>
+
+    <div class="tool-result" id="sdes-result">
+      <div class="result-title" id="sdes-title"></div>
+      <div id="sdes-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 7: QUIZ ==================== -->
+<div class="section" id="quiz">
+  <div class="score-bar">
+    <div>
+      <div style="font-size:0.78rem;color:var(--muted);">LIVE SCORE</div>
+      <div class="score-val"><span id="score-val">0</span> / <span id="score-total">15</span></div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">ANSWERED: <span id="q-answered">0</span>/15</div>
+      <button class="reset-btn" onclick="resetQuiz()">↺ Reset Quiz</button>
+    </div>
+  </div>
+  <div id="quiz-container"></div>
+</div>
+
+</main>
+
+<script>
+// ===== TAB NAVIGATION =====
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== CHECKLIST =====
+function toggleCheck(li) {
+  li.classList.toggle('done');
+  li.querySelector('.chk').classList.toggle('done');
+  updateProgress();
+}
+function updateProgress() {
+  const total = document.querySelectorAll('.checklist li').length;
+  const done = document.querySelectorAll('.checklist li.done').length;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct;
+}
+
+// ===== S-DES SIMULATOR =====
+// All permutation tables (1-indexed in description, 0-indexed in arrays)
+const P10 = [3,5,2,7,4,10,1,9,8,6];
+const P8  = [6,3,7,4,8,5,10,9];
+const P4  = [2,4,3,1];
+const EP  = [4,1,2,3,2,3,4,1];
+const IP  = [2,6,3,1,4,8,5,7];
+const IPinv=[4,1,3,5,7,2,8,6];
+
+const S0 = [
+  [1,0,3,2],
+  [3,2,1,0],
+  [0,2,1,3],
+  [3,1,3,2]
+];
+const S1 = [
+  [0,1,2,3],
+  [2,0,1,3],
+  [3,0,1,0],
+  [2,1,0,3]
+];
+
+function perm(bits, table) {
+  return table.map(p => bits[p-1]);
+}
+function lshift(bits, n) {
+  return bits.slice(n).concat(bits.slice(0,n));
+}
+function xorBits(a, b) {
+  return a.map((x, i) => x ^ b[i]);
+}
+function bitsToInt(bits) {
+  return parseInt(bits.join(''), 2);
+}
+function intToBits(n, len) {
+  return n.toString(2).padStart(len,'0').split('').map(Number);
+}
+function bitsStr(bits) { return bits.join(''); }
+
+function sboxLookup(bits4, sbox, label) {
+  const row = bitsToInt([bits4[0], bits4[3]]);
+  const col = bitsToInt([bits4[1], bits4[2]]);
+  const val = sbox[row][col];
+  const out = intToBits(val, 2);
+  return { row, col, val, out, detail: `${label}[${bitsStr(bits4)}]: row=b₁b₄=${row}, col=b₂b₃=${col} → S[${row}][${col}]=${val} = ${bitsStr(out)}` };
+}
+
+function keyGen(keyBits) {
+  const steps = [];
+  const afterP10 = perm(keyBits, P10);
+  steps.push({ label: 'P10', bits: afterP10, desc: `Apply P10 to key → ${bitsStr(afterP10)}` });
+
+  const left5 = afterP10.slice(0,5);
+  const right5 = afterP10.slice(5);
+  steps.push({ label: 'Split', bits: left5, bits2: right5, desc: `Left₅=${bitsStr(left5)}, Right₅=${bitsStr(right5)}` });
+
+  const ls1L = lshift(left5, 1);
+  const ls1R = lshift(right5, 1);
+  steps.push({ label: 'LS-1', bits: ls1L, bits2: ls1R, desc: `LS-1 Left=${bitsStr(ls1L)}, LS-1 Right=${bitsStr(ls1R)}` });
+
+  const joined1 = ls1L.concat(ls1R);
+  const K1 = perm(joined1, P8);
+  steps.push({ label: 'P8 → K₁', bits: K1, desc: `Joined=${bitsStr(joined1)} → P8 = K₁=${bitsStr(K1)}` });
+
+  const ls2L = lshift(ls1L, 2);
+  const ls2R = lshift(ls1R, 2);
+  steps.push({ label: 'LS-2', bits: ls2L, bits2: ls2R, desc: `LS-2 Left=${bitsStr(ls2L)}, LS-2 Right=${bitsStr(ls2R)}` });
+
+  const joined2 = ls2L.concat(ls2R);
+  const K2 = perm(joined2, P8);
+  steps.push({ label: 'P8 → K₂', bits: K2, desc: `Joined=${bitsStr(joined2)} → P8 = K₂=${bitsStr(K2)}` });
+
+  return { K1, K2, steps };
+}
+
+function fK(input8, K8, roundLabel) {
+  const steps = [];
+  const L = input8.slice(0,4);
+  const R = input8.slice(4);
+  steps.push({ desc: `Split 8-bit input: L=${bitsStr(L)}, R=${bitsStr(R)}` });
+
+  const ep = perm(R, EP);
+  steps.push({ desc: `EP(R) = ${bitsStr(ep)} (4 bits expanded to 8)` });
+
+  const xored = xorBits(ep, K8);
+  steps.push({ desc: `EP(R) ⊕ K${roundLabel} = ${bitsStr(ep)} ⊕ ${bitsStr(K8)} = ${bitsStr(xored)}` });
+
+  const xL = xored.slice(0,4);
+  const xR = xored.slice(4);
+  steps.push({ desc: `Split XOR result: left=${bitsStr(xL)}, right=${bitsStr(xR)}` });
+
+  const s0r = sboxLookup(xL, S0, 'S0');
+  const s1r = sboxLookup(xR, S1, 'S1');
+  steps.push({ desc: s0r.detail });
+  steps.push({ desc: s1r.detail });
+
+  const sout = s0r.out.concat(s1r.out);
+  steps.push({ desc: `S-Box concat: ${bitsStr(s0r.out)} || ${bitsStr(s1r.out)} = ${bitsStr(sout)}` });
+
+  const p4out = perm(sout, P4);
+  steps.push({ desc: `P4(${bitsStr(sout)}) = ${bitsStr(p4out)}` });
+
+  const newL = xorBits(L, p4out);
+  steps.push({ desc: `New Left = L ⊕ P4 = ${bitsStr(L)} ⊕ ${bitsStr(p4out)} = ${bitsStr(newL)}` });
+
+  const output = newL.concat(R);
+  steps.push({ desc: `fK output = ${bitsStr(newL)} || ${bitsStr(R)} = ${bitsStr(output)}` });
+  return { output, steps };
+}
+
+function runSDES() {
+  const plainStr = document.getElementById('inp-plain').value.trim();
+  const keyStr = document.getElementById('inp-key').value.trim();
+  const mode = document.getElementById('inp-mode').value;
+
+  if (!/^[01]{8}$/.test(plainStr)) { alert('Plaintext must be exactly 8 binary digits (0s and 1s).'); return; }
+  if (!/^[01]{10}$/.test(keyStr)) { alert('Key must be exactly 10 binary digits.'); return; }
+
+  const plain = plainStr.split('').map(Number);
+  const key = keyStr.split('').map(Number);
+
+  const { K1, K2, steps: ksteps } = keyGen(key);
+  let K_r1 = K1, K_r2 = K2, r1label = '1', r2label = '2';
+  if (mode === 'dec') { K_r1 = K2; K_r2 = K1; r1label = '2 (dec)'; r2label = '1 (dec)'; }
+
+  // Encryption steps
+  const ipOut = perm(plain, IP);
+  const { output: fk1out, steps: fk1steps } = fK(ipOut, K_r1, r1label);
+  const swOut = fk1out.slice(4).concat(fk1out.slice(0,4));
+  const { output: fk2out, steps: fk2steps } = fK(swOut, K_r2, r2label);
+  const result = perm(fk2out, IPinv);
+
+  let html = '';
+
+  // Key Generation Table
+  html += `<h3 style="margin-bottom:10px;">🔑 Key Generation</h3>`;
+  html += `<table class="tbl"><tr><th>Step</th><th>Left</th><th>Right</th><th>Description</th></tr>`;
+  ksteps.forEach(s => {
+    html += `<tr><td style="color:var(--accent3);font-weight:700">${s.label}</td>
+      <td style="font-family:var(--font-mono);color:var(--accent4)">${bitsStr(s.bits)}</td>
+      <td style="font-family:var(--font-mono);color:var(--accent5)">${s.bits2 ? bitsStr(s.bits2) : '—'}</td>
+      <td style="color:var(--muted);font-size:0.82rem">${s.desc}</td></tr>`;
+  });
+  html += `</table>`;
+  html += `<div class="alert alert-key" style="margin:12px 0;"><div class="alert-label">Round Keys</div>K₁ = <strong style="font-family:var(--font-mono)">${bitsStr(K1)}</strong> &nbsp;|&nbsp; K₂ = <strong style="font-family:var(--font-mono)">${bitsStr(K2)}</strong></div>`;
+
+  // Main pipeline
+  html += `<h3 style="margin:16px 0 10px;">🔒 ${mode === 'enc' ? 'Encryption' : 'Decryption'} Pipeline</h3>`;
+  html += `<table class="tbl"><tr><th>Stage</th><th>Input</th><th>Output</th></tr>`;
+  html += `<tr><td>Input</td><td>—</td><td style="font-family:var(--font-mono);color:var(--accent5)">${bitsStr(plain)}</td></tr>`;
+  html += `<tr><td>IP</td><td style="font-family:var(--font-mono)">${bitsStr(plain)}</td><td style="font-family:var(--font-mono);color:var(--accent4)">${bitsStr(ipOut)}</td></tr>`;
+  html += `<tr><td style="color:var(--accent3)">Round 1 (fK${r1label})</td><td style="font-family:var(--font-mono)">${bitsStr(ipOut)}</td><td style="font-family:var(--font-mono);color:var(--accent4)">${bitsStr(fk1out)}</td></tr>`;
+  html += `<tr><td>SW (swap halves)</td><td style="font-family:var(--font-mono)">${bitsStr(fk1out)}</td><td style="font-family:var(--font-mono);color:var(--accent4)">${bitsStr(swOut)}</td></tr>`;
+  html += `<tr><td style="color:var(--accent3)">Round 2 (fK${r2label})</td><td style="font-family:var(--font-mono)">${bitsStr(swOut)}</td><td style="font-family:var(--font-mono);color:var(--accent4)">${bitsStr(fk2out)}</td></tr>`;
+  html += `<tr><td>IP⁻¹</td><td style="font-family:var(--font-mono)">${bitsStr(fk2out)}</td><td style="font-family:var(--font-mono);color:var(--green);font-weight:700">${bitsStr(result)}</td></tr>`;
+  html += `</table>`;
+
+  // Round 1 details
+  html += `<h3 style="margin:16px 0 8px;">⚙️ Round 1 fK Detail</h3>`;
+  html += `<table class="tbl"><tr><th>#</th><th>Operation</th></tr>`;
+  fk1steps.forEach((s,i) => {
+    html += `<tr><td style="color:var(--accent3)">${i+1}</td><td style="font-size:0.85rem;color:var(--muted)">${s.desc}</td></tr>`;
+  });
+  html += `</table>`;
+
+  // Round 2 details
+  html += `<h3 style="margin:16px 0 8px;">⚙️ Round 2 fK Detail</h3>`;
+  html += `<table class="tbl"><tr><th>#</th><th>Operation</th></tr>`;
+  fk2steps.forEach((s,i) => {
+    html += `<tr><td style="color:var(--accent3)">${i+1}</td><td style="font-size:0.85rem;color:var(--muted)">${s.desc}</td></tr>`;
+  });
+  html += `</table>`;
+
+  const label = mode === 'enc' ? 'CIPHERTEXT' : 'PLAINTEXT';
+  document.getElementById('sdes-title').textContent = `${label}: ${bitsStr(result)}`;
+  document.getElementById('sdes-body').innerHTML = html;
+  document.getElementById('sdes-result').classList.add('show');
+}
+
+// ===== QUIZ =====
+const quizData = [
+  {
+    q: "What is the fundamental difference between a stream cipher and a block cipher?",
+    opts: ["Stream ciphers use larger keys than block ciphers", "Block ciphers encrypt a fixed-size block as a whole; stream ciphers encrypt one bit or byte at a time", "Stream ciphers use XOR while block ciphers use addition", "Block ciphers are slower and always less secure than stream ciphers"],
+    ans: 1,
+    exp: "Stream ciphers process individual bits/bytes using a keystream kᵢ generated from key K (cᵢ = pᵢ ⊕ kᵢ). Block ciphers encrypt an entire fixed block (e.g., 64 or 128 bits) as a single unit, producing a same-sized ciphertext block. One-time pad is an example of a stream cipher."
+  },
+  {
+    q: "For an n-bit block cipher, how many valid reversible encryption mappings exist?",
+    opts: ["2ⁿ", "n × 2ⁿ", "(2ⁿ)!", "2^(n²)"],
+    ans: 2,
+    exp: "An n-bit block has 2ⁿ possible input patterns. For decryption to be possible, the mapping must be bijective (one-to-one). The number of bijective functions from a set of 2ⁿ elements to itself is (2ⁿ)! — the factorial of 2ⁿ. This is astronomically large for large n (e.g., n=64), making a pure lookup table approach impractical."
+  },
+  {
+    q: "What is the key problem with an 'ideal' block cipher for large block sizes?",
+    opts: ["It cannot be implemented in hardware", "The key must specify a mapping over 2ⁿ values, making key storage and transmission impossibly large", "It provides less security than a Feistel cipher", "It requires too many S-Boxes"],
+    ans: 1,
+    exp: "For a large n-bit block: the key IS the complete substitution table — it must specify where each of 2ⁿ input patterns maps to. For n=64, this requires a table of 2⁶⁴ entries × 64 bits each = astronomically large key. For small n, frequency analysis applies. Neither extreme is practical — Feistel structures solve this."
+  },
+  {
+    q: "In the Feistel cipher, what is the output of Round i given Left half LE_{i-1}, Right half RE_{i-1}, and key Kᵢ?",
+    opts: [
+      "LE_i = LE_{i-1} ⊕ F(RE_{i-1}, Kᵢ); RE_i = RE_{i-1}",
+      "LE_i = RE_{i-1}; RE_i = LE_{i-1} ⊕ F(RE_{i-1}, Kᵢ)",
+      "LE_i = F(LE_{i-1}, Kᵢ); RE_i = LE_{i-1} ⊕ RE_{i-1}",
+      "LE_i = RE_{i-1} ⊕ Kᵢ; RE_i = LE_{i-1} ⊕ Kᵢ"
+    ],
+    ans: 1,
+    exp: "The Feistel round equations are: LE_i = RE_{i-1} (old right becomes new left — this is the permutation/swap) and RE_i = LE_{i-1} ⊕ F(RE_{i-1}, Kᵢ) (XOR old left with round function output — this is the substitution). The swap is critical: it makes the structure self-inverting for decryption."
+  },
+  {
+    q: "Why does the Feistel cipher not require the round function F to be invertible?",
+    opts: ["Because F is always a simple XOR operation", "Because the XOR with F(R,K) is self-cancelling during decryption — F is applied again with the same inputs, and XOR cancels", "Because DES uses only permutations, which are always invertible", "Because the decryption algorithm is completely different from encryption"],
+    ans: 1,
+    exp: "During decryption, the same F is applied to the same right half with the same round key. XOR is self-inverse: A ⊕ B ⊕ B = A. So the decryption XOR with F cancels the encryption XOR with F, recovering the original left half — regardless of how complex or non-invertible F itself is. This is the elegant genius of the Feistel structure."
+  },
+  {
+    q: "Which Shannon property (diffusion vs confusion) does the S-Box in DES implement?",
+    opts: ["Diffusion only", "Confusion only", "Both diffusion and confusion equally", "Neither — S-Boxes only expand bit width"],
+    ans: 1,
+    exp: "S-Boxes provide CONFUSION — they make the relationship between the key (round key) and the ciphertext as complex and non-linear as possible. Even if an attacker observes statistical properties of the ciphertext, deducing the key remains hard. The P (permutation) box after the S-Boxes provides DIFFUSION by spreading S-Box outputs across the block."
+  },
+  {
+    q: "In S-DES, a 10-bit key generates two 8-bit round keys. What is the correct order of operations to generate K₁?",
+    opts: [
+      "P8 → LS-1 → P10",
+      "P10 → LS-2 → P8",
+      "P10 → LS-1 → P8",
+      "LS-1 → P10 → P8"
+    ],
+    ans: 2,
+    exp: "For K₁: Apply P10 to the 10-bit key, split into two 5-bit halves, apply LS-1 (circular left shift by 1) to both halves independently, concatenate, then apply P8 to select and permute 8 of the 10 bits → K₁. For K₂, apply LS-2 to the LS-1 results (not to the original P10 output) → P8 → K₂."
+  },
+  {
+    q: "In the S-DES/DES S-Box lookup, given a 4-bit input b₁b₂b₃b₄, how are the row and column determined?",
+    opts: [
+      "Row = b₁b₂ (first two bits), Column = b₃b₄ (last two bits)",
+      "Row = b₁b₄ (outer bits), Column = b₂b₃ (inner bits)",
+      "Row = b₃b₄ (last two bits), Column = b₁b₂ (first two bits)",
+      "Row = b₂b₃ (middle bits), Column = b₁b₄ (outer bits)"
+    ],
+    ans: 1,
+    exp: "S-Box addressing: the OUTER bits b₁ and b₄ form the 2-bit row selector (range 0–3 in decimal). The INNER bits b₂ and b₃ form the 2-bit column selector (range 0–3 in decimal). The value at S[row][col] gives the 2-bit output. In full DES, the input is 6 bits: row = b₁b₆ (outer), column = b₂b₃b₄b₅ (inner, 4 bits → 16 columns)."
+  },
+  {
+    q: "What are the exact parameters of the full Data Encryption Standard (DES)?",
+    opts: [
+      "128-bit block, 128-bit key, 10 rounds",
+      "64-bit block, 64-bit key, 16 rounds",
+      "64-bit block, 56-bit effective key (64-bit input with 8 parity bits), 16 rounds",
+      "64-bit block, 56-bit key, 8 rounds"
+    ],
+    ans: 2,
+    exp: "DES uses a 64-bit input block and 64-bit key input, but 8 of the 64 key bits are parity bits (not used in encryption), leaving 56 effective key bits = 2⁵⁶ ≈ 7.2×10¹⁶ possible keys. It runs 16 Feistel rounds, each using a 48-bit round key derived from the 56-bit key via the PC-1 and PC-2 permutation tables plus left circular shifts."
+  },
+  {
+    q: "The Avalanche Effect example in the slides shows that a 1-bit change in DES plaintext produces how many differing bits in the final ciphertext?",
+    opts: ["1 bit (same as input change)", "5–10 bits", "Approximately 32 bits (half)", "All 64 bits"],
+    ans: 2,
+    exp: "From the slide table: starting with δ=1 (1 bit difference), by round 4 δ=34, and the final IP⁻¹ output shows δ=32 bits differing. Approximately half the output bits change when 1 input bit changes — this is ideal avalanche behavior. The key observation is that δ grows rapidly from 1 bit to ~34 bits within just 4–5 rounds."
+  },
+  {
+    q: "Why is Double DES not significantly more secure than single DES?",
+    opts: [
+      "Because Double DES uses the same key twice",
+      "Because the Meet-in-the-Middle attack reduces effective security to ≈2⁵⁶ operations, barely more than single DES",
+      "Because two DES encryptions produce the same result as one stronger DES encryption",
+      "Because the IP permutation in the second DES cancels the IP⁻¹ of the first"
+    ],
+    ans: 1,
+    exp: "The Meet-in-the-Middle (MITM) attack exploits the intermediate value X = E(K₁, P) = D(K₂, C). An attacker encrypts P with all 2⁵⁶ K₁ values (forward) and decrypts C with all 2⁵⁶ K₂ values (backward), looking for matches. The total work is 2⁵⁶ + 2⁵⁶ ≈ 2⁵⁷ — effectively the same as single DES brute force. The apparent 112-bit key space collapses to 56-bit effective security."
+  },
+  {
+    q: "In Triple DES (3DES) with 2 keys using E-D-E structure, what is the encryption formula?",
+    opts: [
+      "C = E(K₁, E(K₂, E(K₁, P)))",
+      "C = E(K₁, D(K₂, E(K₁, P)))",
+      "C = D(K₂, E(K₁, D(K₂, P)))",
+      "C = E(K₂, E(K₁, P))"
+    ],
+    ans: 1,
+    exp: "3DES EDE with 2 keys: C = E(K₁, D(K₂, E(K₁, P))). The structure is Encrypt-Decrypt-Encrypt. Key insight for backward compatibility: if K₁ = K₂, then E(K₁, D(K₁, E(K₁, P))) = E(K₁, P) — exactly single DES. With K₁ ≠ K₂, the effective key length is 112 bits. 3DES with 3 keys uses K₁, K₂, K₃ and gives 168-bit effective key length."
+  },
+  {
+    q: "What role do the S-Boxes play in the DES Algorithm Design, and why are they considered the most critical component?",
+    opts: [
+      "S-Boxes provide diffusion by spreading bits across the block",
+      "S-Boxes provide non-linearity (confusion) — they are the ONLY non-linear operation in DES; without them, DES would be linear and easily broken",
+      "S-Boxes expand 32 bits to 48 bits for the round key XOR",
+      "S-Boxes replace the initial and inverse permutations in each round"
+    ],
+    ans: 1,
+    exp: "S-Boxes are the ONLY non-linear component in DES. All other operations (IP, EP, P, PC-1, PC-2, XOR) are linear. Non-linearity is essential for security — a fully linear cipher can be broken by solving a system of linear equations. The DES S-Boxes were specifically designed (with NSA involvement) to resist differential cryptanalysis and provide maximum confusion. Permutation P provides diffusion."
+  },
+  {
+    q: "How many left circular shift bits are applied to each C and D half in round 1 and round 9 of the DES key schedule?",
+    opts: [
+      "1 shift in round 1, 2 shifts in round 9",
+      "2 shifts in both rounds 1 and 9",
+      "1 shift in round 1, 1 shift in round 9",
+      "2 shifts in round 1, 1 shift in round 9"
+    ],
+    ans: 2,
+    exp: "From the DES key schedule left-shift table: Rounds 1, 2, 9, 16 use 1 left shift. All other rounds (3–8, 10–15) use 2 left shifts. So round 1 = 1 shift, round 9 = 1 shift. The total shifts across all 16 rounds sum to 28, which equals one complete rotation of each 28-bit half (C and D), ensuring all key bits participate in generating round keys."
+  },
+  {
+    q: "AES was selected as the DES replacement. Which of the following correctly describes AES?",
+    opts: [
+      "64-bit block, 56-bit key, Feistel structure, 16 rounds",
+      "128-bit block, 128/192/256-bit keys, Feistel structure, 10/12/14 rounds",
+      "128-bit block, 128/192/256-bit keys, Substitution-Permutation Network (not Feistel), 10/12/14 rounds",
+      "128-bit block, 128-bit key only, same structure as DES but larger"
+    ],
+    ans: 2,
+    exp: "AES uses 128-bit blocks with key sizes of 128, 192, or 256 bits, giving 10, 12, or 14 rounds respectively. Critically, AES is NOT a Feistel cipher — it uses a Substitution-Permutation Network (SPN) where each round transforms the full 128-bit state simultaneously (SubBytes + ShiftRows + MixColumns + AddRoundKey), operating on GF(2⁸) Galois Field arithmetic. It was selected from global candidates and standardized in 2001."
+  }
+];
+
+let quizScore = 0, quizAnswered = 0;
+
+function buildQuiz() {
+  let html = '';
+  quizData.forEach((q, i) => {
+    html += `<div class="q-block" id="q-${i}">
+      <div class="q-num">Question ${i+1} of 15</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((o, j) => `<button class="q-opt" id="q-${i}-opt-${j}" onclick="answerQ(${i},${j})">${['A','B','C','D'][j]}. ${o}</button>`).join('')}
+      </div>
+      <div class="q-explain" id="q-${i}-exp"><strong>📖 Explanation:</strong> ${q.exp}</div>
+    </div>`;
+  });
+  document.getElementById('quiz-container').innerHTML = html;
+  document.getElementById('score-total').textContent = quizData.length;
+}
+
+function answerQ(qi, optIdx) {
+  const q = quizData[qi];
+  for (let j = 0; j < q.opts.length; j++) {
+    const btn = document.getElementById(`q-${qi}-opt-${j}`);
+    btn.disabled = true;
+    if (j === q.ans) btn.classList.add('correct');
+    else if (j === optIdx && j !== q.ans) btn.classList.add('wrong');
+  }
+  document.getElementById(`q-${qi}-exp`).classList.add('show');
+  quizAnswered++;
+  if (optIdx === q.ans) quizScore++;
+  document.getElementById('score-val').textContent = quizScore;
+  document.getElementById('q-answered').textContent = quizAnswered;
+}
+
+function resetQuiz() {
+  quizScore = 0; quizAnswered = 0;
+  document.getElementById('score-val').textContent = 0;
+  document.getElementById('q-answered').textContent = 0;
+  buildQuiz();
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

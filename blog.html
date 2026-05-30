@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — Arko Mustafi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="blog-header">
+    <div class="section-label" style="margin-bottom:1.5rem; position:relative;">Writing</div>
+    <h1>Blog</h1>
+    <p>Thoughts, experiences, and reflections from the journey.</p>
+  </header>
+
+  <nav class="site-nav">
+    <ul>
+      <li><a href="index.html">← Home</a></li>
+      <li><a href="study.html">Study Materials</a></li>
+    </ul>
+  </nav>
+
+  <div class="posts-container">
+
+    <article class="post-card reveal">
+      <div class="post-date-col">Feb 11, 2025</div>
+      <div>
+        <h2 class="post-title">Academic Depression</h2>
+        <p class="post-excerpt">A first-generation student at the University of Dhaka, navigating a city, a system, and a silence that no scholarship had prepared me for.</p>
+        <a href="post1.html" class="read-link">Read essay</a>
+      </div>
+    </article>
+
+    <article class="post-card reveal">
+      <div class="post-date-col">May 18, 2025</div>
+      <div>
+        <h2 class="post-title">Journey &amp; Mistakes of My Undergrad Life</h2>
+        <p class="post-excerpt">Covid gaps, no mentor, wrong priorities — and what I'd tell the first-year version of myself who just got into DU with stars in his eyes.</p>
+        <a href="post2.html" class="read-link">Read essay</a>
+      </div>
+    </article>
+
+    <article class="post-card reveal">
+      <div class="post-date-col">Jan 1, 2026</div>
+      <div>
+        <h2 class="post-title">স্মৃতির বিদ্রোহ</h2>
+        <p class="post-excerpt">একটি কবিতা — সুরবন্দিতা ম্যাগাজিনে প্রকাশিত। স্মৃতি, প্রতীক্ষা, এবং দূরত্বের কথা।</p>
+        <a href="post3.html" class="read-link">Read poem</a>
+        &nbsp;&nbsp;
+        <a href="https://drive.google.com/file/d/1Swx-w5jOYbhax37VoCUGOYThqKGWUiEe/view?usp=drive_link" class="read-link" target="_blank" style="color:var(--muted)">Magazine ↗</a>
+      </div>
+    </article>
+
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Arko Mustafi · University of Dhaka</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

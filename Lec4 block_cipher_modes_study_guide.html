@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Block Cipher Operation — EEE-5305 Study Guide</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #1a1d27;
+  --card2: #22263a;
+  --border: #2e3354;
+  --text: #e2e6f0;
+  --muted: #8892b0;
+  --accent: #00c9b1;
+  --accent2: #f06292;
+  --accent3: #5b8dee;
+  --accent4: #f7c948;
+  --accent5: #a78bfa;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --radius: 10px;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', 'Noto Sans', sans-serif; font-size: 15px; line-height: 1.7; min-height: 100vh; }
+a { color: var(--accent); }
+
+/* HEADER */
+.header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: .5px; }
+.header-sub { color: var(--muted); font-size: .82rem; }
+.progress-wrap { flex: 1; min-width: 160px; }
+.progress-label { font-size: .75rem; color: var(--muted); margin-bottom: 4px; }
+.progress-bar-bg { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent3)); border-radius: 3px; transition: width .4s; }
+
+/* NAV */
+.nav { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; overflow-x: auto; gap: 0; }
+.nav-btn {
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .88rem;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: color .2s, border-color .2s;
+}
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* SECTIONS */
+.section { display: none; padding: 32px; max-width: 1100px; margin: 0 auto; }
+.section.active { display: block; }
+
+/* CARDS */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.card2 { background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.card-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.card-title.pink { color: var(--accent2); }
+.card-title.blue { color: var(--accent3); }
+.card-title.amber { color: var(--accent4); }
+.card-title.purple { color: var(--accent5); }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+/* FORMULAS */
+.formula {
+  background: #111420;
+  border-left: 3px solid var(--accent4);
+  border-radius: 0 6px 6px 0;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-family: var(--font-mono);
+  font-size: .88rem;
+  color: var(--accent4);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+.formula.teal { border-left-color: var(--accent); color: var(--accent); }
+.formula.pink { border-left-color: var(--accent2); color: var(--accent2); }
+.formula.blue { border-left-color: var(--accent3); color: var(--accent3); }
+.formula.purple { border-left-color: var(--accent5); color: var(--accent5); }
+
+/* ALERTS */
+.alert {
+  border-left: 4px solid;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: .9rem;
+}
+.alert-info  { border-color: var(--accent3); background: #1a2240; }
+.alert-warn  { border-color: var(--accent4); background: #22200e; }
+.alert-key   { border-color: var(--accent);  background: #0d2220; }
+.alert-exam  { border-color: var(--accent2); background: #220d1a; }
+.alert-label { font-size: .75rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 4px; }
+.alert-info  .alert-label { color: var(--accent3); }
+.alert-warn  .alert-label { color: var(--accent4); }
+.alert-key   .alert-label { color: var(--accent); }
+.alert-exam  .alert-label { color: var(--accent2); }
+
+/* STEPS */
+.steps { margin: 12px 0; }
+.step { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+.step-num {
+  width: 26px; height: 26px; min-width: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #000;
+  font-size: .78rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+}
+.step-num.pink { background: var(--accent2); }
+.step-num.blue { background: var(--accent3); }
+.step-num.amber { background: var(--accent4); }
+.step-num.purple { background: var(--accent5); }
+.step-body { flex: 1; }
+
+/* TABLES */
+.tbl-wrap { overflow-x: auto; margin: 12px 0; }
+table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+th { background: var(--card2); color: var(--accent); font-weight: 700; text-align: left; padding: 10px 14px; border-bottom: 2px solid var(--border); }
+td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.02); }
+.td-good { color: var(--success); font-weight: 600; }
+.td-bad  { color: var(--danger); font-weight: 600; }
+.td-mid  { color: var(--accent4); font-weight: 600; }
+.td-mono { font-family: var(--font-mono); font-size: .82rem; }
+
+/* BADGE */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .4px;
+}
+.badge-teal   { background: #0d2220; color: var(--accent); border: 1px solid var(--accent); }
+.badge-pink   { background: #220d1a; color: var(--accent2); border: 1px solid var(--accent2); }
+.badge-blue   { background: #1a2240; color: var(--accent3); border: 1px solid var(--accent3); }
+.badge-amber  { background: #22200e; color: var(--accent4); border: 1px solid var(--accent4); }
+.badge-purple { background: #1e1a2e; color: var(--accent5); border: 1px solid var(--accent5); }
+
+/* TIMELINE */
+.tl-item { display: flex; gap: 16px; margin-bottom: 0; position: relative; padding-bottom: 20px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 11px; top: 26px;
+  width: 2px;
+  height: calc(100% - 4px);
+  background: var(--border);
+}
+.tl-dot {
+  width: 24px; height: 24px; min-width: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem;
+  font-weight: 800;
+  color: #000;
+  margin-top: 2px;
+  z-index: 1;
+}
+.tl-time { font-size: .8rem; color: var(--accent4); font-weight: 700; min-width: 56px; margin-top: 4px; }
+.tl-content h4 { font-size: .95rem; font-weight: 700; margin-bottom: 2px; }
+.tl-content p  { font-size: .84rem; color: var(--muted); }
+.tl-slide { font-size: .75rem; color: var(--accent3); margin-top: 2px; }
+
+/* CHECKLIST */
+.checklist { list-style: none; margin: 12px 0; }
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .15s;
+  font-size: .9rem;
+}
+.checklist li:hover { background: var(--card2); }
+.checklist li input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+.checklist li.done { color: var(--muted); text-decoration: line-through; }
+
+/* QUIZ */
+.quiz-q { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.quiz-q-text { font-weight: 600; margin-bottom: 14px; line-height: 1.5; }
+.quiz-q-num { color: var(--accent); font-weight: 800; margin-right: 6px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: .88rem;
+  transition: border-color .15s, background .15s;
+  background: var(--card2);
+  text-align: left;
+  color: var(--text);
+  font-family: inherit;
+}
+.quiz-opt:hover:not(:disabled) { border-color: var(--accent3); background: #1a2240; }
+.quiz-opt.correct  { border-color: var(--success); background: #0d2218; color: var(--success); }
+.quiz-opt.wrong    { border-color: var(--danger);  background: #2a0d0d; color: var(--danger); }
+.quiz-opt:disabled { cursor: default; }
+.quiz-explain { background: var(--card2); border-left: 3px solid var(--accent3); border-radius: 0 6px 6px 0; padding: 10px 14px; margin-top: 10px; font-size: .86rem; color: var(--muted); display: none; }
+.quiz-explain.show { display: block; }
+.quiz-score-bar { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.score-display { font-size: 1.5rem; font-weight: 800; color: var(--accent4); }
+.score-label { color: var(--muted); font-size: .9rem; }
+.reset-btn {
+  margin-left: auto;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 18px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: .88rem;
+  transition: border-color .2s;
+}
+.reset-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* INTERACTIVE TOOL */
+.tool-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
+.tool-field { display: flex; flex-direction: column; gap: 4px; }
+.tool-field label { font-size: .8rem; color: var(--muted); font-weight: 600; }
+.pp-input, .sim-input {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 9px 12px;
+  font-family: var(--font-mono);
+  font-size: .88rem;
+  width: 220px;
+  transition: border-color .2s;
+}
+.pp-input:focus, .sim-input:focus { outline: none; border-color: var(--accent3); }
+.pp-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 7px;
+  color: #000;
+  padding: 10px 22px;
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
+}
+.pp-btn:hover { background: #00e5cc; }
+.pp-btn.secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+.pp-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+.tool-result { display: none; background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-top: 16px; }
+.tool-result.show { display: block; }
+.tool-step { border-left: 3px solid var(--accent3); padding: 8px 14px; margin-bottom: 8px; font-family: var(--font-mono); font-size: .84rem; background: #111420; border-radius: 0 6px 6px 0; }
+.tool-step-label { font-size: .75rem; color: var(--accent3); font-weight: 700; margin-bottom: 2px; }
+
+/* SECTION HEADING */
+h2.sec { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--text); border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+h3.sub { font-size: 1.05rem; font-weight: 700; margin: 20px 0 10px; color: var(--accent); }
+h3.sub.pink   { color: var(--accent2); }
+h3.sub.blue   { color: var(--accent3); }
+h3.sub.amber  { color: var(--accent4); }
+h3.sub.purple { color: var(--accent5); }
+p { margin-bottom: 8px; }
+
+/* DIAGRAM BOXES (ASCII-style) */
+.diag { background: #0a0d18; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--font-mono); font-size: .82rem; color: var(--muted); line-height: 1.8; overflow-x: auto; margin: 12px 0; }
+.diag .hl { color: var(--accent4); }
+.diag .op { color: var(--accent); }
+.diag .cipher { color: var(--accent2); }
+.diag .iv { color: var(--accent3); }
+.diag .key { color: var(--accent5); }
+
+select.pp-input { width: 180px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">⚡ EEE-5305 — Block Cipher Operation</div>
+    <div class="header-sub">Network &amp; Information Security · Dr. Mosabber Uddin Ahmed</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label">Study Progress: <span id="prog-count">0</span>/10 tasks</div>
+    <div class="progress-bar-bg"><div class="progress-bar" id="prog-bar"></div></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('study-plan',this)">📅 Study Plan</button>
+  <button class="nav-btn" onclick="showSection('ecb-cbc',this)">🔐 ECB &amp; CBC</button>
+  <button class="nav-btn" onclick="showSection('cfb-ofb',this)">🌊 CFB &amp; OFB</button>
+  <button class="nav-btn" onclick="showSection('ctr-xts',this)">⚡ CTR &amp; XTS-AES</button>
+  <button class="nav-btn" onclick="showSection('compare',this)">📊 Comparison &amp; Apps</button>
+  <button class="nav-btn" onclick="showSection('tool',this)">🧮 Interactive Tool</button>
+  <button class="nav-btn" onclick="showSection('quiz',this)">🧠 Quiz</button>
+</nav>
+
+<!-- ========== TAB 1: STUDY PLAN ========== -->
+<section id="study-plan" class="section active">
+  <h2 class="sec">📅 Study Plan — Block Cipher Modes of Operation</h2>
+
+  <div class="card">
+    <div class="card-title">What This Topic Is Really About</div>
+    <p>A block cipher (e.g., AES, DES) encrypts a fixed-length block (e.g., 64 or 128 bits) at a time. When real-world messages are longer, we must decide <em>how to chain or process multiple blocks</em> — these strategies are called <strong>modes of operation</strong>. The five standard modes (ECB, CBC, CFB, OFB, CTR) differ in how the output of one block affects subsequent blocks, trading off security, parallelizability, error propagation, and suitability for different use cases. XTS-AES is a specialized mode for storage-layer encryption, not transmission. Understanding these modes means understanding where block ciphers fail or succeed in real deployments.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⏱ 6-Hour Study Timeline</div>
+    <div style="margin-top:16px">
+      <div class="tl-item">
+        <div class="tl-dot">1</div>
+        <div class="tl-time">0:00–1:00</div>
+        <div class="tl-content">
+          <h4>ECB Mode — Mechanics &amp; Weaknesses</h4>
+          <p>Master the stateless, parallel nature of ECB. Understand why identical plaintext blocks yield identical ciphertext — the "ECB penguin" problem. Derive the security implication.</p>
+          <div class="tl-slide">Slides 2–5 (ECB Encryption, Decryption, Summary)</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">2</div>
+        <div class="tl-time">1:00–2:30</div>
+        <div class="tl-content">
+          <h4>CBC Mode — Chaining, IV, Error Propagation</h4>
+          <p>Trace CBC encryption/decryption equations step by step. Analyze the role of the IV. Understand why decryption can be parallelized but encryption cannot. Work out bit-error propagation.</p>
+          <div class="tl-slide">Slides 6–8 (CBC Encryption, Decryption, Summary)</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">3</div>
+        <div class="tl-time">2:30–3:30</div>
+        <div class="tl-content">
+          <h4>CFB Mode — Stream Cipher from Block Cipher</h4>
+          <p>Understand the shift register mechanism, the s-bit granularity, why decryption uses Encrypt (not Decrypt), and error propagation over ⌈b/s⌉ blocks.</p>
+          <div class="tl-slide">Slides 9–11 (CFB Encryption, Decryption, Summary)</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">4</div>
+        <div class="tl-time">3:30–4:15</div>
+        <div class="tl-content">
+          <h4>OFB Mode — Keystream Pre-generation</h4>
+          <p>Compare OFB vs CFB feedback path. Note that OFB feedback comes from encrypt-output (not ciphertext), enabling keystream pre-computation. Analyze satellite comm use case.</p>
+          <div class="tl-slide">Slides 12–14 (OFB Encryption, Decryption, Summary)</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">5</div>
+        <div class="tl-time">4:15–5:15</div>
+        <div class="tl-content">
+          <h4>CTR + XTS-AES — Modern Modes</h4>
+          <p>CTR: derive the counter-based keystream, prove full parallelizability. XTS-AES: understand the two-key tweak construction, the GF(2^128) multiplication, and the ciphertext-stealing mechanism for the final partial block.</p>
+          <div class="tl-slide">Slides 15–24 (CTR + XTS-AES full)</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">6</div>
+        <div class="tl-time">5:15–6:00</div>
+        <div class="tl-content">
+          <h4>Comparison, Applications &amp; Self-Test</h4>
+          <p>Build the master comparison table from memory. Do the quiz. Use the interactive tool to trace CBC/CTR manually. Review exam-critical items.</p>
+          <div class="tl-slide">All slides + interactive tool + quiz</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✅ 10-Item Study Checklist</div>
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Explain why ECB is insecure for long messages with repeated blocks</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Derive CBC encryption equation: C_i = E(K, P_i ⊕ C_{i-1})</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> State why CBC decryption is parallelizable but encryption is not</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Explain the CFB shift-register mechanism and s-bit granularity</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Explain why CFB/OFB decryption uses Encrypt (not Decrypt)</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> State the key structural difference between OFB and CFB feedback</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Derive CTR encryption: C_i = E(K, Counter_i) ⊕ P_i</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Describe XTS-AES single-block encryption using the tweak T = E(K2, i) ⊗ α^j</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Identify which modes can be parallelized (both enc &amp; dec)</li>
+      <li onclick="toggleCheck(this)"><input type="checkbox"> Score ≥ 12/15 on the quiz without notes</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== TAB 2: ECB & CBC ========== -->
+<section id="ecb-cbc" class="section">
+  <h2 class="sec">🔐 ECB &amp; CBC — Block-Oriented Modes</h2>
+
+  <!-- MODES OF OPERATION INTRO -->
+  <div class="card">
+    <div class="card-title">Why Modes of Operation Exist</div>
+    <p>A block cipher (e.g., AES-128) encrypts exactly <em>b</em>-bit inputs to <em>b</em>-bit outputs. Real messages are longer. The solution: partition plaintext into <em>b</em>-bit blocks (pad the last block if necessary) and apply the cipher to each block. <strong>The manner in which this is done determines security properties</strong> — different modes of operation have been developed to address different security issues arising from naive block-by-block encryption.</p>
+    <div class="alert alert-key">
+      <div class="alert-label">Key Concept</div>
+      If you just encrypt each block independently with the same key (ECB), identical plaintext blocks produce identical ciphertext blocks — a catastrophic pattern-leakage vulnerability.
+    </div>
+  </div>
+
+  <!-- ECB -->
+  <div class="card">
+    <div class="card-title">ECB — Electronic Codebook Mode</div>
+
+    <h3 class="sub">Mechanism</h3>
+    <p>Each <em>b</em>-bit plaintext block is encrypted independently using the same key <em>K</em>. The blocks have no relationship to each other.</p>
+
+    <div class="formula teal">ECB Encryption:  C_i = E(K, P_i)         for i = 1, 2, ..., N
+ECB Decryption:  P_i = D(K, C_i)         for i = 1, 2, ..., N</div>
+
+    <h3 class="sub">Step-by-Step Encryption Trace</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">Partition plaintext M into N blocks of b bits each: P_1, P_2, ..., P_N (pad P_N if |M| mod b ≠ 0)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">Apply the block cipher E with key K to each block independently: C_i = E(K, P_i)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">Concatenate ciphertext blocks: C = C_1 || C_2 || ... || C_N</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">Decryption is the exact reverse — each C_i decrypted independently with D(K, ·)</div>
+      </div>
+    </div>
+
+    <div class="diag">
+    <span class="hl">P_1</span>          <span class="hl">P_2</span>          ...    <span class="hl">P_N</span>
+     |            |                    |
+<span class="key">K</span>→ [<span class="cipher">Encrypt</span>]   <span class="key">K</span>→ [<span class="cipher">Encrypt</span>]   ...  <span class="key">K</span>→ [<span class="cipher">Encrypt</span>]
+     |            |                    |
+    <span class="op">C_1</span>          <span class="op">C_2</span>          ...   <span class="op">C_N</span></div>
+
+    <h3 class="sub">Properties &amp; Security Analysis</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>ECB Behavior</th></tr>
+        <tr><td>Block Size</td><td>64-bit blocks (DES context from slides)</td></tr>
+        <tr><td>Parallelism (Enc)</td><td class="td-good">Yes — fully parallel</td></tr>
+        <tr><td>Parallelism (Dec)</td><td class="td-good">Yes — fully parallel</td></tr>
+        <tr><td>Error Propagation</td><td>Single block only — error in C_i corrupts P_i only</td></tr>
+        <tr><td>IV Required?</td><td class="td-good">No</td></tr>
+        <tr><td>Pattern Leakage</td><td class="td-bad">YES — P_i = P_j ⟹ C_i = C_j</td></tr>
+        <tr><td>Best Use Case</td><td>Single-value encryption (e.g., transmitting an encryption key)</td></tr>
+      </table>
+    </div>
+
+    <div class="alert alert-exam">
+      <div class="alert-label">Exam Critical</div>
+      <strong>ECB's fundamental flaw:</strong> With long messages, repetition in plaintext <em>causes</em> repetition in ciphertext. An attacker can detect repeated blocks, infer structure, and perform replay attacks — even without knowing the key. The famous "ECB penguin" image demonstrates how ECB preserves pixel-block patterns.
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-label">Typical Application</div>
+      Secure transmission of single isolated values (e.g., one AES session key). <strong>Never</strong> use for bulk data encryption.
+    </div>
+  </div>
+
+  <!-- CBC -->
+  <div class="card">
+    <div class="card-title pink">CBC — Cipher Block Chaining Mode</div>
+
+    <h3 class="sub pink">Core Idea</h3>
+    <p>CBC solves ECB's pattern-leakage problem by XOR-ing each plaintext block with the <em>previous ciphertext block</em> before encryption. This chains the blocks — each ciphertext block depends on all previous plaintext blocks. A random Initialization Vector (IV) seeds the first block.</p>
+
+    <div class="formula pink">CBC Encryption:  C_i = E(K, P_i ⊕ C_{i-1})    where C_0 = IV
+CBC Decryption:  P_i = D(K, C_i) ⊕ C_{i-1}   where C_0 = IV</div>
+
+    <h3 class="sub pink">Step-by-Step CBC Encryption</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num pink">1</div>
+        <div class="step-body">Choose a random IV of b bits. This is C_0 for the first iteration. IV must be known to both sender and receiver but kept secret from the attacker.</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">2</div>
+        <div class="step-body">XOR the first plaintext block P_1 with IV: PP_1 = P_1 ⊕ IV</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">3</div>
+        <div class="step-body">Encrypt: C_1 = E(K, PP_1) = E(K, P_1 ⊕ IV)</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">4</div>
+        <div class="step-body">For each subsequent block i ≥ 2: XOR P_i with C_{i-1}, then encrypt: C_i = E(K, P_i ⊕ C_{i-1})</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">5</div>
+        <div class="step-body">Continue until all N blocks processed. Output: C_0 (IV) || C_1 || C_2 || ... || C_N</div>
+      </div>
+    </div>
+
+    <div class="diag">
+<span class="iv">IV</span>          <span class="op">C_{i-1}</span>       ...     <span class="op">C_{N-1}</span>
+ |              |                      |
+ ⊕←<span class="hl">P_1</span>        ⊕←<span class="hl">P_2</span>            ⊕←<span class="hl">P_N</span>
+ |              |                      |
+<span class="key">K</span>→[<span class="cipher">Encrypt</span>]  <span class="key">K</span>→[<span class="cipher">Encrypt</span>]   ...  <span class="key">K</span>→[<span class="cipher">Encrypt</span>]
+ |              |                      |
+<span class="op">C_1</span>───────→  <span class="op">C_2</span>───────→   ...   <span class="op">C_N</span></div>
+
+    <h3 class="sub pink">Step-by-Step CBC Decryption</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num pink">1</div>
+        <div class="step-body">Decrypt C_i using D(K, ·) to get an intermediate value</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">2</div>
+        <div class="step-body">XOR with the previous ciphertext block C_{i-1} (or IV for i=1): P_i = D(K, C_i) ⊕ C_{i-1}</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">3</div>
+        <div class="step-body">Crucially, since C_{i-1} is already received (it's ciphertext), ALL blocks can be decrypted simultaneously in parallel — decryption is fully parallelizable.</div>
+      </div>
+    </div>
+
+    <div class="alert alert-exam">
+      <div class="alert-label">Exam Critical — Asymmetry</div>
+      <strong>CBC encryption is inherently sequential</strong> (you need C_{i-1} to compute C_i). But <strong>CBC decryption is fully parallelizable</strong> (all C_i are already available; you just need D(K, C_i) and C_{i-1} for each block independently).
+    </div>
+
+    <h3 class="sub pink">CBC Error Propagation Analysis</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Error Location</th><th>Effect on Decryption</th></tr>
+        <tr><td>Single-bit error in C_i</td><td>Corrupts <em>entire</em> P_i AND exactly one bit in P_{i+1} (the same bit position). P_{i+2}, P_{i+3}, ... unaffected.</td></tr>
+        <tr><td>Error in IV</td><td>Only P_1 is affected; all subsequent blocks decrypt correctly</td></tr>
+        <tr><td>Lost/inserted block in C_i</td><td>All subsequent blocks are garbled (loss of sync)</td></tr>
+      </table>
+    </div>
+
+    <div class="alert alert-key">
+      <div class="alert-label">Key Property — Self-Synchronizing</div>
+      If a ciphertext block is corrupted, the error affects only 2 consecutive plaintext blocks (C_i corrupts P_i and P_{i+1}). The cipher re-synchronizes from C_{i+1} onward — this is called self-synchronization or a limited error-propagation window.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>CBC Behavior</th></tr>
+        <tr><td>Input to E(K, ·)</td><td class="td-mono">P_i ⊕ C_{i-1} (XOR of 64-bit plaintext and preceding ciphertext)</td></tr>
+        <tr><td>Parallelism (Enc)</td><td class="td-bad">No — sequential</td></tr>
+        <tr><td>Parallelism (Dec)</td><td class="td-good">Yes — fully parallel</td></tr>
+        <tr><td>IV Required?</td><td class="td-bad">Yes — must be secret from attacker, shared with receiver</td></tr>
+        <tr><td>Error Propagation</td><td>Affects 2 blocks (C_i → P_i and 1 bit of P_{i+1})</td></tr>
+        <tr><td>Padding Required?</td><td class="td-bad">Yes — plaintext must be multiple of b bits</td></tr>
+        <tr><td>Typical Applications</td><td>General-purpose block-oriented transmission; authentication</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- FEEDBACK COMPARISON -->
+  <div class="card">
+    <div class="card-title blue">CBC Feedback Architecture (from Slide 18)</div>
+    <p>In CBC, the output register (ciphertext) feeds back as input to the next XOR before encryption:</p>
+    <div class="diag">CBC Feedback Path (one unit):
+
+Plaintext block → ⊕ → Input Register → [<span class="cipher">Encrypt</span>] → Output Register → Ciphertext
+                  ↑                                                              |
+                  └──────────────── C_{i-1} (feedback from output) ─────────────┘</div>
+    <p style="margin-top:8px">This is <strong>ciphertext feedback</strong>: the previous ciphertext block is what gets XOR'd with the next plaintext block.</p>
+  </div>
+</section>
+
+<!-- ========== TAB 3: CFB & OFB ========== -->
+<section id="cfb-ofb" class="section">
+  <h2 class="sec">🌊 CFB &amp; OFB — Stream-Oriented Modes</h2>
+
+  <!-- CFB -->
+  <div class="card">
+    <div class="card-title">CFB — Cipher Feedback Mode</div>
+    <p>CFB converts a block cipher into a <strong>stream cipher</strong>. Instead of waiting for a full b-bit block, CFB processes <em>s</em> bits at a time (where s ≤ b). A shift register maintains state. This eliminates the padding requirement.</p>
+
+    <h3 class="sub">CFB Mechanism — Shift Register Detail</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Initialize</strong> the b-bit shift register with IV (e.g., b = 64, s = 8).</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Encrypt</strong> the shift register contents: O = E(K, ShiftReg) — producing b bits of output.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Select</strong> the leftmost s bits of O; discard the remaining (b−s) bits.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>XOR</strong> the s selected bits with the s-bit plaintext segment P_i: C_i = MSB_s(E(K, ShiftReg)) ⊕ P_i</div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body"><strong>Shift</strong> the register left by s positions; insert C_i (the ciphertext) into the rightmost s bits. This is the critical feedback step.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">Repeat from step 2 for the next s-bit segment.</div>
+      </div>
+    </div>
+
+    <div class="formula">CFB Encryption:  C_i = MSB_s(E(K, X_i)) ⊕ P_i
+CFB Decryption:  P_i = MSB_s(E(K, X_i)) ⊕ C_i
+
+where X_i is the shift register state (b bits):
+  X_1 = IV
+  X_{i+1} = LSB_{b-s}(X_i) || C_i   (shift left s bits, insert C_i)</div>
+
+    <div class="diag">CFB Encryption (one stage, b=64, s=8):
+
+  ┌── Shift Register: [b-s bits | s bits] ──┐
+  │                    ↑ C_{i-1} inserted    │
+  │                                          │
+  <span class="key">K</span>→ [<span class="cipher">Encrypt</span>]                             │
+      |                                    │
+  [Select <span class="op">s bits</span>] [Discard <span class="hl">b-s bits</span>]        │
+      |                                    │
+      ⊕ ← <span class="hl">P_i</span> (s bits)                  │
+      |                                    │
+     <span class="op">C_i</span> (s bits) ─────────────────────────┘  (feedback)
+                   → transmitted</div>
+
+    <div class="alert alert-exam">
+      <div class="alert-label">Exam Critical — Why Decryption Uses E(K, ·) Not D(K, ·)</div>
+      In CFB decryption, the shift register still feeds through <strong>Encrypt</strong>, not Decrypt. This is because the XOR keystream is generated identically on both sides — we XOR C_i with the same keystream to recover P_i. The encryption operation is inverted by XOR, not by calling the inverse cipher function.
+    </div>
+
+    <h3 class="sub">CFB Error Propagation</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Error in C_i</th><th>Impact</th></tr>
+        <tr><td>Bit error in 1-bit segment C_i</td><td>Corrupts P_i immediately (1 unit). As C_i propagates through the shift register, it corrupts further decrypted segments for ⌈b/s⌉ more segments, then re-synchronizes.</td></tr>
+        <tr><td>Total corruption window</td><td>1 + ⌈b/s⌉ consecutive s-bit segments. For b=64, s=8: 1 + 8 = 9 bytes affected.</td></tr>
+      </table>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>CFB Behavior</th></tr>
+        <tr><td>Processing granularity</td><td>s bits at a time (flexible)</td></tr>
+        <tr><td>Padding required?</td><td class="td-good">No — stream cipher behavior</td></tr>
+        <tr><td>Parallelism (Enc)</td><td class="td-bad">No — sequential (feedback is ciphertext)</td></tr>
+        <tr><td>Parallelism (Dec)</td><td class="td-good">Yes — C_i already known, parallel D possible</td></tr>
+        <tr><td>IV Required?</td><td class="td-bad">Yes</td></tr>
+        <tr><td>Typical Application</td><td>General-purpose stream-oriented transmission; authentication</td></tr>
+        <tr><td>Real-time capable?</td><td class="td-good">Yes — each character encrypted/transmitted immediately</td></tr>
+      </table>
+    </div>
+
+    <div class="alert alert-key">
+      <div class="alert-label">Key Insight</div>
+      CFB is essentially a synchronous stream cipher where the keystream is derived from previous <strong>ciphertext</strong> (via the shift register). This makes it self-synchronizing after an error — after b/s steps, the error clears.
+    </div>
+  </div>
+
+  <!-- OFB -->
+  <div class="card">
+    <div class="card-title pink">OFB — Output Feedback Mode</div>
+    <p>OFB is structurally similar to CFB but with one critical difference: the feedback comes from the <strong>encryption output</strong> (keystream), not from the ciphertext. This decouples the keystream from the message, enabling pre-computation.</p>
+
+    <div class="formula pink">OFB Encryption:  O_i = E(K, O_{i-1})   where O_0 = Nonce (IV)
+                  C_i = P_i ⊕ O_i
+
+OFB Decryption:  O_i = E(K, O_{i-1})   (identical — keystream is same)
+                  P_i = C_i ⊕ O_i</div>
+
+    <h3 class="sub pink">Step-by-Step OFB Operation</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num pink">1</div>
+        <div class="step-body">Initialize the b-bit input register with Nonce (a unique value per message, analogous to IV).</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">2</div>
+        <div class="step-body">Compute keystream output: O_1 = E(K, Nonce)</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">3</div>
+        <div class="step-body">XOR with plaintext: C_1 = P_1 ⊕ O_1</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">4</div>
+        <div class="step-body">Feed O_1 (the encryption OUTPUT — NOT C_1) back as input for next step: O_2 = E(K, O_1)</div>
+      </div>
+      <div class="step">
+        <div class="step-num pink">5</div>
+        <div class="step-body">The keystream {O_1, O_2, O_3, ...} can be computed entirely <em>before</em> seeing any plaintext, since it depends only on (K, Nonce).</div>
+      </div>
+    </div>
+
+    <div class="diag">OFB vs CFB — The Critical Difference:
+
+CFB feedback:  C_i ───────────→ [Shift Register] → E(K,·) → keystream
+               (ciphertext feeds back — message-dependent)
+
+OFB feedback:  O_i = E(K,·) → [Shift Register] → E(K,·) → keystream
+               (encryption output feeds back — message-independent)</div>
+
+    <h3 class="sub pink">OFB Error Propagation</h3>
+    <div class="alert alert-exam">
+      <div class="alert-label">Exam Critical — OFB Error Behavior</div>
+      Because OFB feedback is independent of ciphertext, a bit error in C_i corrupts <strong>only</strong> P_i (the corresponding bit). There is NO error propagation to subsequent blocks. However, OFB is more vulnerable to <strong>message stream modification attacks</strong> — if an attacker knows the plaintext and can flip bits in C_i, they can predictably modify the corresponding plaintext bits.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>OFB Behavior</th></tr>
+        <tr><td>Feedback source</td><td class="td-mono">E(K, O_{i-1}) — encryption output, message-independent</td></tr>
+        <tr><td>Keystream pre-computation</td><td class="td-good">Yes — entire keystream computable before plaintext</td></tr>
+        <tr><td>Error propagation</td><td class="td-good">None — single-bit error corrupts only 1 plaintext bit</td></tr>
+        <tr><td>Parallelism (Enc/Dec)</td><td class="td-bad">No — keystream is sequential (O_i depends on O_{i-1})</td></tr>
+        <tr><td>Nonce reuse risk</td><td class="td-bad">CATASTROPHIC — same (K, Nonce) gives same keystream</td></tr>
+        <tr><td>Typical Application</td><td>Stream-oriented transmission over noisy channels (satellite comm)</td></tr>
+        <tr><td>vs CFB advantage</td><td>Bit errors do not propagate (critical for noisy channels)</td></tr>
+        <tr><td>vs CFB disadvantage</td><td>More vulnerable to message stream modification</td></tr>
+      </table>
+    </div>
+
+    <div class="two-col" style="margin-top:16px">
+      <div class="card2">
+        <div style="font-weight:700; color:var(--accent); margin-bottom:8px">CFB Feedback Architecture</div>
+        <div class="diag" style="font-size:.78rem">Input Register → [<span class="cipher">Encrypt</span>]
+                        ↓
+               Output Register
+                        ↓
+                        ⊕ ← Plaintext
+                        ↓
+                   Ciphertext ──→ (feedback to Input Reg)</div>
+        <p style="font-size:.82rem; color:var(--muted); margin-top:8px">Ciphertext is fed back — ties keystream to message</p>
+      </div>
+      <div class="card2">
+        <div style="font-weight:700; color:var(--accent2); margin-bottom:8px">OFB Feedback Architecture</div>
+        <div class="diag" style="font-size:.78rem">Input Register → [<span class="cipher">Encrypt</span>]
+                        ↓
+               Output Register ──→ (feedback to Input Reg)
+                        ↓
+                        ⊕ ← Plaintext
+                        ↓
+                   Ciphertext</div>
+        <p style="font-size:.82rem; color:var(--muted); margin-top:8px">Encryption output feeds back — keystream is message-independent</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TAB 4: CTR & XTS-AES ========== -->
+<section id="ctr-xts" class="section">
+  <h2 class="sec">⚡ CTR &amp; XTS-AES — Modern Parallelizable Modes</h2>
+
+  <!-- CTR -->
+  <div class="card">
+    <div class="card-title">CTR — Counter Mode</div>
+    <p>CTR converts a block cipher into a stream cipher using a counter as input to the encryption function. The counter is typically initialized with a nonce and incremented for each block. CTR achieves <strong>full parallelism for both encryption and decryption</strong>.</p>
+
+    <div class="formula teal">CTR Encryption:  C_i = E(K, Counter_i) ⊕ P_i
+CTR Decryption:  P_i = E(K, Counter_i) ⊕ C_i
+
+Counter_i = Counter_1 + (i - 1)   (simple increment, or any non-repeating sequence)</div>
+
+    <h3 class="sub">CTR Encryption Step-by-Step</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">Choose N unique counter values Counter_1, Counter_2, ..., Counter_N (typically Counter_1 = Nonce, Counter_{i+1} = Counter_i + 1). Counter values must never repeat for the same key.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">For each block i, independently compute: keystream_i = E(K, Counter_i)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">XOR with plaintext block: C_i = keystream_i ⊕ P_i</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">Because each counter block is independent, all N blocks can be processed <strong>simultaneously in parallel</strong> on multi-core hardware.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">Decryption is identical: P_i = E(K, Counter_i) ⊕ C_i. No inverse cipher needed.</div>
+      </div>
+    </div>
+
+    <div class="diag">
+Counter_1       Counter_2       ...    Counter_N        (inside dashed box)
+    |               |                      |
+<span class="key">K</span>→[<span class="cipher">Encrypt</span>]   <span class="key">K</span>→[<span class="cipher">Encrypt</span>]   ...  <span class="key">K</span>→[<span class="cipher">Encrypt</span>]
+    |               |                      |
+    ⊕←<span class="hl">P_1</span>          ⊕←<span class="hl">P_2</span>            ⊕←<span class="hl">P_N</span>
+    |               |                      |
+   <span class="op">C_1</span>            <span class="op">C_2</span>             ...   <span class="op">C_N</span>
+
+Note: No arrows between stages — complete independence!</div>
+
+    <div class="alert alert-exam">
+      <div class="alert-label">Exam Critical — CTR Unique Properties</div>
+      CTR is the only mode here where <strong>both encryption and decryption are fully parallelizable</strong>. This is because each block's keystream depends only on (K, Counter_i), not on any other block's output. CTR also allows <strong>random access</strong> — you can decrypt any block C_i without processing earlier blocks.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>CTR Behavior</th></tr>
+        <tr><td>Parallelism (Enc)</td><td class="td-good">Yes — fully parallel</td></tr>
+        <tr><td>Parallelism (Dec)</td><td class="td-good">Yes — fully parallel</td></tr>
+        <tr><td>Inverse cipher needed?</td><td class="td-good">No — only E(K, ·) used in both directions</td></tr>
+        <tr><td>Error propagation</td><td class="td-good">None — single-bit error affects only 1 block</td></tr>
+        <tr><td>Random access</td><td class="td-good">Yes — compute keystream for any block independently</td></tr>
+        <tr><td>Padding required?</td><td class="td-good">No — last block XOR truncated to actual plaintext length</td></tr>
+        <tr><td>Counter reuse risk</td><td class="td-bad">CATASTROPHIC — if Counter_i reused, two-time pad attack possible</td></tr>
+        <tr><td>Hardware efficiency</td><td class="td-good">Excellent — pipelines, SIMD, AES-NI all exploitable</td></tr>
+        <tr><td>Typical Application</td><td>General-purpose block-oriented; high-speed requirements (TLS 1.3, disk encryption)</td></tr>
+      </table>
+    </div>
+
+    <div class="alert alert-key">
+      <div class="alert-label">Key Point — CTR vs OFB</div>
+      Both CTR and OFB produce keystreams independent of plaintext. In OFB, keystream block i depends on keystream block i−1 (sequential). In CTR, each keystream block depends only on its counter (parallel). CTR strictly dominates OFB in performance without any security loss.
+    </div>
+  </div>
+
+  <!-- XTS-AES -->
+  <div class="card">
+    <div class="card-title purple">XTS-AES — Encryption for Stored Data</div>
+    <p>XTS-AES (XEX-based Tweaked-codebook mode with ciphertext Stealing) is designed specifically for <strong>encrypting stored data on block devices</strong> (disk sectors, flash blocks), as opposed to transmitted data. It uses two independent AES keys and a mathematical tweak per block position.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-label">Context</div>
+      Storage encryption has a unique constraint: the ciphertext must be exactly the same size as the plaintext (no expansion), because disk sectors have fixed sizes. XTS-AES achieves this while providing sector-level context binding.
+    </div>
+
+    <h3 class="sub purple">XTS-AES Single-Block Encryption — Step by Step</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num purple">1</div>
+        <div class="step-body"><strong>Compute Tweak T:</strong> Given sector index <em>i</em> and block position within sector <em>j</em>, compute the tweak value: T = E(Key₂, i) ⊗ α^j — where ⊗ is multiplication in GF(2^128), and α is a primitive element (the polynomial x, i.e., α = 0x02 in GF(2^128)).</div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">2</div>
+        <div class="step-body"><strong>Pre-whiten plaintext:</strong> PP = P_j ⊕ T (XOR plaintext block with the tweak)</div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">3</div>
+        <div class="step-body"><strong>Core encryption:</strong> CC = E(Key₁, PP) — encrypt the pre-whitened plaintext using Key₁</div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">4</div>
+        <div class="step-body"><strong>Post-whiten ciphertext:</strong> C_j = CC ⊕ T (XOR again with the same tweak)</div>
+      </div>
+    </div>
+
+    <div class="formula purple">XTS-AES Single Block Encryption:
+  T     = E(Key₂, i) ⊗ αʲ           (tweak for sector i, block j)
+  PP    = P_j ⊕ T                    (pre-whitening)
+  CC    = E(Key₁, PP)                (AES encryption with Key₁)
+  C_j   = CC ⊕ T                    (post-whitening)
+
+XTS-AES Single Block Decryption:
+  T     = E(Key₂, i) ⊗ αʲ           (same tweak computation)
+  CC    = C_j ⊕ T                   (undo post-whitening)
+  PP    = D(Key₁, CC)               (AES decryption with Key₁)
+  P_j   = PP ⊕ T                    (undo pre-whitening)</div>
+
+    <h3 class="sub purple">XTS-AES Full Sector Encryption</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num purple">1</div>
+        <div class="step-body">For a sector containing blocks P_0, P_1, ..., P_{m-1}, P_m (where P_m may be a partial/incomplete block): encrypt P_0 through P_{m-2} using the standard XTS block procedure with tweak (i, 0), (i, 1), ..., (i, m-2).</div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">2</div>
+        <div class="step-body"><strong>Last full block P_{m-1}:</strong> Encrypted with tweak (i, m). Output XX (intermediate full-block ciphertext). The final partial ciphertext C_m is composed of the <em>most significant</em> bits of XX (as many as P_m has).</div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">3</div>
+        <div class="step-body"><strong>Ciphertext Stealing for partial block P_m:</strong> The partial plaintext P_m is concatenated with the <em>least significant</em> bits of XX (those that were "excess" from XX) to form a full b-bit block CP. Encrypt CP with tweak (i, m-1) to get C_{m-1}.</div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">4</div>
+        <div class="step-body">Final output: C_0, C_1, ..., C_{m-2}, C_{m-1}, C_m — same total byte count as the input sector (no expansion).</div>
+      </div>
+    </div>
+
+    <div class="alert alert-exam">
+      <div class="alert-label">Exam Critical — XTS-AES Design Rationale</div>
+      The "tweak" T = E(Key₂, i) ⊗ αʲ serves as a per-block context binding. Two keys are used: Key₂ derives the sector-specific tweak, Key₁ encrypts the actual data. This prevents cross-sector attacks — the same plaintext at different sectors/positions produces different ciphertext. The GF(2^128) multiplication by αʲ cheaply generates j distinct tweaks per sector from one AES operation.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Property</th><th>XTS-AES Behavior</th></tr>
+        <tr><td>Keys required</td><td>Two: Key₁ (data encryption), Key₂ (tweak generation)</td></tr>
+        <tr><td>Ciphertext expansion</td><td class="td-good">None — output = input length</td></tr>
+        <tr><td>Parallelism (blocks within sector)</td><td class="td-good">Yes — tweaks computed independently</td></tr>
+        <tr><td>Designed for</td><td>Storage devices (disk sectors, SSDs, flash)</td></tr>
+        <tr><td>NOT designed for</td><td class="td-bad">Network/transmission encryption (use GCM or CTR instead)</td></tr>
+        <tr><td>Ciphertext stealing</td><td>Used for final partial block — avoids padding</td></tr>
+        <tr><td>Standardized by</td><td>IEEE P1619 / NIST SP 800-38E</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TAB 5: COMPARISON & APPLICATIONS ========== -->
+<section id="compare" class="section">
+  <h2 class="sec">📊 Master Comparison &amp; Applications</h2>
+
+  <div class="card">
+    <div class="card-title amber">Comprehensive Mode Comparison Table</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr>
+          <th>Mode</th>
+          <th>Type</th>
+          <th>Enc Parallel</th>
+          <th>Dec Parallel</th>
+          <th>IV/Nonce</th>
+          <th>Padding</th>
+          <th>Error Prop</th>
+          <th>Best Use Case</th>
+        </tr>
+        <tr>
+          <td><span class="badge badge-teal">ECB</span></td>
+          <td>Block</td>
+          <td class="td-good">✓ Yes</td>
+          <td class="td-good">✓ Yes</td>
+          <td class="td-good">No</td>
+          <td class="td-bad">Yes</td>
+          <td>1 block only</td>
+          <td>Single-value (key) transmission</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-pink">CBC</span></td>
+          <td>Block</td>
+          <td class="td-bad">✗ No</td>
+          <td class="td-good">✓ Yes</td>
+          <td class="td-bad">Yes (secret)</td>
+          <td class="td-bad">Yes</td>
+          <td>2 blocks</td>
+          <td>General block transmission; auth</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">CFB</span></td>
+          <td>Stream</td>
+          <td class="td-bad">✗ No</td>
+          <td class="td-good">✓ Yes</td>
+          <td class="td-bad">Yes (IV)</td>
+          <td class="td-good">No</td>
+          <td>⌈b/s⌉+1 segs</td>
+          <td>Stream-oriented; real-time auth</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-amber">OFB</span></td>
+          <td>Stream</td>
+          <td class="td-bad">✗ No</td>
+          <td class="td-bad">✗ No</td>
+          <td class="td-bad">Yes (Nonce)</td>
+          <td class="td-good">No</td>
+          <td>None (1 bit)</td>
+          <td>Noisy channels (satellite comm)</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-teal">CTR</span></td>
+          <td>Stream</td>
+          <td class="td-good">✓ Yes</td>
+          <td class="td-good">✓ Yes</td>
+          <td class="td-bad">Yes (Nonce)</td>
+          <td class="td-good">No</td>
+          <td>None (1 block)</td>
+          <td>High-speed; disk enc; TLS 1.3</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">XTS-AES</span></td>
+          <td>Tweaked Block</td>
+          <td class="td-good">✓ Yes (intra-sector)</td>
+          <td class="td-good">✓ Yes</td>
+          <td class="td-bad">Yes (sector index)</td>
+          <td class="td-good">No (CTS)</td>
+          <td>1 block</td>
+          <td>Storage (disk/SSD) encryption only</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Feedback Mechanism Comparison (Slides 18–19)</div>
+    <p>The modes differ fundamentally in <em>what</em> gets fed back into the encryption function:</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Mode</th><th>What is Fed Back?</th><th>Consequence</th></tr>
+        <tr>
+          <td><span class="badge badge-pink">CBC</span></td>
+          <td>Previous <strong>Ciphertext</strong> block C_{i-1} → XOR'd with plaintext before encryption</td>
+          <td>Errors propagate through 2 blocks; encryption sequential, decryption parallel</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">CFB</span></td>
+          <td>Previous <strong>Ciphertext</strong> C_{i-1} → shift register → encrypt → XOR with plaintext</td>
+          <td>Self-synchronizing after ⌈b/s⌉ steps; encryption sequential, decryption parallel</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-amber">OFB</span></td>
+          <td>Previous <strong>Encrypt Output</strong> O_{i-1} → encrypt again → XOR with plaintext</td>
+          <td>Keystream independent of plaintext; no error propagation; fully sequential keystream</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-teal">CTR</span></td>
+          <td><strong>No feedback</strong> — Counter is input; no dependency between blocks at all</td>
+          <td>Fully parallel both directions; random access; highest performance</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title blue">When CBC ≈ CFB</div>
+      <p>Both CBC and CFB are fed by previous ciphertext. Key differences:</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th></th><th>CBC</th><th>CFB</th></tr>
+          <tr><td>Block size</td><td>Full b bits</td><td>s bits (flexible)</td></tr>
+          <tr><td>Padding needed?</td><td class="td-bad">Yes</td><td class="td-good">No</td></tr>
+          <tr><td>Real-time streaming?</td><td class="td-bad">No</td><td class="td-good">Yes</td></tr>
+          <tr><td>Error prop duration</td><td>2 blocks</td><td>⌈b/s⌉+1 segs</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title amber">When OFB ≈ CTR</div>
+      <p>Both OFB and CTR produce plaintext-independent keystreams. Key differences:</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th></th><th>OFB</th><th>CTR</th></tr>
+          <tr><td>Keystream gen</td><td>Sequential chain</td><td>Parallel (counter)</td></tr>
+          <tr><td>Random access?</td><td class="td-bad">No</td><td class="td-good">Yes</td></tr>
+          <tr><td>Pre-computation?</td><td class="td-good">Yes</td><td class="td-good">Yes</td></tr>
+          <tr><td>Performance</td><td class="td-mid">Medium</td><td class="td-good">Excellent</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title pink">Real-World Applications Summary</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Application</th><th>Mode Used</th><th>Reason</th></tr>
+        <tr><td>TLS 1.2 (legacy)</td><td><span class="badge badge-pink">CBC</span></td><td>Block-oriented transmission; supported by both parties</td></tr>
+        <tr><td>TLS 1.3 (modern)</td><td><span class="badge badge-teal">CTR</span> (via GCM)</td><td>Parallelism, AEAD, high performance</td></tr>
+        <tr><td>Full-disk encryption (BitLocker, dm-crypt)</td><td><span class="badge badge-purple">XTS-AES</span></td><td>No size expansion, sector-context binding, IEEE P1619</td></tr>
+        <tr><td>Satellite/noisy channel comm</td><td><span class="badge badge-amber">OFB</span></td><td>Bit errors don't propagate; robust to channel noise</td></tr>
+        <tr><td>Real-time interactive session</td><td><span class="badge badge-blue">CFB (s=8)</span></td><td>Byte-by-byte stream; no need to buffer full blocks</td></tr>
+        <tr><td>Database field encryption</td><td><span class="badge badge-teal">ECB</span></td><td>Random access per field; single short values only</td></tr>
+        <tr><td>File encryption (large)</td><td><span class="badge badge-teal">CTR</span></td><td>Parallel hardware, seekable, no padding overhead</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Security Properties Deep-Dive</div>
+    <div class="alert alert-exam">
+      <div class="alert-label">Exam Critical — IV/Nonce Reuse Consequences</div>
+      <strong>CBC + reused IV:</strong> An attacker can detect when two messages have the same prefix (BEAST attack in TLS 1.0). <br>
+      <strong>OFB/CTR + reused Nonce:</strong> Catastrophic — same keystream XOR'd with two plaintexts: C1 ⊕ C2 = P1 ⊕ P2 (the "two-time pad" problem; reveals XOR of plaintexts). <br>
+      <strong>ECB:</strong> No IV needed, but no confidentiality for repeated blocks regardless.
+    </div>
+
+    <h3 class="sub">Error Propagation: Concrete Example</h3>
+    <p>Suppose b = 64 bits, s = 8 bits, and block C_3 has a 1-bit transmission error:</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Mode</th><th>Blocks Corrupted</th><th>Recovery Point</th></tr>
+        <tr><td>ECB</td><td>P_3 only</td><td>P_4 correct</td></tr>
+        <tr><td>CBC</td><td>P_3 entirely + 1 bit of P_4</td><td>P_5 correct</td></tr>
+        <tr><td>CFB (s=8)</td><td>P_3 + next 8 segments (9 total bytes)</td><td>Byte 3+9=12 onwards correct</td></tr>
+        <tr><td>OFB</td><td>1 bit of P_3 only</td><td>P_3 next bit onwards correct</td></tr>
+        <tr><td>CTR</td><td>1 bit of P_3 only</td><td>P_4 correct</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TAB 6: INTERACTIVE TOOL ========== -->
+<section id="tool" class="section">
+  <h2 class="sec">🧮 Interactive Block Cipher Mode Simulator</h2>
+
+  <div class="card">
+    <p>This simulator traces encryption and decryption step-by-step for ECB, CBC, OFB, and CTR modes using <strong>4-bit toy blocks</strong> (XOR-based pseudoencryption: E(K, X) = X ⊕ K rotated by round). All arithmetic shown in binary. Pre-loaded with a worked example.</p>
+    <div class="alert alert-info">
+      <div class="alert-label">Note on Simulation</div>
+      For pedagogical clarity, E(K, X) here is defined as X ⊕ K (simple XOR substitution). In real AES/DES, E(K, ·) is a complex multi-round function — but the <em>structural mechanics</em> of each mode are identical.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Simulator Inputs</div>
+    <div class="tool-row">
+      <div class="tool-field">
+        <label>Mode</label>
+        <select class="pp-input" id="mode-select">
+          <option value="ecb">ECB — Electronic Codebook</option>
+          <option value="cbc" selected>CBC — Cipher Block Chaining</option>
+          <option value="ofb">OFB — Output Feedback</option>
+          <option value="ctr">CTR — Counter Mode</option>
+        </select>
+      </div>
+      <div class="tool-field">
+        <label>Key K (4-bit binary)</label>
+        <input class="pp-input" id="key-input" value="1010" maxlength="4" placeholder="e.g. 1010" style="width:140px">
+      </div>
+      <div class="tool-field">
+        <label>IV / Nonce (4-bit binary)</label>
+        <input class="pp-input" id="iv-input" value="0011" maxlength="4" placeholder="e.g. 0011" style="width:140px">
+      </div>
+    </div>
+    <div class="tool-row">
+      <div class="tool-field">
+        <label>Plaintext Blocks (4-bit each, comma-separated)</label>
+        <input class="pp-input" id="pt-input" value="1100,0101,1010,0110" placeholder="e.g. 1100,0101,1010" style="width:300px">
+      </div>
+    </div>
+    <div class="tool-row">
+      <button class="pp-btn" onclick="runSim()">▶ Run Simulation</button>
+      <button class="pp-btn secondary" onclick="loadPreset('cbc')">CBC Example</button>
+      <button class="pp-btn secondary" onclick="loadPreset('ctr')">CTR Example</button>
+      <button class="pp-btn secondary" onclick="loadPreset('ofb')">OFB Example</button>
+    </div>
+  </div>
+
+  <div id="sim-result" class="tool-result">
+    <div id="sim-output"></div>
+  </div>
+</section>
+
+<!-- ========== TAB 7: QUIZ ========== -->
+<section id="quiz" class="section">
+  <h2 class="sec">🧠 Self-Test Quiz — 15 Questions</h2>
+
+  <div class="quiz-score-bar">
+    <div>
+      <div class="score-label">Live Score</div>
+      <div class="score-display"><span id="q-correct">0</span> / <span id="q-total">0</span></div>
+    </div>
+    <div style="flex:1; min-width:120px">
+      <div class="progress-label" style="font-size:.78rem">Answered: <span id="q-answered">0</span>/15</div>
+      <div class="progress-bar-bg"><div class="progress-bar" id="q-bar"></div></div>
+    </div>
+    <button class="reset-btn" onclick="resetQuiz()">↺ Reset Quiz</button>
+  </div>
+
+  <div id="quiz-container"></div>
+</section>
+
+<script>
+// ======= SECTION SWITCHING =======
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ======= CHECKLIST =======
+function toggleCheck(li) {
+  const cb = li.querySelector('input[type=checkbox]');
+  cb.checked = !cb.checked;
+  li.classList.toggle('done', cb.checked);
+  updateProgress();
+}
+function updateProgress() {
+  const total = document.querySelectorAll('#checklist li input').length;
+  const done = document.querySelectorAll('#checklist li input:checked').length;
+  document.getElementById('prog-count').textContent = done;
+  document.getElementById('prog-bar').style.width = (done / total * 100) + '%';
+}
+
+// ======= SIMULATOR =======
+function xorBin(a, b) {
+  let r = '';
+  for (let i = 0; i < a.length; i++) r += (parseInt(a[i]) ^ parseInt(b[i])).toString();
+  return r;
+}
+function enc(k, x) { return xorBin(k, x); } // simplified E(K,X) = K ⊕ X
+function binToHex(b) { return parseInt(b, 2).toString(16).toUpperCase(); }
+function incCounter(b) {
+  let n = parseInt(b, 2) + 1;
+  return n.toString(2).padStart(b.length, '0').slice(-b.length);
+}
+function validateBin(s, len) {
+  return /^[01]+$/.test(s) && s.length === len;
+}
+
+function loadPreset(mode) {
+  document.getElementById('mode-select').value = mode;
+  document.getElementById('key-input').value = '1010';
+  document.getElementById('iv-input').value = '0011';
+  document.getElementById('pt-input').value = '1100,0101,1010,0110';
+}
+
+function runSim() {
+  const mode = document.getElementById('mode-select').value;
+  const K = document.getElementById('key-input').value.trim();
+  const IV = document.getElementById('iv-input').value.trim();
+  const ptRaw = document.getElementById('pt-input').value.trim();
+  const blocks = ptRaw.split(',').map(s => s.trim());
+  const b = K.length;
+
+  if (!validateBin(K, b)) { alert('Key must be binary digits'); return; }
+  if (mode !== 'ecb' && !validateBin(IV, b)) { alert(`IV must be ${b}-bit binary`); return; }
+  for (const bl of blocks) {
+    if (!validateBin(bl, b)) { alert(`Each plaintext block must be ${b}-bit binary: "${bl}" is invalid`); return; }
+  }
+
+  let html = `<div style="font-weight:700; color:var(--accent4); margin-bottom:12px; font-size:1rem">
+    Mode: <span style="color:var(--accent)">${mode.toUpperCase()}</span> &nbsp;|&nbsp;
+    K = <span style="color:var(--accent5)">${K}</span> &nbsp;|&nbsp;
+    IV/Nonce = <span style="color:var(--accent3)">${IV}</span> &nbsp;|&nbsp;
+    Blocks: ${blocks.length}
+  </div>`;
+
+  // ---- ENCRYPTION ----
+  html += `<h3 style="color:var(--accent2); margin:12px 0 8px; font-size:1rem">▼ ENCRYPTION</h3>`;
+  const CT = [];
+
+  if (mode === 'ecb') {
+    for (let i = 0; i < blocks.length; i++) {
+      const ci = enc(K, blocks[i]);
+      CT.push(ci);
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1}</div>
+        C_${i+1} = E(K, P_${i+1}) = E(${K}, ${blocks[i]}) = ${K} ⊕ ${blocks[i]} = <strong style="color:var(--accent)">${ci}</strong>
+      </div>`;
+    }
+  } else if (mode === 'cbc') {
+    let prev = IV;
+    for (let i = 0; i < blocks.length; i++) {
+      const xored = xorBin(blocks[i], prev);
+      const ci = enc(K, xored);
+      CT.push(ci);
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1}</div>
+        P_${i+1} ⊕ C_${i} = ${blocks[i]} ⊕ ${prev} = ${xored}<br>
+        C_${i+1} = E(K, ${xored}) = ${K} ⊕ ${xored} = <strong style="color:var(--accent)">${ci}</strong>
+      </div>`;
+      prev = ci;
+    }
+  } else if (mode === 'ofb') {
+    let oi = IV;
+    for (let i = 0; i < blocks.length; i++) {
+      const newOi = enc(K, oi);
+      const ci = xorBin(blocks[i], newOi);
+      CT.push(ci);
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1}</div>
+        O_${i+1} = E(K, O_${i}) = E(${K}, ${oi}) = ${K} ⊕ ${oi} = ${newOi}<br>
+        C_${i+1} = P_${i+1} ⊕ O_${i+1} = ${blocks[i]} ⊕ ${newOi} = <strong style="color:var(--accent)">${ci}</strong>
+      </div>`;
+      oi = newOi;
+    }
+  } else if (mode === 'ctr') {
+    let ctr = IV;
+    for (let i = 0; i < blocks.length; i++) {
+      const ks = enc(K, ctr);
+      const ci = xorBin(blocks[i], ks);
+      CT.push(ci);
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1} (Counter = ${ctr})</div>
+        Keystream_${i+1} = E(K, Counter_${i+1}) = E(${K}, ${ctr}) = ${K} ⊕ ${ctr} = ${ks}<br>
+        C_${i+1} = P_${i+1} ⊕ Keystream_${i+1} = ${blocks[i]} ⊕ ${ks} = <strong style="color:var(--accent)">${ci}</strong>
+      </div>`;
+      ctr = incCounter(ctr);
+    }
+  }
+
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin:12px 0;font-family:var(--font-mono);font-size:.85rem">
+    <span style="color:var(--muted)">Ciphertext Blocks: </span>
+    ${CT.map((c,i) => `<span style="color:var(--accent4)">C_${i+1}=${c}</span>`).join(' &nbsp; ')}
+  </div>`;
+
+  // ---- DECRYPTION ----
+  html += `<h3 style="color:var(--accent2); margin:16px 0 8px; font-size:1rem">▼ DECRYPTION VERIFICATION</h3>`;
+  const PT2 = [];
+
+  if (mode === 'ecb') {
+    for (let i = 0; i < CT.length; i++) {
+      const pi = enc(K, CT[i]);
+      PT2.push(pi);
+      const ok = pi === blocks[i];
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1}</div>
+        P_${i+1} = D(K, C_${i+1}) = E(K, ${CT[i]}) = ${K} ⊕ ${CT[i]} = <strong style="color:${ok?'var(--success)':'var(--danger)'}">${pi}</strong>
+        ${ok ? '✓ Matches' : '✗ Mismatch!'}
+      </div>`;
+    }
+  } else if (mode === 'cbc') {
+    let prev = IV;
+    for (let i = 0; i < CT.length; i++) {
+      const dec = enc(K, CT[i]);
+      const pi = xorBin(dec, prev);
+      PT2.push(pi);
+      const ok = pi === blocks[i];
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1}</div>
+        D(K, C_${i+1}) = E(K, ${CT[i]}) = ${dec}<br>
+        P_${i+1} = ${dec} ⊕ C_${i}(${prev}) = <strong style="color:${ok?'var(--success)':'var(--danger)'}">${pi}</strong>
+        ${ok ? '✓ Matches' : '✗ Mismatch!'}
+      </div>`;
+      prev = CT[i];
+    }
+  } else if (mode === 'ofb') {
+    let oi = IV;
+    for (let i = 0; i < CT.length; i++) {
+      const newOi = enc(K, oi);
+      const pi = xorBin(CT[i], newOi);
+      PT2.push(pi);
+      const ok = pi === blocks[i];
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1}</div>
+        O_${i+1} = E(K, ${oi}) = ${newOi}<br>
+        P_${i+1} = C_${i+1} ⊕ O_${i+1} = ${CT[i]} ⊕ ${newOi} = <strong style="color:${ok?'var(--success)':'var(--danger)'}">${pi}</strong>
+        ${ok ? '✓ Matches' : '✗ Mismatch!'}
+      </div>`;
+      oi = newOi;
+    }
+  } else if (mode === 'ctr') {
+    let ctr = IV;
+    for (let i = 0; i < CT.length; i++) {
+      const ks = enc(K, ctr);
+      const pi = xorBin(CT[i], ks);
+      PT2.push(pi);
+      const ok = pi === blocks[i];
+      html += `<div class="tool-step">
+        <div class="tool-step-label">Block ${i+1} (Counter = ${ctr})</div>
+        Keystream_${i+1} = E(K, ${ctr}) = ${ks}<br>
+        P_${i+1} = C_${i+1} ⊕ Keystream = ${CT[i]} ⊕ ${ks} = <strong style="color:${ok?'var(--success)':'var(--danger)'}">${pi}</strong>
+        ${ok ? '✓ Matches' : '✗ Mismatch!'}
+      </div>`;
+      ctr = incCounter(ctr);
+    }
+  }
+
+  html += `<div style="background:var(--card);border:1px solid var(--success);border-radius:8px;padding:12px;margin:12px 0;font-family:var(--font-mono);font-size:.85rem">
+    <span style="color:var(--muted)">Recovered Plaintext: </span>
+    ${PT2.map((p,i) => `<span style="color:var(--success)">P_${i+1}=${p}</span>`).join(' &nbsp; ')}
+  </div>`;
+
+  // Summary
+  html += `<div class="alert alert-key" style="margin-top:16px">
+    <div class="alert-label">Mode Characteristics Observed</div>
+    ${getModeNote(mode)}
+  </div>`;
+
+  document.getElementById('sim-output').innerHTML = html;
+  document.getElementById('sim-result').classList.add('show');
+}
+
+function getModeNote(mode) {
+  const notes = {
+    ecb: 'ECB: Each block encrypted independently with same key. Notice: if two plaintext blocks are equal, their ciphertext blocks will also be equal — this is the pattern-leakage vulnerability.',
+    cbc: 'CBC: Each ciphertext block depends on all previous plaintext blocks via chaining. Encryption must be sequential (prev C needed). Decryption can be parallelized (all C already available).',
+    ofb: 'OFB: Keystream {O_i} depends only on K and IV — completely independent of plaintext/ciphertext. The keystream could have been pre-computed before any plaintext was seen. A bit error in one C_i affects only that block\'s P_i.',
+    ctr: 'CTR: Each keystream block computed from (K, Counter_i) independently. Full parallelism both ways. Counter must never repeat — use a fresh nonce per session/message.'
+  };
+  return notes[mode] || '';
+}
+
+// ======= QUIZ =======
+const QUESTIONS = [
+  {
+    q: "In ECB mode, what is the fundamental security problem when encrypting a long message?",
+    opts: [
+      "The encryption key is revealed to an attacker",
+      "Identical plaintext blocks produce identical ciphertext blocks, leaking structural patterns",
+      "The IV must be transmitted in plaintext, revealing message content",
+      "Each block must be encrypted sequentially, making it too slow"
+    ],
+    ans: 1,
+    exp: "ECB encrypts each block independently with the same key: C_i = E(K, P_i). If P_i = P_j, then C_i = C_j. This means an attacker can detect repeated blocks in the ciphertext without breaking the cipher — revealing structural patterns (the 'ECB penguin' effect). This is why ECB is unsafe for bulk data."
+  },
+  {
+    q: "The CBC encryption equation is: C_i = E(K, P_i ⊕ C_{i-1}). What does C_0 represent?",
+    opts: [
+      "The final ciphertext block from the previous session",
+      "A hash of the plaintext message",
+      "The Initialization Vector (IV)",
+      "The encryption key K"
+    ],
+    ans: 2,
+    exp: "C_0 is defined as the IV (Initialization Vector) — a b-bit random value that 'seeds' the chaining for the first block. Without it, two messages with the same first block and same key would produce the same C_1. The IV must be known to both sender and receiver but kept secret from attackers."
+  },
+  {
+    q: "Why is CBC encryption sequential but CBC decryption parallelizable?",
+    opts: [
+      "Decryption uses a different algorithm that doesn't require previous blocks",
+      "Encryption requires C_{i-1} which isn't available until computed, but decryption receives all C_i at once as ciphertext input",
+      "CBC uses a stream cipher for decryption but a block cipher for encryption",
+      "The decryption key is different from the encryption key and doesn't create dependencies"
+    ],
+    ans: 1,
+    exp: "During encryption: C_i = E(K, P_i ⊕ C_{i-1}). You must compute C_{i-1} before you can compute C_i — strictly sequential. During decryption: P_i = D(K, C_i) ⊕ C_{i-1}. All ciphertext blocks C_1...C_N are already received as input, so every block can be decrypted independently and simultaneously — fully parallel."
+  },
+  {
+    q: "In CFB mode, what is the decryption equation for P_i?",
+    opts: [
+      "P_i = D(K, C_i) ⊕ C_{i-1}",
+      "P_i = MSB_s(E(K, X_i)) ⊕ C_i, where X_i is the shift register state",
+      "P_i = D(K, C_i ⊕ IV)",
+      "P_i = E(K, C_i) ⊕ K"
+    ],
+    ans: 1,
+    exp: "In CFB decryption, the receiver computes the same keystream as the sender: MSB_s(E(K, X_i)) where X_i is the shift register (initialized with IV, then updated with received C_{i-1}). XOR-ing C_i with this keystream recovers P_i. Critically, CFB decryption calls Encrypt (E), not Decrypt (D) — because the XOR operation is self-inverse; no inverse cipher is needed."
+  },
+  {
+    q: "What is the key structural difference between CFB and OFB modes?",
+    opts: [
+      "CFB uses a larger block size than OFB",
+      "OFB requires two keys while CFB uses one",
+      "In CFB, ciphertext is fed back to the shift register; in OFB, the encryption output is fed back",
+      "CFB cannot be used for authentication but OFB can"
+    ],
+    ans: 2,
+    exp: "This is the most important distinction: CFB feedback = C_{i-1} (previous ciphertext) fed back into the shift register. OFB feedback = O_{i-1} (previous encryption output, i.e., keystream block) fed back. This means the OFB keystream is completely independent of the plaintext/ciphertext — enabling pre-computation and eliminating error propagation."
+  },
+  {
+    q: "A satellite communication system experiences frequent single-bit transmission errors. Which mode is MOST appropriate?",
+    opts: [
+      "ECB — no error propagation beyond the corrupted block",
+      "CBC — self-synchronizing after 2 blocks",
+      "OFB — bit errors do not propagate to other blocks",
+      "CTR — fully parallel recovery"
+    ],
+    ans: 2,
+    exp: "OFB is specifically designed for noisy channels like satellite communications. Because the keystream is independent of the ciphertext, a bit error in C_i affects ONLY the corresponding bit in P_i. There is zero error propagation. The slides explicitly state OFB typical application as 'stream-oriented transmission over noisy channels (e.g. satellite communications)'."
+  },
+  {
+    q: "In CTR mode, what is the encryption of the i-th block?",
+    opts: [
+      "C_i = E(K, P_i ⊕ C_{i-1})",
+      "C_i = E(K, Counter_i ⊕ P_i)",
+      "C_i = E(K, Counter_i) ⊕ P_i",
+      "C_i = D(K, Counter_i) ⊕ P_i"
+    ],
+    ans: 2,
+    exp: "CTR encryption: C_i = E(K, Counter_i) ⊕ P_i. The counter is encrypted first to produce a keystream block, then XOR'd with the plaintext. Decryption is identical: P_i = E(K, Counter_i) ⊕ C_i. Note that only E(K,·) is used — never D(K,·). This is why only one cipher direction needs to be implemented."
+  },
+  {
+    q: "Which mode(s) offer full parallelism for BOTH encryption AND decryption?",
+    opts: [
+      "ECB and CTR only",
+      "CBC and CFB only",
+      "OFB only",
+      "ECB, CTR, and XTS-AES (within a sector)"
+    ],
+    ans: 3,
+    exp: "ECB: both directions parallel (no dependencies). CTR: both directions parallel (counter blocks independent). XTS-AES: blocks within a sector are independent (tweaks computed independently). CBC: only decryption is parallel (encryption is sequential). CFB: only decryption is parallel. OFB: neither is parallel (keystream is a chain)."
+  },
+  {
+    q: "In XTS-AES, what is the purpose of the tweak T = E(Key₂, i) ⊗ αʲ?",
+    opts: [
+      "To generate a random initialization vector for each sector",
+      "To provide per-block location binding — identical plaintext at different positions produces different ciphertext",
+      "To increase the effective key length against brute force attacks",
+      "To enable error detection in stored data"
+    ],
+    ans: 1,
+    exp: "The tweak T encodes both the sector index i and the block position j within the sector. XORing it with the plaintext before and after encryption binds the ciphertext to its specific location. This prevents an attacker from copying ciphertext blocks between sectors or positions — a subtle 'copy-paste' attack on disk encryption. It's not about key length or error detection."
+  },
+  {
+    q: "Why does XTS-AES use two keys (Key₁ and Key₂) instead of one?",
+    opts: [
+      "Because Key₂ encrypts Key₁ for added security",
+      "Key₁ encrypts the data blocks; Key₂ is used only for computing the tweak E(Key₂, i) — separating data encryption from location-binding",
+      "Key₁ is for sectors with even indices, Key₂ for odd indices",
+      "Using two keys doubles the effective block size"
+    ],
+    ans: 1,
+    exp: "Key₁ is the data encryption key used in E(Key₁, PP) to actually protect the plaintext. Key₂ is used only to compute the tweak: T = E(Key₂, i) ⊗ αʲ. This separation ensures that even if an attacker somehow compromises the tweak computation (Key₂), they cannot decrypt the actual data without Key₁ — and vice versa. The two-key design also prevents certain related-key attacks."
+  },
+  {
+    q: "What happens to CBC decryption if exactly one bit in ciphertext block C_3 is flipped by an attacker?",
+    opts: [
+      "Only P_3 is corrupted; P_4 onwards decrypt correctly",
+      "P_3 is entirely corrupted AND exactly one bit in P_4 (same position) is flipped; P_5 onwards are correct",
+      "P_3, P_4, and P_5 are all corrupted",
+      "The entire message fails to decrypt"
+    ],
+    ans: 1,
+    exp: "CBC decryption: P_i = D(K, C_i) ⊕ C_{i-1}. P_3 depends on C_3 directly, so the whole block P_3 is corrupted (one bit flip in C_3 affects the entire decrypted block due to the block cipher's avalanche effect). P_4 = D(K, C_4) ⊕ C_3 — the single flipped bit in C_3 causes exactly one bit flip at the same position in P_4. C_4 is unmodified, so D(K, C_4) is correct, and C_4 feeds into P_5 correctly. P_5 onwards: unaffected."
+  },
+  {
+    q: "An attacker observes that C_5 = C_12 in an ECB-encrypted ciphertext. What can they conclude?",
+    opts: [
+      "The encryption key has been reused from a previous session",
+      "The plaintext blocks P_5 and P_12 are identical",
+      "An error occurred during transmission",
+      "The IV was poorly chosen"
+    ],
+    ans: 1,
+    exp: "In ECB, C_i = E(K, P_i). If C_5 = C_12, then E(K, P_5) = E(K, P_12). Since E(K, ·) is a bijection (one-to-one), this implies P_5 = P_12. The attacker has learned that two message blocks are equal — without decrypting anything. This is the core of ECB's pattern-leakage vulnerability."
+  },
+  {
+    q: "In OFB mode, what is the catastrophic consequence of reusing the same Nonce with the same key for two different messages M and M'?",
+    opts: [
+      "Both messages will fail to encrypt due to counter collision",
+      "The same keystream is generated for both; C ⊕ C' = P ⊕ P', revealing the XOR of plaintexts",
+      "The second message overwrites the first in decryption",
+      "The IV must be resynchronized before continuing"
+    ],
+    ans: 1,
+    exp: "OFB keystream O_1, O_2, ... depends only on (K, Nonce). If Nonce is reused, both M and M' are XOR'd with the identical keystream: C_i = P_i ⊕ O_i and C'_i = P'_i ⊕ O_i. Then C_i ⊕ C'_i = P_i ⊕ P'_i — the two-time pad problem. An attacker sees the XOR of the two plaintexts, which is often sufficient to recover both using language statistics or known-plaintext. This applies equally to CTR."
+  },
+  {
+    q: "Which statement about CFB mode processing granularity is CORRECT?",
+    opts: [
+      "CFB always processes exactly b bits (one full block) at a time",
+      "CFB processes s bits at a time, where s can be less than the block size b",
+      "CFB requires the message to be a multiple of the block size b",
+      "CFB can only be used when s equals b (i.e., full block mode)"
+    ],
+    ans: 1,
+    exp: "CFB processes s bits at a time, where 1 ≤ s ≤ b. The shift register is b bits wide, but only s bits are selected from the encryption output and used as keystream. This is what enables CFB to work as a stream cipher without padding — you can encrypt s=8 bits (one byte) at a time, or even s=1 bit. The shift register advances s positions per step, inserting the s-bit ciphertext segment."
+  },
+  {
+    q: "XTS-AES is specifically designed for which use case?",
+    opts: [
+      "High-speed TLS 1.3 encrypted network transmission",
+      "Real-time satellite communications over noisy channels",
+      "Encrypting stored data on block storage devices (disk sectors)",
+      "Authentication tag generation in AEAD constructions"
+    ],
+    ans: 2,
+    exp: "XTS-AES (IEEE P1619 / NIST SP 800-38E) is explicitly designed for encrypting stored data on block storage devices like HDDs, SSDs, and flash. The key constraints it addresses are: (1) no ciphertext expansion (output = input length), needed because disk sectors have fixed sizes; (2) sector/position binding via the tweak, preventing copy attacks; (3) independent block access within a sector. It is NOT designed for transmitted data — use GCM, CTR, or CBC for that."
+  }
+];
+
+let quizState = { answered: 0, correct: 0, used: new Set() };
+
+function buildQuiz() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  quizState = { answered: 0, correct: 0, used: new Set() };
+  updateQuizScore();
+
+  QUESTIONS.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.id = `qq-${qi}`;
+    div.innerHTML = `
+      <div class="quiz-q-text"><span class="quiz-q-num">Q${qi+1}.</span> ${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((opt, oi) => `
+          <button class="quiz-opt" onclick="answerQ(${qi}, ${oi})" id="qo-${qi}-${oi}">${opt}</button>
+        `).join('')}
+      </div>
+      <div class="quiz-explain" id="qe-${qi}">${q.exp}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function answerQ(qi, oi) {
+  if (quizState.used.has(qi)) return;
+  quizState.used.add(qi);
+  quizState.answered++;
+
+  const q = QUESTIONS[qi];
+  const isCorrect = oi === q.ans;
+  if (isCorrect) quizState.correct++;
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`qo-${qi}-${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add('correct');
+    else if (i === oi && !isCorrect) btn.classList.add('wrong');
+  }
+  document.getElementById(`qe-${qi}`).classList.add('show');
+  updateQuizScore();
+}
+
+function updateQuizScore() {
+  document.getElementById('q-correct').textContent = quizState.correct;
+  document.getElementById('q-total').textContent = quizState.answered;
+  document.getElementById('q-answered').textContent = quizState.answered;
+  document.getElementById('q-bar').style.width = (quizState.answered / 15 * 100) + '%';
+}
+
+function resetQuiz() { buildQuiz(); }
+
+// Init
+buildQuiz();
+updateProgress();
+</script>
+</body>
+</html>

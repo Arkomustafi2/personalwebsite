@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EEE-5305 | Classical Encryption Techniques</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #1a1d27;
+  --card2: #22263a;
+  --border: #2e3354;
+  --text: #e2e6f0;
+  --muted: #8892b0;
+  --accent: #64ffda;
+  --accent2: #ff79c6;
+  --accent3: #6272a4;
+  --accent4: #f7c948;
+  --accent5: #8be9fd;
+  --red: #ff5555;
+  --green: #50fa7b;
+  --orange: #ffb86c;
+  --radius: 10px;
+  --font-mono: 'Courier New', Courier, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 15px; line-height: 1.7; }
+
+/* HEADER */
+header {
+  background: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #0f1117 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 24px 0;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-bottom: 12px; }
+.header-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; }
+.header-sub { font-size: 0.8rem; color: var(--muted); }
+.progress-wrap { display: flex; align-items: center; gap: 10px; }
+.progress-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+.progress-bar-outer { width: 160px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-bar-inner { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent5)); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+
+/* NAV TABS */
+nav { display: flex; gap: 2px; overflow-x: auto; padding-bottom: 0; }
+.tab-btn {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  padding: 10px 16px; font-size: 0.82rem; font-weight: 600; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: all 0.2s; border-radius: 6px 6px 0 0;
+  letter-spacing: 0.03em;
+}
+.tab-btn:hover { color: var(--text); background: var(--card2); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--card2); }
+
+/* MAIN */
+main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* CARDS */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 20px; }
+.card-title { font-size: 1.05rem; font-weight: 700; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.card-title::before { content: ''; display: inline-block; width: 3px; height: 18px; background: var(--accent); border-radius: 2px; }
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* ALERTS */
+.alert { border-left: 4px solid; border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin-bottom: 14px; background: var(--card2); }
+.alert-info { border-color: var(--accent5); }
+.alert-warn { border-color: var(--orange); }
+.alert-key { border-color: var(--accent); }
+.alert-exam { border-color: var(--accent2); }
+.alert-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+.alert-info .alert-label { color: var(--accent5); }
+.alert-warn .alert-label { color: var(--orange); }
+.alert-key .alert-label { color: var(--accent); }
+.alert-exam .alert-label { color: var(--accent2); }
+
+/* FORMULA */
+.formula {
+  background: #0a0d14; border-left: 4px solid var(--accent4);
+  padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0;
+  font-family: var(--font-mono); font-size: 0.88rem; color: var(--accent4);
+  white-space: pre; overflow-x: auto; line-height: 1.8;
+}
+
+/* STEPS */
+.steps { margin: 14px 0; }
+.step { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+.step-num { background: var(--accent); color: #000; font-weight: 800; font-size: 0.75rem;
+  width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.step-body { flex: 1; }
+.step-body strong { color: var(--accent4); }
+
+/* TABLE */
+.tbl { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 12px 0; }
+.tbl th { background: var(--card2); color: var(--accent); padding: 9px 12px; text-align: left; border-bottom: 2px solid var(--accent); font-size: 0.78rem; letter-spacing: 0.05em; }
+.tbl td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.tbl tr:hover td { background: var(--card2); }
+
+/* STUDY PLAN */
+.summary-box { background: linear-gradient(135deg, var(--card2), var(--card)); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 22px; }
+.summary-box p { color: var(--text); margin-bottom: 8px; }
+.tl-item { display: flex; gap: 16px; margin-bottom: 16px; position: relative; }
+.tl-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 8px var(--accent); }
+.tl-content { flex: 1; }
+.tl-time { font-size: 0.72rem; color: var(--accent4); font-weight: 700; letter-spacing: 0.08em; }
+.tl-task { font-weight: 600; color: var(--text); }
+.tl-slide { font-size: 0.78rem; color: var(--muted); }
+.tl-item::before { content: ''; position: absolute; left: 6px; top: 18px; width: 2px; height: calc(100% + 4px); background: var(--border); }
+.tl-item:last-child::before { display: none; }
+
+/* CHECKLIST */
+.checklist { list-style: none; margin: 14px 0; }
+.checklist li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.checklist li:last-child { border-bottom: none; }
+.chk { width: 18px; height: 18px; border: 2px solid var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.chk.done { background: var(--accent); border-color: var(--accent); }
+.chk.done::after { content: '✓'; color: #000; font-size: 0.75rem; font-weight: 900; }
+.chk-text { color: var(--muted); transition: color 0.2s; }
+.checklist li.done .chk-text { color: var(--text); text-decoration: line-through; }
+
+/* QUIZ */
+.q-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 18px; }
+.q-num { font-size: 0.72rem; color: var(--accent4); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.q-text { font-weight: 600; margin-bottom: 14px; color: var(--text); }
+.q-options { display: grid; gap: 8px; }
+.q-opt { background: var(--card2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; text-align: left; color: var(--text); width: 100%; }
+.q-opt:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.q-opt.correct { background: rgba(80, 250, 123, 0.15); border-color: var(--green); color: var(--green); }
+.q-opt.wrong { background: rgba(255, 85, 85, 0.15); border-color: var(--red); color: var(--red); }
+.q-opt:disabled { cursor: default; }
+.q-explain { margin-top: 12px; padding: 10px 14px; background: var(--card2); border-left: 3px solid var(--accent4); border-radius: 0 7px 7px 0; font-size: 0.85rem; color: var(--muted); display: none; }
+.q-explain.show { display: block; }
+.score-bar { background: var(--card2); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); }
+.score-val { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+.reset-btn { background: var(--accent2); color: #000; border: none; padding: 10px 20px; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: opacity 0.2s; }
+.reset-btn:hover { opacity: 0.85; }
+
+/* INTERACTIVE TOOL */
+.tool-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 20px; }
+.inp-label { font-size: 0.8rem; color: var(--accent4); font-weight: 600; margin-bottom: 5px; display: block; }
+.pp-input { background: var(--card2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 7px; font-size: 0.88rem; width: 100%; font-family: var(--font-mono); margin-bottom: 14px; transition: border-color 0.2s; outline: none; }
+.pp-input:focus { border-color: var(--accent); }
+.pp-btn { background: linear-gradient(135deg, var(--accent), var(--accent5)); color: #000; border: none; padding: 11px 28px; border-radius: 7px; cursor: pointer; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.04em; transition: opacity 0.2s; margin-top: 6px; }
+.pp-btn:hover { opacity: 0.85; }
+.tool-result { display: none; margin-top: 18px; background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.tool-result.show { display: block; }
+.result-title { color: var(--accent); font-weight: 700; margin-bottom: 12px; font-size: 0.95rem; }
+.cipher-row { display: flex; gap: 3px; flex-wrap: wrap; margin: 8px 0; font-family: var(--font-mono); font-size: 0.9rem; }
+.cipher-cell { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; min-width: 30px; text-align: center; }
+.cipher-cell.plain { color: var(--accent5); }
+.cipher-cell.key-letter { color: var(--accent4); font-size: 0.75rem; }
+.cipher-cell.cipher { color: var(--accent2); }
+.freq-bar-wrap { margin: 6px 0; }
+.freq-letter { display: inline-block; width: 22px; text-align: center; font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); }
+.freq-bar { display: inline-block; height: 14px; background: var(--accent); border-radius: 2px; vertical-align: middle; }
+.freq-pct { font-size: 0.75rem; color: var(--accent4); margin-left: 5px; }
+
+/* DEFINITION */
+.def-term { color: var(--accent); font-weight: 700; }
+.def-body { color: var(--muted); margin-bottom: 10px; padding-left: 12px; border-left: 2px solid var(--border); }
+
+/* TAG */
+.tag { display: inline-block; background: var(--card2); border: 1px solid var(--accent); color: var(--accent); font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; font-weight: 700; letter-spacing: 0.05em; margin-right: 6px; vertical-align: middle; }
+.tag.pink { border-color: var(--accent2); color: var(--accent2); }
+.tag.yellow { border-color: var(--accent4); color: var(--accent4); }
+
+/* PLAYFAIR GRID */
+.pf-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; max-width: 280px; }
+.pf-cell { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 8px; text-align: center; font-family: var(--font-mono); font-weight: 700; font-size: 0.9rem; }
+.pf-cell.keyword { background: rgba(100, 255, 218, 0.1); border-color: var(--accent); color: var(--accent); }
+
+h2 { color: var(--text); font-size: 1.1rem; margin: 20px 0 10px; }
+h3 { color: var(--accent4); font-size: 0.95rem; margin: 14px 0 8px; }
+p { margin-bottom: 10px; color: var(--muted); }
+ul, ol { padding-left: 20px; color: var(--muted); }
+li { margin-bottom: 4px; }
+strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="header-title">EEE-5305 · Network &amp; Information Security</div>
+      <div class="header-sub">Classical Encryption Techniques — Dr. Mosabber Uddin Ahmed</div>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-label">Study Progress: <span id="prog-pct">0</span>%</span>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="prog-bar"></div></div>
+    </div>
+  </div>
+  <nav>
+    <button class="tab-btn active" onclick="showSection('plan',this)">📅 Study Plan</button>
+    <button class="tab-btn" onclick="showSection('core',this)">🔐 Core Concepts</button>
+    <button class="tab-btn" onclick="showSection('sub',this)">🔄 Substitution Ciphers</button>
+    <button class="tab-btn" onclick="showSection('poly',this)">🔑 Polyalphabetic</button>
+    <button class="tab-btn" onclick="showSection('trans',this)">🔀 Transposition &amp; More</button>
+    <button class="tab-btn" onclick="showSection('tool',this)">🧮 Interactive Tool</button>
+    <button class="tab-btn" onclick="showSection('quiz',this)">🧠 Quiz</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ===================== TAB 1: STUDY PLAN ===================== -->
+<div class="section active" id="plan">
+  <div class="summary-box">
+    <h2 style="color:var(--accent);margin-top:0;margin-bottom:12px;">What is this lecture really about?</h2>
+    <p>This lecture establishes the foundational vocabulary and historical techniques of cryptography — the art of hiding information. You will learn how ancient ciphers (Caesar, Playfair, Vigenère) work, why they fail, and how cryptanalysts break them using statistical properties of language. The lecture builds a conceptual bridge from historical ciphers to modern block/stream ciphers by tracing the evolution from simple substitution → polyalphabetic → product ciphers → rotor machines. Understanding <em>why</em> each classical cipher fails is the key exam skill — not just knowing how it works.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">6-Hour Study Timeline</div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 1 — 0:00–1:00</div>
+        <div class="tl-task">Terminology, Encryption Model &amp; Symmetric Cipher Fundamentals</div>
+        <div class="tl-slide">Slides 1–9 · Tab: Core Concepts</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 2 — 1:00–2:00</div>
+        <div class="tl-task">Attack Types, Brute-Force vs Cryptanalysis, Security Measures</div>
+        <div class="tl-slide">Slides 10–14 · Tab: Core Concepts</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 3 — 2:00–3:00</div>
+        <div class="tl-task">Caesar Cipher, Monoalphabetic Substitution, Frequency Analysis, Playfair Cipher</div>
+        <div class="tl-slide">Slides 15–29 · Tab: Substitution Ciphers</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 4 — 3:00–4:00</div>
+        <div class="tl-task">Vigenère Cipher, Autokey Cipher, Vernam Cipher, One-Time Pad</div>
+        <div class="tl-slide">Slides 30–37 · Tab: Polyalphabetic Ciphers</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 5 — 4:00–5:00</div>
+        <div class="tl-task">Transposition Ciphers, Product Ciphers, Rotor Machines, Steganography</div>
+        <div class="tl-slide">Slides 38–46 · Tab: Transposition &amp; More</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-time">HOUR 6 — 5:00–6:00</div>
+        <div class="tl-task">Practice with Interactive Tool, run 15-question quiz, review weak areas</div>
+        <div class="tl-slide">Tabs: Interactive Tool + Quiz</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Exam Readiness Checklist</div>
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Define plaintext, ciphertext, cipher, key, cryptography, cryptanalysis</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Explain the symmetric encryption model (Y=E(K,X), X=D(K,Y))</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Differentiate brute-force attack vs cryptanalysis and know the key-space table</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Name the 4 cryptanalytic attack types (ciphertext-only, known-plaintext, chosen-plaintext, chosen-ciphertext)</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Encrypt/decrypt using Caesar cipher with the formula C=(p+k)mod26</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Explain why monoalphabetic ciphers fail despite having 26! keys</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Apply Playfair cipher rules for all 3 cases (same row, same column, rectangle)</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Encrypt using Vigenère cipher (worked example: keyword DECEPTIVE)</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Explain why One-Time Pad is unconditionally secure but impractical</span></li>
+      <li onclick="toggleCheck(this)"><div class="chk"></div><span class="chk-text">Perform rail fence and row transposition cipher encryption/decryption</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================== TAB 2: CORE CONCEPTS ===================== -->
+<div class="section" id="core">
+  <div class="alert alert-key"><div class="alert-label">Key Concept</div>Encryption ensures confidentiality: anyone can see ciphertext, but only authorised parties with the key can recover the original plaintext.</div>
+
+  <div class="card">
+    <div class="card-title">Essential Terminology</div>
+    <div class="grid-2">
+      <div>
+        <p class="def-term">Plaintext</p><p class="def-body">The original message before encryption.</p>
+        <p class="def-term">Ciphertext</p><p class="def-body">The scrambled, encrypted output.</p>
+        <p class="def-term">Cipher</p><p class="def-body">The algorithm that transforms plaintext → ciphertext.</p>
+        <p class="def-term">Key</p><p class="def-body">Secret information known only to sender/receiver; controls the cipher.</p>
+        <p class="def-term">Encipher / Encrypt</p><p class="def-body">Converting plaintext to ciphertext using the key.</p>
+      </div>
+      <div>
+        <p class="def-term">Decipher / Decrypt</p><p class="def-body">Recovering plaintext from ciphertext using the key.</p>
+        <p class="def-term">Cryptography</p><p class="def-body">Study of encryption principles and methods.</p>
+        <p class="def-term">Cryptanalysis</p><p class="def-body">Study of deciphering ciphertext <em>without</em> the key.</p>
+        <p class="def-term">Cryptology</p><p class="def-body">The combined field of cryptography + cryptanalysis.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Symmetric Cipher Model</div>
+    <div class="alert alert-key"><div class="alert-label">Core Equations</div>
+      The two fundamental equations of symmetric encryption:
+    </div>
+    <div class="formula">Y = E(K, X)    ← Encryption: plaintext X with key K → ciphertext Y
+X = D(K, Y)    ← Decryption: ciphertext Y with key K → plaintext X
+
+Where: X = plaintext, Y = ciphertext, K = secret key
+       E() = encryption algorithm,  D() = decryption algorithm</div>
+    <p>Two requirements for secure symmetric encryption:</p>
+    <ol>
+      <li><strong>Strong encryption algorithm</strong> — Even if attacker knows the algorithm and multiple (plaintext, ciphertext) pairs, they cannot find the key or plaintext.</li>
+      <li><strong>Secret key</strong> — Only sender and receiver know K. A secure channel must exist for key distribution.</li>
+    </ol>
+    <div class="alert alert-info"><div class="alert-label">Important Assumption</div>Kerckhoffs' Principle: the encryption algorithm is assumed to be publicly known. Security must rely entirely on the secrecy of the key, not the algorithm.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cryptographic System Characterisation</div>
+    <table class="tbl">
+      <tr><th>Dimension</th><th>Categories</th></tr>
+      <tr><td><strong>Operations Used</strong></td><td>Substitution · Transposition · Product (multiple stages)</td></tr>
+      <tr><td><strong>Number of Keys</strong></td><td>Single-key (symmetric/private) · Two-key (asymmetric/public)</td></tr>
+      <tr><td><strong>Processing Method</strong></td><td>Block cipher (one block at a time) · Stream cipher (continuous elements)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Attack Types</div>
+    <div class="alert alert-exam"><div class="alert-label">Exam Critical</div>Know the goal of the attacker and both attack methods. If either brute-force OR cryptanalysis succeeds, all use of that key is compromised.</div>
+
+    <h3>Attacker's Goals (in order of value)</h3>
+    <ol>
+      <li>Discover the <strong>plaintext</strong> (good for attacker)</li>
+      <li>Discover the <strong>key</strong> (better — compromises all future messages)</li>
+    </ol>
+
+    <h3>Two Attack Methods</h3>
+    <div class="grid-2">
+      <div class="alert alert-warn"><div class="alert-label">Brute-Force Attack</div>
+        Try every possible key on the ciphertext until a meaningful plaintext appears.<br>
+        — A k-bit key requires up to 2<sup>k</sup> attempts<br>
+        — Success requires recognising correct plaintext<br>
+        — Depends on key length + computational speed
+      </div>
+      <div class="alert alert-warn"><div class="alert-label">Cryptanalysis</div>
+        Exploit weaknesses in the algorithm's mathematical structure.<br>
+        Methods: Linear, Differential, Meet-in-the-middle, Side-channel attacks.<br>
+        Metrics: # of operations, amount of memory, # of known plaintexts/ciphertexts.
+      </div>
+    </div>
+
+    <h3>Cryptanalytic Attack Taxonomy (by attacker's knowledge)</h3>
+    <table class="tbl">
+      <tr><th>Attack Type</th><th>Attacker Knows</th></tr>
+      <tr><td><strong>Ciphertext Only</strong></td><td>Encryption algorithm + ciphertext only</td></tr>
+      <tr><td><strong>Known Plaintext</strong></td><td>Algorithm + ciphertext + one or more (plaintext, ciphertext) pairs with the same key</td></tr>
+      <tr><td><strong>Chosen Plaintext</strong></td><td>Algorithm + ciphertext + plaintext chosen by attacker and its ciphertext under the secret key</td></tr>
+      <tr><td><strong>Chosen Ciphertext</strong></td><td>Algorithm + ciphertext + attacker's chosen ciphertext and its decryption under secret key</td></tr>
+      <tr><td><strong>Chosen Text</strong></td><td>Combination: chosen plaintext + chosen ciphertext simultaneously</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Brute-Force Key Search — Time Analysis</div>
+    <div class="alert alert-exam"><div class="alert-label">Exam Table</div>Memorise approximate times for 56-bit (DES era) and 128-bit (AES era).</div>
+    <table class="tbl">
+      <tr><th>Key Length (bits)</th><th>Key Space</th><th>@ 10⁹/sec</th><th>@ 10¹²/sec</th><th>@ 10¹⁵/sec</th></tr>
+      <tr><td>32</td><td>2³²</td><td>4 sec</td><td>4 ms</td><td>4 μs</td></tr>
+      <tr><td>56</td><td>2⁵⁶</td><td>833 days</td><td>20 hrs</td><td>72 sec</td></tr>
+      <tr><td>64</td><td>2⁶⁴</td><td>584 yrs</td><td>213 days</td><td>5 sec</td></tr>
+      <tr><td>128</td><td>2¹²⁸</td><td>10²² yrs</td><td>10¹⁹ yrs</td><td>10¹⁶ yrs</td></tr>
+      <tr><td>256</td><td>2²⁵⁶</td><td>10⁶⁰ yrs</td><td>10⁵⁷ yrs</td><td>10⁵⁴ yrs</td></tr>
+      <tr><td>26! (mono-alpha)</td><td>≈2⁸⁸</td><td>10¹⁰ yrs</td><td>10⁷ yrs</td><td>10⁴ yrs</td></tr>
+    </table>
+    <p style="font-size:0.82rem;color:var(--muted);">Reference: Age of Earth ≈ 4×10⁹ yrs | Age of Universe ≈ 1.3×10¹⁰ yrs — 128-bit keys are computationally secure even at future speeds.</p>
+
+    <h3>Measures of Security</h3>
+    <div class="grid-2">
+      <div class="alert alert-key"><div class="alert-label">Unconditionally Secure</div>Ciphertext contains insufficient information to derive plaintext or key — regardless of computation available. <strong>Only the One-Time Pad achieves this</strong>, but it is impractical.</div>
+      <div class="alert alert-info"><div class="alert-label">Computationally Secure</div>A cipher is computationally secure if either: (a) cost of breaking &gt; value of information, OR (b) time to break &gt; useful lifetime of the information. Most practical ciphers aim for this.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 3: SUBSTITUTION CIPHERS ===================== -->
+<div class="section" id="sub">
+  <div class="alert alert-key"><div class="alert-label">Core Idea</div>Substitution ciphers replace plaintext elements (letters, bits, groups) with other elements. The key vulnerability: substitution preserves the statistical structure of the language.</div>
+
+  <div class="card">
+    <div class="card-title">Caesar Cipher</div>
+    <div class="alert alert-exam"><div class="alert-label">Exam Critical</div>Know both the general formula and the specific k=3 case. Be able to encrypt and decrypt by hand.</div>
+    <p>The earliest known cipher, used by Julius Caesar (~100 BCE). Each letter is shifted 3 positions forward in the alphabet.</p>
+    <div class="formula">Plain : a b c d e f g h i j k l m n o p q r s t u v w x y z
+Cipher: D E F G H I J K L M N O P Q R S T U V W X Y Z A B C</div>
+
+    <h3>Generalised Caesar Cipher (shift by k)</h3>
+    <p>Assign numeric values: a=0, b=1, c=2, ..., z=25</p>
+    <div class="formula">Encryption:  C = E(k, p) = (p + k) mod 26
+Decryption:  p = D(k, C) = (C - k) mod 26
+
+Example (k=3): 'a'(0) → (0+3) mod 26 = 3 = 'D'
+               'z'(25)→ (25+3) mod 26 = 2 = 'C'</div>
+
+    <div class="steps">
+      <h3>Worked Encryption Example: "hello" with k=3</h3>
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>h=7</strong> → (7+3) mod 26 = 10 = K</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>e=4</strong> → (4+3) mod 26 = 7 = H</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>l=11</strong> → (11+3) mod 26 = 14 = O</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>l=11</strong> → 14 = O</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>o=14</strong> → (14+3) mod 26 = 17 = R → Ciphertext: <span style="color:var(--accent2);">KHOOR</span></div></div>
+    </div>
+
+    <h3>Breaking the Caesar Cipher</h3>
+    <p>The key space is only 25 (k=1 through 25). Brute force: try all 25 shifts and identify the meaningful English plaintext. This is trivially easy.</p>
+    <div class="alert alert-warn"><div class="alert-label">Countermeasures Evaluated</div>
+      — Hide the algorithm: <strong>Not practical</strong> (Kerckhoffs' Principle)<br>
+      — Use compression/different language: <strong>Limited options</strong><br>
+      — <strong>Increase the number of keys</strong> ← The correct solution
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Monoalphabetic Substitution Cipher</div>
+    <p>Instead of a fixed shift, each plaintext letter maps to an arbitrary ciphertext letter. Uses a single substitution alphabet for the entire message.</p>
+    <div class="formula">Plain : a b c d e f g h i j k l m n o p q r s t u v w x y z
+Cipher: D Z G L S E J H V F I X A C B T K R W Y Q M O U P N
+        (example random permutation)</div>
+
+    <p>Key space: 26! permutations ≈ 4 × 10²⁶. Far more than Caesar's 25. Yet <strong>this cipher is NOT secure.</strong></p>
+
+    <div class="alert alert-exam"><div class="alert-label">The Critical Insight</div>A large key space does NOT guarantee security. The monoalphabetic cipher preserves the frequency distribution of letters — every 'e' in the plaintext maps to the same cipher letter. Language statistics are preserved in the ciphertext.</div>
+
+    <h3>English Letter Frequency Statistics</h3>
+    <p>Human languages are redundant. Letters appear with highly unequal frequencies:</p>
+    <table class="tbl">
+      <tr><th>Rank</th><th>Letters (most common)</th><th>Approx. Frequency</th></tr>
+      <tr><td>1</td><td>E</td><td>12.7%</td></tr>
+      <tr><td>2</td><td>T</td><td>9.1%</td></tr>
+      <tr><td>3</td><td>A</td><td>8.2%</td></tr>
+      <tr><td>4–8</td><td>O, I, N, S, H</td><td>6–7% each</td></tr>
+      <tr><td>Rare</td><td>Z, Q, X, J, K</td><td>&lt;1%</td></tr>
+    </table>
+    <div class="alert alert-key"><div class="alert-label">Fundamental Weakness</div>Since monoalphabetic substitution is a one-to-one mapping, the ciphertext inherits all frequency statistics of the plaintext. An attacker can directly read off letter frequencies from the ciphertext and match them to known English frequencies.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Frequency Analysis — Cryptanalysis of Monoalphabetic Ciphers</div>
+    <p>Discovered by Arabian scholars in the 9th century (Al-Kindi). The method:</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">Count frequency of each letter in ciphertext.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">Compare counts/plot against known English frequency table. The most frequent ciphertext letter likely represents 'e'.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">Look for common peaks (A-E-I triple, NO pair, RST triple) and troughs (JK, X-Z).</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">Use digram/trigram tables (common pairs: TH, HE, IN; trigrams: THE, AND, ING) to refine guesses.</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body">Iterative trial-and-error until plaintext is recovered.</div></div>
+    </div>
+
+    <h3>Worked Cryptanalysis Example (from slides)</h3>
+    <div class="formula">Ciphertext:
+UZQSOVUOHXMOPVGPOZPEVSGZWSZOPFPESXUDBMETSXAIZ
+VUEPHZHMDZSHZOWSFPAPPDTSVPQUZWYMXUZUHSX
+EPYEPOPDZSZUFPOMBZWPFUPZHMDJUDTMOHMQ
+
+Step 1: Count frequencies → P and Z are most common
+Step 2: Guess P=e, Z=t
+Step 3: ZW appears often → guess ZW="th", so ZWP="the"
+Step 4: Continue trial-and-error...
+
+Recovered plaintext:
+"it was disclosed yesterday that several informal but
+direct contacts have been made with political
+representatives of the viet cong in moscow"</div>
+    <div class="alert alert-info"><div class="alert-label">Key Takeaway</div>Despite 4×10²⁶ possible keys, frequency analysis breaks monoalphabetic ciphers with only a few hundred letters of ciphertext. Key space size is a necessary but not sufficient condition for security.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Playfair Cipher</div>
+    <p>Invented by Charles Wheatstone (1854), named after Baron Playfair. Improves monoalphabetic security by <strong>encrypting digrams (pairs of letters)</strong> rather than individual letters. Used by US &amp; British military in WW1.</p>
+
+    <h3>Key Matrix Construction (keyword: MONARCHY)</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">Create a 5×5 matrix. Fill in keyword letters first (no duplicates), then remaining alphabet. <strong>Treat I and J as the same letter</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">Keyword MONARCHY → M,O,N,A,R,C,H,Y,B,D,E,F,G,I/J,K,L,P,Q,S,T,U,V,W,X,Z</div></div>
+    </div>
+    <div class="pf-grid" style="margin:12px 0;">
+      <div class="pf-cell keyword">M</div><div class="pf-cell keyword">O</div><div class="pf-cell keyword">N</div><div class="pf-cell keyword">A</div><div class="pf-cell keyword">R</div>
+      <div class="pf-cell keyword">C</div><div class="pf-cell keyword">H</div><div class="pf-cell keyword">Y</div><div class="pf-cell">B</div><div class="pf-cell">D</div>
+      <div class="pf-cell">E</div><div class="pf-cell">F</div><div class="pf-cell">G</div><div class="pf-cell" style="font-size:0.75rem">I/J</div><div class="pf-cell">K</div>
+      <div class="pf-cell">L</div><div class="pf-cell">P</div><div class="pf-cell">Q</div><div class="pf-cell">S</div><div class="pf-cell">T</div>
+      <div class="pf-cell">U</div><div class="pf-cell">V</div><div class="pf-cell">W</div><div class="pf-cell">X</div><div class="pf-cell">Z</div>
+    </div>
+
+    <h3>Encryption Rules (operate on digrams)</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">0</div><div class="step-body"><strong>Preparation:</strong> If a digram has the same letter twice, insert 'X' between them (e.g., "LL" → "LX L"). If message length is odd, append 'X'.</div></div>
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Same Row:</strong> Both letters in the same row → replace each with the letter to its right (wrap around). E.g., MO → OM, OR → RA.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Same Column:</strong> Both letters in the same column → replace each with the letter below it (wrap around). E.g., MF → CE, CE → EL.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Rectangle:</strong> Letters form corners of a rectangle → each letter is replaced by the letter in the same row but at the column of the other letter. E.g., AR: A(row0,col3)↔R(row0,col4)... actually different rows: pick letter at same row, same column as partner.</div></div>
+    </div>
+    <div class="alert alert-exam"><div class="alert-label">Security of Playfair</div>Playfair operates on 676 digrams (26×26) instead of 26 monograms — requires a 676-entry frequency table to cryptanalyse, vs just 26 for monoalphabetic. Still breakable given a few hundred letters because the underlying frequency structure of digrams is still preserved in the ciphertext.</div>
+  </div>
+</div>
+
+<!-- ===================== TAB 4: POLYALPHABETIC ===================== -->
+<div class="section" id="poly">
+  <div class="alert alert-key"><div class="alert-label">Core Idea</div>Polyalphabetic ciphers use multiple substitution alphabets to flatten the frequency distribution — making simple frequency analysis impossible. The key selects which alphabet to use for each plaintext letter.</div>
+
+  <div class="card">
+    <div class="card-title">Vigenère Cipher</div>
+    <p>The simplest and most important polyalphabetic cipher. Effectively applies multiple Caesar ciphers with a repeating keyword.</p>
+
+    <div class="formula">Key: K = k₁ k₂ k₃ ... k_d   (d letters long)
+
+Encryption of i-th letter:  Cᵢ = (pᵢ + k_{i mod d}) mod 26
+Decryption:                  pᵢ = (Cᵢ - k_{i mod d}) mod 26
+
+The key repeats after every d letters.</div>
+
+    <div class="alert alert-exam"><div class="alert-label">Full Worked Example — keyword: DECEPTIVE</div></div>
+    <div class="formula">Keyword:   d  e  c  e  p  t  i  v  e  d  e  c  e  p  t  i  v  e  d  e  c  e  p  t  i  v  e
+           3  4  2  4 15 19  8 21  4  3  4  2  4 15 19  8 21  4  3  4  2  4 15 19  8 21  4
+
+Plaintext: w  e  a  r  e  d  i  s  c  o  v  e  r  e  d  s  a  v  e  y  o  u  r  s  e  l  f
+          22  4  0 17  4  3  8 18  2 14 21  4 17  4  3 18  0 21  4 24 14 20 17 18  4 11  5
+
+Ciph = (p+k) mod 26:
+           Z  I  C  V  T  W  Q  N  G  R  Z  G  V  T  W  A  V  Z  H  C  Q  Y  G  L  M  G  J
+
+Ciphertext: ZICVTWQNGRZGVTWAVZHCQYGLMGJ</div>
+
+    <div class="steps">
+      <h3>Step-by-Step Verification (first 3 letters)</h3>
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>w (22) + d (3)</strong> = 25 mod 26 = 25 = <span style="color:var(--accent2)">Z</span> ✓</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>e (4) + e (4)</strong> = 8 mod 26 = 8 = <span style="color:var(--accent2)">I</span> ✓</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>a (0) + c (2)</strong> = 2 mod 26 = 2 = <span style="color:var(--accent2)">C</span> ✓</div></div>
+    </div>
+
+    <h3>Security Analysis</h3>
+    <p>Each plaintext letter maps to multiple possible ciphertext letters — 'e' maps to Z, I, G, T, W, etc. depending on its position. This flattens the frequency distribution but does not eliminate it entirely.</p>
+    <div class="alert alert-warn"><div class="alert-label">Kasiski Test — Breaking Vigenère</div>If key length d is known, the ciphertext can be split into d independent Caesar-cipher streams, each solvable by frequency analysis. Kasiski's method: find repeated sequences in ciphertext → distances between repeats likely multiples of d → deduce d by GCD of distances.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Autokey Cipher</div>
+    <p>Proposed by Vigenère as an improvement. The keyword is used as a prefix to the message itself, creating a key as long as the message.</p>
+    <div class="formula">Key construction: keyword is PREPENDED to message
+Key    = deceptive | w e a r e d i s c o v e r e d s a v ...
+         (keyword)   (message used as continuation of key)
+
+Plaintext: w e a r e d i s c o v e r e d s a v e y o u r s e l f
+Key:       d e c e p t i v e w e a r e d i s c o v e r e d s a v
+Ciphertext:Z I C V T W Q N G K Z E I I G A S X S T S L V V W L A</div>
+    <div class="alert alert-warn"><div class="alert-label">Why Autokey Still Fails</div>The key still has statistical structure because it IS the message (just offset). Frequency characteristics of the plaintext appear in the key, making it still vulnerable to linguistic cryptanalysis.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Vernam Cipher</div>
+    <p>Invented by AT&amp;T engineer Gilbert Vernam in 1918. Uses a key as long as the message with <strong>no statistical relationship</strong> to the plaintext. Originally proposed with a very long but eventually repeating key.</p>
+    <div class="formula">Operation: XOR each plaintext bit with corresponding key bit
+Cᵢ = pᵢ XOR kᵢ
+pᵢ = Cᵢ XOR kᵢ   (XOR is self-inverse)
+
+This is a binary stream cipher — the foundation of modern stream ciphers.</div>
+    <p>If the key repeats, it can be attacked (similar to Vigenère with known period). The ultimate version — where the key never repeats — is the One-Time Pad.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">One-Time Pad (OTP)</div>
+    <div class="alert alert-key"><div class="alert-label">The Only Unconditionally Secure Cipher</div>The One-Time Pad uses a truly random key as long as the message, used exactly once and then discarded.</div>
+
+    <h3>Why OTP is Unconditionally Secure</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">For any ciphertext C, for any possible plaintext P of the same length, there EXISTS a key K such that E(K,P) = C.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">Therefore, the ciphertext provides ZERO information about the plaintext to an attacker — even with infinite computation.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">The attacker cannot distinguish the correct plaintext from any other possible plaintext.</div></div>
+    </div>
+
+    <h3>OTP Example (from slides)</h3>
+    <div class="formula">Ciphertext: ANKYODKYUREPFJBYOJDSPLREYIUNOFDOIUERFPLUYTS
+
+Key1: pxlmvmsydofuyrvzwc tnlebnecvgdupahfzzlmnyih
+→ Plaintext1: "mr mustard with the candlestick in the hall"
+
+Key2: pftgpmiydgaxgoufhklllmhsqdqogtewbqfgyovuhwt
+→ Plaintext2: "miss scarlet with the knife in the library"
+
+The attacker cannot know which (if either) is correct.</div>
+
+    <div class="alert alert-exam"><div class="alert-label">Why OTP is Impractical</div>
+      Two fundamental problems:<br>
+      1. <strong>Key generation:</strong> Must generate truly random keys as large as all data to be encrypted.<br>
+      2. <strong>Key distribution:</strong> Must securely deliver the key to the receiver — but if you have a secure channel for the key, why not use it for the message directly?
+    </div>
+
+    <h3>Comparison: Polyalphabetic Cipher Security</h3>
+    <table class="tbl">
+      <tr><th>Cipher</th><th>Key Length</th><th>Frequency Flattening</th><th>Security</th></tr>
+      <tr><td>Caesar</td><td>1 letter (fixed shift)</td><td>None — same distribution</td><td>Trivially broken</td></tr>
+      <tr><td>Monoalphabetic</td><td>26! permutation</td><td>None — single mapping</td><td>Broken by freq. analysis</td></tr>
+      <tr><td>Vigenère</td><td>d letters</td><td>Partial (d overlapping distributions)</td><td>Broken by Kasiski test</td></tr>
+      <tr><td>Vernam (repeating)</td><td>Very long repeating</td><td>Better but still periodic</td><td>Breakable with period known</td></tr>
+      <tr><td>One-Time Pad</td><td>|message| truly random</td><td>Complete — uniform distribution</td><td><strong>Unconditionally secure</strong></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== TAB 5: TRANSPOSITION & MORE ===================== -->
+<div class="section" id="trans">
+  <div class="alert alert-key"><div class="alert-label">Core Distinction</div>Transposition ciphers rearrange letter positions without changing the letters themselves. The frequency distribution of letters is IDENTICAL to the plaintext — this is how you identify transposition vs substitution.</div>
+
+  <div class="card">
+    <div class="card-title">Rail Fence Cipher</div>
+    <p>Write the message diagonally across multiple rows ("rails"), then read off row by row.</p>
+    <div class="formula">Message: "meet me after the toga party" (spaces removed: meetmeafterthetogaparty)
+
+Write diagonally across 2 rails:
+Rail 1: m . e . m . a . t . r . h . t . g . p . r . y
+Rail 2: . e . t . e . f . e . t . e . o . a . a . t .
+
+Rail 1: m e m a t r h t g p r y
+Rail 2: e t e f e t e o a a t
+
+Ciphertext: MEMATRHTGPRY ETEFETEOAAT
+            → MEMATRHTGPRYETEFETEOAAT</div>
+
+    <div class="alert alert-warn"><div class="alert-label">Security</div>Very weak. The number of rails is tiny and easily guessed. With n rails, there are only n possible "keys". Frequency analysis immediately confirms transposition (same letter distribution as English).</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Row Transposition Cipher</div>
+    <p>A more complex transposition. Write the message into a grid with a fixed number of columns, then reorder the columns according to a numeric key before reading off column by column.</p>
+    <div class="alert alert-exam"><div class="alert-label">Worked Example (from slides)</div></div>
+    <div class="formula">Key:        4  3  1  2  5  6  7
+            ↓  ↓  ↓  ↓  ↓  ↓  ↓
+Row 1:      a  t  t  a  c  k  p
+Row 2:      o  s  t  p  o  n  e
+Row 3:      d  u  n  t  i  l  t
+Row 4:      w  o  a  m  x  y  z
+
+Step: Read columns in ORDER given by key (1,2,3,4,5,6,7):
+Column 1 (key-position 1): t, t, n, a  → TTNA
+Column 2 (key-position 2): a, p, t, m  → APTM
+Column 3 (key-position 3): t, s, u, o  → TSUO
+Column 4 (key-position 4): a, o, d, w  → AODW
+Column 5 (key-position 5): c, o, i, x  → COIX
+Column 6 (key-position 6): k, n, l, y  → KNLY
+Column 7 (key-position 7): p, e, t, z  → PETZ
+
+Ciphertext: TTNAAPTMTSUOAODWCOIXKNLYPETZ</div>
+
+    <div class="steps">
+      <h3>How to Decrypt</h3>
+      <div class="step"><div class="step-num">1</div><div class="step-body">Know the key (e.g., 4312567) and message length (28 chars, 4 rows × 7 cols).</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">Determine column order from key: column 3 goes first (key=1), column 4 goes second (key=2), etc.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">Fill ciphertext into columns in the correct order, then read off row by row.</div></div>
+    </div>
+
+    <h3>Multiple Rounds of Transposition</h3>
+    <p>Applying row transposition twice creates a more complex transposition (still not substitution). To get a truly stronger cipher, you need to combine substitution AND transposition.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Product Ciphers — Bridge to Modern Cryptography</div>
+    <div class="alert alert-key"><div class="alert-label">Critical Principle</div>Two substitutions → more complex substitution. Two transpositions → more complex transposition. But: <strong>substitution followed by transposition</strong> creates a qualitatively new, much harder cipher — this is the foundation of modern block ciphers like DES and AES.</div>
+
+    <table class="tbl">
+      <tr><th>Combination</th><th>Result</th></tr>
+      <tr><td>Substitution + Substitution</td><td>Equivalent to a more complex substitution</td></tr>
+      <tr><td>Transposition + Transposition</td><td>Equivalent to a more complex transposition</td></tr>
+      <tr><td><strong>Substitution + Transposition</strong></td><td><strong>New, qualitatively harder cipher — product cipher</strong></td></tr>
+    </table>
+
+    <p>Shannon formalised this with the concepts of <strong>confusion</strong> (substitution obscures relationship between key and ciphertext) and <strong>diffusion</strong> (transposition spreads plaintext structure across ciphertext). Modern ciphers iterate many rounds of confusion + diffusion.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Rotor Machines</div>
+    <p>Before modern electronic computers, rotor machines were the most sophisticated encryption devices. Widely used in WWII:</p>
+    <ul>
+      <li><strong>German: Enigma</strong></li>
+      <li><strong>Allied: Hagelin</strong></li>
+      <li><strong>Japanese: Purple</strong></li>
+    </ul>
+    <div class="formula">Mechanism:
+— A series of rotating cylinders (rotors), each implementing one substitution
+— After each keystroke, one or more rotors rotate → changes the substitution
+— With 3 cylinders: 26³ = 17,576 different alphabets before cycling
+— The "key" is the initial rotor settings + rotor wiring
+
+Effectively: a very long, slowly repeating polyalphabetic cipher
+             with astronomically large period</div>
+    <div class="alert alert-info"><div class="alert-label">Historical Note</div>Alan Turing's work at Bletchley Park broke the Enigma cipher, significantly shortening WWII. The attack exploited predictable plaintext (weather reports starting with "Wetter" = weather), cribs (known plaintext segments), and operator errors (reusing key settings).</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Steganography</div>
+    <p>Not encryption — <strong>concealment of the existence of the message itself</strong>. The message is hidden within an innocent-looking cover medium.</p>
+    <div class="grid-2">
+      <div>
+        <h3>Examples</h3>
+        <ul>
+          <li>Selected letters in a document are marked/underlined to form the hidden message</li>
+          <li>Invisible ink (visible only with chemical or heat)</li>
+          <li>Using the least significant bits (LSBs) of image/audio/video pixels to embed data</li>
+          <li>First letters of each word in a text spell the hidden message (acrostic)</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Steganography vs Cryptography</h3>
+        <table class="tbl">
+          <tr><th>Property</th><th>Steganography</th><th>Cryptography</th></tr>
+          <tr><td>Hides</td><td>Existence of message</td><td>Content of message</td></tr>
+          <tr><td>Advantage</td><td>Does not look like hiding anything</td><td>Even if detected, content secure</td></tr>
+          <tr><td>Weakness</td><td>Once method known, everything lost</td><td>Key management complexity</td></tr>
+          <tr><td>Efficiency</td><td>Low (large cover for small message)</td><td>High bandwidth</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="alert alert-exam"><div class="alert-label">Steganography Example (from slides)</div>The "Dear George" letter hides the message using first letters of words/sentences. This is a classical acrostic form of steganography.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Summary: All Classical Cipher Techniques</div>
+    <table class="tbl">
+      <tr><th>Cipher</th><th>Type</th><th>Key Space</th><th>Main Attack</th><th>Strength</th></tr>
+      <tr><td>Caesar</td><td>Substitution (monoalpha)</td><td>25</td><td>Brute force (25 tries)</td><td>Negligible</td></tr>
+      <tr><td>Monoalphabetic</td><td>Substitution</td><td>26! ≈ 4×10²⁶</td><td>Frequency analysis</td><td>Weak</td></tr>
+      <tr><td>Playfair</td><td>Digram substitution</td><td>Very large</td><td>Digram frequency analysis</td><td>Moderate</td></tr>
+      <tr><td>Vigenère</td><td>Polyalphabetic</td><td>26^d</td><td>Kasiski test + freq. analysis</td><td>Moderate</td></tr>
+      <tr><td>Autokey</td><td>Polyalphabetic</td><td>Large</td><td>Freq. analysis on key-message overlap</td><td>Moderate</td></tr>
+      <tr><td>One-Time Pad</td><td>Polyalphabetic (stream)</td><td>∞ (random)</td><td>None (unconditionally secure)</td><td>Perfect (impractical)</td></tr>
+      <tr><td>Rail Fence</td><td>Transposition</td><td>Tiny (# rails)</td><td>Brute force + anagramming</td><td>Negligible</td></tr>
+      <tr><td>Row Transposition</td><td>Transposition</td><td>n! (column perms)</td><td>Anagramming</td><td>Weak–Moderate</td></tr>
+      <tr><td>Product Cipher</td><td>Sub + Trans</td><td>Very large</td><td>Differential/linear cryptanalysis</td><td>Strong (foundation of DES/AES)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== TAB 6: INTERACTIVE TOOL ===================== -->
+<div class="section" id="tool">
+  <div class="card">
+    <div class="card-title">🧮 Cipher Workbench — Encrypt &amp; Analyse</div>
+    <p style="color:var(--muted);margin-bottom:18px;">Select a cipher, enter your text and key, then click <strong>Run Cipher</strong>. The tool shows full step-by-step processing and frequency analysis of both plaintext and ciphertext.</p>
+
+    <div class="tool-section">
+      <label class="inp-label">Select Cipher</label>
+      <select class="pp-input" id="cipher-select" style="cursor:pointer;">
+        <option value="caesar">Caesar Cipher</option>
+        <option value="vigenere" selected>Vigenère Cipher</option>
+        <option value="mono">Monoalphabetic (Random Substitution)</option>
+        <option value="rail">Rail Fence Cipher</option>
+        <option value="row">Row Transposition Cipher</option>
+      </select>
+
+      <label class="inp-label">Plaintext</label>
+      <input class="pp-input" id="inp-plain" value="wearediscoveredsaveyourself" placeholder="Enter plaintext (letters only)">
+
+      <div id="key-block">
+        <label class="inp-label" id="key-label">Key (keyword for Vigenère)</label>
+        <input class="pp-input" id="inp-key" value="deceptive" placeholder="Enter key">
+      </div>
+
+      <button class="pp-btn" onclick="runCipher()">▶ Run Cipher</button>
+    </div>
+
+    <div class="tool-result" id="tool-result">
+      <div class="result-title" id="res-title"></div>
+      <div id="res-body"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Frequency Analyser</div>
+    <p style="color:var(--muted);">After running a cipher, the frequency bar charts appear here.</p>
+    <div id="freq-area">
+      <p style="color:var(--border);font-style:italic;">Run a cipher above to see frequency analysis.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 7: QUIZ ===================== -->
+<div class="section" id="quiz">
+  <div class="score-bar">
+    <div>
+      <div style="font-size:0.78rem;color:var(--muted);">LIVE SCORE</div>
+      <div class="score-val"><span id="score-val">0</span> / <span id="score-total">15</span></div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">QUESTIONS ANSWERED: <span id="q-answered">0</span>/15</div>
+      <button class="reset-btn" onclick="resetQuiz()">↺ Reset Quiz</button>
+    </div>
+  </div>
+  <div id="quiz-container"></div>
+</div>
+
+</main>
+
+<script>
+// ===== TAB NAVIGATION =====
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== CHECKLIST =====
+function toggleCheck(li) {
+  li.classList.toggle('done');
+  const chk = li.querySelector('.chk');
+  chk.classList.toggle('done');
+  updateProgress();
+}
+function updateProgress() {
+  const items = document.querySelectorAll('.checklist li');
+  const done = document.querySelectorAll('.checklist li.done').length;
+  const pct = Math.round((done / items.length) * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct;
+}
+
+// ===== CIPHER TOOL =====
+document.getElementById('cipher-select').addEventListener('change', function() {
+  const v = this.value;
+  const kl = document.getElementById('key-label');
+  const ki = document.getElementById('inp-key');
+  const kb = document.getElementById('key-block');
+  if (v === 'caesar') { kl.textContent = 'Shift (number 1–25)'; ki.value = '3'; kb.style.display='block'; }
+  else if (v === 'vigenere') { kl.textContent = 'Keyword (letters only)'; ki.value = 'deceptive'; kb.style.display='block'; }
+  else if (v === 'mono') { kl.textContent = 'Key (optional seed, press Run to randomize)'; ki.value = '42'; kb.style.display='block'; }
+  else if (v === 'rail') { kl.textContent = 'Number of Rails (2 or 3)'; ki.value = '2'; kb.style.display='block'; }
+  else if (v === 'row') { kl.textContent = 'Column Key (e.g. 4312567)'; ki.value = '4312567'; kb.style.display='block'; }
+});
+
+function cleanText(t) { return t.toLowerCase().replace(/[^a-z]/g, ''); }
+function toNum(c) { return c.charCodeAt(0) - 97; }
+function toChar(n) { return String.fromCharCode((((n % 26) + 26) % 26) + 97); }
+
+function caesarEnc(plain, k) {
+  const steps = [];
+  let cipher = '';
+  for (let i = 0; i < plain.length; i++) {
+    const p = toNum(plain[i]);
+    const c = (p + k) % 26;
+    cipher += toChar(c).toUpperCase();
+    steps.push({ p: plain[i], pn: p, kn: k, cn: c, c: toChar(c).toUpperCase() });
+  }
+  return { cipher, steps };
+}
+
+function vigenereEnc(plain, keyword) {
+  const key = cleanText(keyword);
+  if (!key.length) return { cipher: '', steps: [] };
+  const steps = [];
+  let cipher = '';
+  for (let i = 0; i < plain.length; i++) {
+    const p = toNum(plain[i]);
+    const ki = toNum(key[i % key.length]);
+    const c = (p + ki) % 26;
+    cipher += toChar(c).toUpperCase();
+    steps.push({ p: plain[i], k: key[i % key.length], pn: p, kn: ki, cn: c, c: toChar(c).toUpperCase() });
+  }
+  return { cipher, steps };
+}
+
+function monoEnc(plain, seed) {
+  seed = parseInt(seed) || 42;
+  const alpha = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  // seeded shuffle
+  let s = alpha.slice();
+  for (let i = s.length - 1; i > 0; i--) {
+    seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF;
+    const j = Math.abs(seed) % (i + 1);
+    [s[i], s[j]] = [s[j], s[i]];
+  }
+  const table = {};
+  alpha.forEach((c, i) => { table[c] = s[i].toUpperCase(); });
+  const steps = [];
+  let cipher = '';
+  for (const c of plain) {
+    cipher += table[c];
+    steps.push({ p: c, c: table[c] });
+  }
+  return { cipher, steps, table };
+}
+
+function railFenceEnc(plain, rails) {
+  if (rails < 2) rails = 2;
+  const rows = Array.from({length: rails}, () => []);
+  let row = 0, dir = 1;
+  for (let i = 0; i < plain.length; i++) {
+    rows[row].push({char: plain[i], pos: i, rail: row});
+    if (row === 0) dir = 1;
+    else if (row === rails - 1) dir = -1;
+    row += dir;
+  }
+  let cipher = rows.map(r => r.map(x => x.char).join('')).join('').toUpperCase();
+  return { cipher, rows, rails };
+}
+
+function rowTransEnc(plain, keyStr) {
+  const key = keyStr.split('').map(Number).filter(n => !isNaN(n) && n > 0);
+  if (!key.length) return { cipher: 'Invalid key', grid: [], order: [] };
+  const cols = key.length;
+  const rows = Math.ceil(plain.length / cols);
+  const grid = [];
+  let idx = 0;
+  for (let r = 0; r < rows; r++) {
+    const row = [];
+    for (let c = 0; c < cols; c++) {
+      row.push(idx < plain.length ? plain[idx++] : 'x');
+    }
+    grid.push(row);
+  }
+  // columns sorted by key value
+  const order = key.map((v, i) => ({v, i})).sort((a, b) => a.v - b.v).map(x => x.i);
+  let cipher = '';
+  for (const ci of order) {
+    for (const row of grid) cipher += row[ci].toUpperCase();
+  }
+  return { cipher, grid, order, key, cols };
+}
+
+function freqCount(text) {
+  const counts = {};
+  for (const c of text.toLowerCase()) {
+    if (/[a-z]/.test(c)) counts[c] = (counts[c] || 0) + 1;
+  }
+  return counts;
+}
+
+function renderFreqChart(text, label) {
+  const counts = freqCount(text);
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  let html = `<h3 style="margin-bottom:8px;">${label}</h3>`;
+  for (const [ch, cnt] of sorted) {
+    const pct = (cnt / total * 100).toFixed(1);
+    const w = Math.round(pct * 8);
+    html += `<div class="freq-bar-wrap">
+      <span class="freq-letter">${ch.toUpperCase()}</span>
+      <span class="freq-bar" style="width:${w}px;"></span>
+      <span class="freq-pct">${pct}% (${cnt})</span>
+    </div>`;
+  }
+  return html;
+}
+
+function runCipher() {
+  const type = document.getElementById('cipher-select').value;
+  const rawPlain = document.getElementById('inp-plain').value;
+  const rawKey = document.getElementById('inp-key').value;
+  const plain = cleanText(rawPlain);
+  if (!plain.length) { alert('Please enter some plaintext.'); return; }
+
+  let result = {};
+  let html = '';
+  let cipher = '';
+
+  if (type === 'caesar') {
+    const k = parseInt(rawKey);
+    if (isNaN(k) || k < 1 || k > 25) { alert('Shift must be 1–25'); return; }
+    result = caesarEnc(plain, k);
+    cipher = result.cipher;
+    html = `<p><strong>Cipher:</strong> Caesar (shift = ${k})</p>`;
+    html += `<p><strong>Plaintext:</strong> <span style="color:var(--accent5)">${plain}</span></p>`;
+    html += `<p><strong>Ciphertext:</strong> <span style="color:var(--accent2)">${cipher}</span></p>`;
+    html += `<h3 style="margin:14px 0 8px;">Step-by-step (first 20 chars)</h3>`;
+    html += `<div style="overflow-x:auto"><table class="tbl"><tr><th>Plaintext</th><th>p (num)</th><th>k</th><th>(p+k) mod 26</th><th>Ciphertext</th></tr>`;
+    result.steps.slice(0, 20).forEach(s => {
+      html += `<tr><td style="color:var(--accent5)">${s.p}</td><td>${s.pn}</td><td>${s.kn}</td><td>${s.cn}</td><td style="color:var(--accent2)">${s.c}</td></tr>`;
+    });
+    html += `</table></div>`;
+    if (result.steps.length > 20) html += `<p style="color:var(--muted);font-size:0.8rem;">(showing first 20 of ${result.steps.length} characters)</p>`;
+  }
+  else if (type === 'vigenere') {
+    const kw = cleanText(rawKey);
+    if (!kw.length) { alert('Enter a keyword.'); return; }
+    result = vigenereEnc(plain, kw);
+    cipher = result.cipher;
+    html = `<p><strong>Cipher:</strong> Vigenère | <strong>Keyword:</strong> <span style="color:var(--accent4)">${kw}</span></p>`;
+    html += `<p><strong>Plaintext:</strong> <span style="color:var(--accent5)">${plain}</span></p>`;
+    html += `<p><strong>Ciphertext:</strong> <span style="color:var(--accent2)">${cipher}</span></p>`;
+    html += `<h3 style="margin:14px 0 8px;">Step-by-step table</h3>`;
+    html += `<div style="overflow-x:auto"><table class="tbl"><tr><th>Pos</th><th>Plain p</th><th>p (num)</th><th>Key k</th><th>k (num)</th><th>(p+k) mod 26</th><th>Cipher</th></tr>`;
+    result.steps.slice(0, 27).forEach((s, i) => {
+      html += `<tr><td>${i+1}</td><td style="color:var(--accent5)">${s.p}</td><td>${s.pn}</td><td style="color:var(--accent4)">${s.k}</td><td>${s.kn}</td><td>${s.cn}</td><td style="color:var(--accent2)">${s.c}</td></tr>`;
+    });
+    html += `</table></div>`;
+    if (result.steps.length > 27) html += `<p style="color:var(--muted);font-size:0.8rem;">(showing first 27 of ${result.steps.length} characters)</p>`;
+  }
+  else if (type === 'mono') {
+    result = monoEnc(plain, rawKey);
+    cipher = result.cipher;
+    html = `<p><strong>Cipher:</strong> Monoalphabetic Substitution (seed: ${rawKey})</p>`;
+    html += `<p><strong>Substitution Alphabet:</strong></p>`;
+    html += `<div class="formula">Plain : a b c d e f g h i j k l m n o p q r s t u v w x y z\nCipher: `;
+    for (const c of 'abcdefghijklmnopqrstuvwxyz') html += (result.table[c] || '?') + ' ';
+    html += `</div>`;
+    html += `<p><strong>Plaintext:</strong> <span style="color:var(--accent5)">${plain}</span></p>`;
+    html += `<p><strong>Ciphertext:</strong> <span style="color:var(--accent2)">${cipher}</span></p>`;
+    html += `<div class="alert alert-warn" style="margin-top:14px;"><div class="alert-label">Security Note</div>Despite ${(Math.pow(10, 26.6)).toExponential(1)} possible keys, frequency analysis can break this cipher. See frequency chart below.</div>`;
+  }
+  else if (type === 'rail') {
+    const rails = parseInt(rawKey);
+    if (isNaN(rails) || rails < 2) { alert('Rails must be ≥ 2'); return; }
+    result = railFenceEnc(plain, rails);
+    cipher = result.cipher;
+    html = `<p><strong>Cipher:</strong> Rail Fence | <strong>Rails:</strong> ${rails}</p>`;
+    html += `<p><strong>Plaintext:</strong> <span style="color:var(--accent5)">${plain}</span></p>`;
+    html += `<p><strong>Ciphertext:</strong> <span style="color:var(--accent2)">${cipher}</span></p>`;
+    html += `<h3 style="margin:14px 0 8px;">Rail Diagram</h3>`;
+    const railGrid = Array.from({length: rails}, () => Array(plain.length).fill('.'));
+    let row = 0, dir = 1;
+    for (let i = 0; i < plain.length; i++) {
+      railGrid[row][i] = plain[i].toUpperCase();
+      if (row === 0) dir = 1;
+      else if (row === rails - 1) dir = -1;
+      row += dir;
+    }
+    html += `<div class="formula">`;
+    railGrid.forEach((r, ri) => {
+      html += `Rail ${ri+1}: ${r.join(' ')}\n`;
+    });
+    html += `\nReading rails in order:\n`;
+    result.rows.forEach((r, ri) => {
+      html += `Rail ${ri+1}: ${r.map(x=>x.char.toUpperCase()).join('')}\n`;
+    });
+    html += `</div>`;
+  }
+  else if (type === 'row') {
+    result = rowTransEnc(plain, rawKey);
+    cipher = result.cipher;
+    html = `<p><strong>Cipher:</strong> Row Transposition | <strong>Key:</strong> <span style="color:var(--accent4)">${rawKey}</span></p>`;
+    html += `<p><strong>Plaintext:</strong> <span style="color:var(--accent5)">${plain}</span></p>`;
+    html += `<p><strong>Ciphertext:</strong> <span style="color:var(--accent2)">${cipher}</span></p>`;
+    html += `<h3 style="margin:14px 0 8px;">Grid Layout</h3>`;
+    html += `<div style="overflow-x:auto"><table class="tbl"><tr>`;
+    result.key.forEach((k, i) => {
+      const isFirst = result.order[0] === i;
+      html += `<th style="${isFirst?'color:var(--accent4)':''}">Col ${i+1} (key=${k})</th>`;
+    });
+    html += '</tr>';
+    result.grid.forEach(row => {
+      html += '<tr>' + row.map((c, i) => {
+        const inOrder = result.order.includes(i);
+        return `<td style="color:${inOrder?'var(--accent5)':'var(--muted)'}">${c.toUpperCase()}</td>`;
+      }).join('') + '</tr>';
+    });
+    html += '</table></div>';
+    html += `<p style="margin-top:10px;color:var(--muted);font-size:0.85rem;">Column reading order (by key value): ` + result.order.map(i => `Col ${i+1}`).join(' → ') + '</p>';
+  }
+
+  document.getElementById('res-title').textContent = `Result: ${cipher}`;
+  document.getElementById('res-body').innerHTML = html;
+  document.getElementById('tool-result').classList.add('show');
+
+  // Frequency charts
+  let freqHtml = '<div class="grid-2">';
+  freqHtml += '<div>' + renderFreqChart(plain, '📊 Plaintext Frequencies') + '</div>';
+  freqHtml += '<div>' + renderFreqChart(cipher, '📊 Ciphertext Frequencies') + '</div>';
+  freqHtml += '</div>';
+  freqHtml += '<div class="alert alert-info" style="margin-top:14px;"><div class="alert-label">Analysis</div>';
+  const pFreq = freqCount(plain);
+  const cFreq = freqCount(cipher.toLowerCase());
+  const pMax = Object.entries(pFreq).sort((a,b)=>b[1]-a[1])[0];
+  const cMax = Object.entries(cFreq).sort((a,b)=>b[1]-a[1])[0];
+  freqHtml += `Most frequent plaintext letter: <strong>${pMax[0].toUpperCase()}</strong> (${pMax[1]} times) | Most frequent ciphertext letter: <strong>${cMax[0].toUpperCase()}</strong> (${cMax[1]} times). `;
+  if (type === 'caesar' || type === 'mono') freqHtml += 'Notice the frequency distribution SHAPE is preserved — the most common ciphertext letter likely maps to "E" in English.';
+  else if (type === 'vigenere') freqHtml += 'Notice the flatter frequency distribution compared to plaintext — polyalphabetic substitution hides single-letter statistics.';
+  else freqHtml += 'Transposition preserves ALL letter frequencies exactly — the frequency histogram should be identical between plaintext and ciphertext.';
+  freqHtml += '</div>';
+  document.getElementById('freq-area').innerHTML = freqHtml;
+}
+
+// ===== QUIZ =====
+const quizData = [
+  {
+    q: "What is the primary goal of encryption for confidentiality?",
+    opts: ["Speed up data transmission", "Ensure only authorised individuals can read the original data", "Compress data for storage efficiency", "Authenticate the identity of the sender"],
+    ans: 1,
+    exp: "Encryption for confidentiality ensures that while anyone may see the ciphertext, only authorised parties with the correct key can decrypt and read the original plaintext. This is the fundamental security service of confidentiality."
+  },
+  {
+    q: "In the symmetric cipher model, which mathematical relationship correctly describes encryption?",
+    opts: ["Y = D(K, X)", "X = E(K, Y)", "Y = E(K, X)", "K = E(X, Y)"],
+    ans: 2,
+    exp: "Y = E(K, X) means ciphertext Y is obtained by applying encryption algorithm E with key K to plaintext X. The inverse is X = D(K, Y) for decryption."
+  },
+  {
+    q: "Kerckhoffs' Principle states that:",
+    opts: ["The key must be publicly known", "The algorithm must be kept completely secret", "Security must depend on the key, not the secrecy of the algorithm", "Only stream ciphers are truly secure"],
+    ans: 2,
+    exp: "Kerckhoffs' Principle: A cryptosystem should be secure even if everything about the system, except the key, is public knowledge. The encryption algorithm is assumed to be known; security depends entirely on the key."
+  },
+  {
+    q: "A brute-force attack on a 128-bit key at 10¹⁵ operations/sec would take approximately:",
+    opts: ["72 seconds", "5 seconds", "10¹⁶ years", "213 days"],
+    ans: 2,
+    exp: "From the lecture table, a 128-bit key (2¹²⁸ key space) at 10¹⁵ operations/sec would take approximately 10¹⁶ years — astronomically longer than the age of the universe (~1.3×10¹⁰ years). This makes 128-bit keys computationally secure."
+  },
+  {
+    q: "Which cryptanalytic attack type gives the attacker the MOST information?",
+    opts: ["Ciphertext-only attack", "Known-plaintext attack", "Chosen-plaintext attack", "Chosen-text attack"],
+    ans: 3,
+    exp: "Chosen-text attack combines chosen-plaintext (attacker picks messages to encrypt) AND chosen-ciphertext (attacker picks ciphertexts to decrypt) — giving maximum information. Ciphertext-only is the weakest attack (least information)."
+  },
+  {
+    q: "Using the Caesar cipher with k=13, what is the encryption of the letter 'n' (n=13)?",
+    opts: ["A (0)", "Z (25)", "N (13)", "O (14)"],
+    ans: 0,
+    exp: "C = (p + k) mod 26 = (13 + 13) mod 26 = 26 mod 26 = 0 = 'A'. ROT-13 (k=13) is its own inverse — encrypting twice gives back the original."
+  },
+  {
+    q: "Why is the monoalphabetic cipher insecure despite having 26! ≈ 4×10²⁶ possible keys?",
+    opts: ["The key space is too small for modern computers", "The algorithm is publicly known", "It preserves letter frequency distributions, enabling frequency analysis", "It uses only single-character substitution per block"],
+    ans: 2,
+    exp: "26! keys is far beyond brute force. The weakness is that monoalphabetic substitution is a fixed one-to-one mapping — every 'e' always becomes the same cipher letter. This preserves the frequency distribution of English, making frequency analysis trivially effective."
+  },
+  {
+    q: "In the Playfair cipher using keyword MONARCHY, what rule applies when two plaintext letters appear in the SAME ROW?",
+    opts: ["Replace each with the letter to its left (wrap around)", "Replace each with the letter below it (wrap around)", "Replace each with the letter to its right (wrap around)", "Replace each with the letter at the same column of the other letter's row"],
+    ans: 2,
+    exp: "Same row rule: each letter is replaced by the letter immediately to its right in the same row, with wrap-around (the last column wraps to the first). E.g., in row [M O N A R], 'O' → 'N', 'A' → 'R', 'R' → 'M' (wraps)."
+  },
+  {
+    q: "The Vigenère cipher with keyword 'deceptive' encrypts 'w' (position 0) as which letter?",
+    opts: ["W", "Z", "D", "I"],
+    ans: 1,
+    exp: "w=22, key letter d=3. C = (22+3) mod 26 = 25 = 'Z'. This matches the worked example in the slides: WEAREDISCOVEREDSAVEYOURSELF → ZICVTWQNGRZGVTWAVZHCQYGLMGJ."
+  },
+  {
+    q: "What is the fundamental weakness of the Autokey cipher proposed by Vigenère?",
+    opts: ["The key is too short", "The message itself becomes part of the key, which has natural language frequency patterns", "It uses the same alphabet as the plaintext", "The key must be securely distributed"],
+    ans: 1,
+    exp: "In the Autokey cipher, after the initial keyword, the message itself continues as the key. Since the message is natural language (not random), the 'key' has the same statistical regularities as English text, making it still vulnerable to frequency-based attacks."
+  },
+  {
+    q: "Why is the One-Time Pad considered unconditionally secure?",
+    opts: ["It uses a 256-bit key which is computationally infeasible to brute force", "For any ciphertext, any plaintext of that length could have been produced by some key, so the attacker learns nothing", "It applies multiple rounds of substitution and transposition", "It uses XOR which is a self-inverse operation"],
+    ans: 1,
+    exp: "The OTP is unconditionally secure because for any ciphertext C and ANY plaintext P (of the same length), there EXISTS a key K such that E(K,P)=C. The attacker cannot distinguish between 'mr mustard' and 'miss scarlet' as the correct decryption — even with infinite computation."
+  },
+  {
+    q: "The Rail Fence cipher belongs to which category?",
+    opts: ["Substitution cipher", "Transposition cipher", "Product cipher", "Polyalphabetic cipher"],
+    ans: 1,
+    exp: "Rail Fence is a transposition cipher — the LETTERS are not changed, only their POSITIONS are rearranged. This means the frequency distribution of letters is identical to the original plaintext, which is a key identifying characteristic of transposition ciphers."
+  },
+  {
+    q: "In a row transposition cipher with key 4312567, which column is read FIRST when constructing the ciphertext?",
+    opts: ["Column 4", "Column 3", "Column 1", "Column 7"],
+    ans: 2,
+    exp: "The key 4312567 assigns column positions. Column 1 has key-value '3', column 2 has '1', column 3 has '2', etc. We read columns in ascending key-value order: first the column with key-value 1 (column 2... wait: key position 3 = 1). The column whose key number = 1 comes first. In key 4,3,1,2,5,6,7 → position 3 has value 1, so column 3 is read first: T,T,N,A."
+  },
+  {
+    q: "What makes product ciphers (substitution followed by transposition) significantly stronger than either alone?",
+    opts: ["They double the key length", "They create a qualitatively new type of cipher not reducible to either substitution or transposition alone", "They eliminate frequency analysis attacks entirely", "They reduce the key space needed"],
+    ans: 1,
+    exp: "Two substitutions → a more complex substitution. Two transpositions → a more complex transposition. But substitution + transposition creates something genuinely different — combining confusion (substitution) and diffusion (transposition). This is the foundation of modern block ciphers like DES and AES."
+  },
+  {
+    q: "What is the key difference between steganography and cryptography?",
+    opts: ["Steganography uses stronger keys", "Steganography hides the existence of the message; cryptography hides its content", "Cryptography is only for digital communications", "Steganography is always combined with encryption"],
+    ans: 1,
+    exp: "Cryptography makes the message unreadable but its existence is visible (ciphertext is obvious). Steganography hides the fact that a secret message exists at all (it's embedded in an innocent-looking cover — an image, letter, etc.). The critical weakness: once the hiding method is discovered, all security is lost."
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+
+function buildQuiz() {
+  let html = '';
+  quizData.forEach((q, i) => {
+    html += `<div class="q-block" id="q-${i}">
+      <div class="q-num">Question ${i+1} of 15</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((o, j) => `<button class="q-opt" id="q-${i}-opt-${j}" onclick="answerQ(${i}, ${j})">${String.fromCharCode(65+j)}. ${o}</button>`).join('')}
+      </div>
+      <div class="q-explain" id="q-${i}-exp"><strong>📖 Explanation:</strong> ${q.exp}</div>
+    </div>`;
+  });
+  document.getElementById('quiz-container').innerHTML = html;
+  document.getElementById('score-total').textContent = quizData.length;
+}
+
+function answerQ(qi, optIdx) {
+  const q = quizData[qi];
+  // disable all options
+  for (let j = 0; j < q.opts.length; j++) {
+    const btn = document.getElementById(`q-${qi}-opt-${j}`);
+    btn.disabled = true;
+    if (j === q.ans) btn.classList.add('correct');
+    else if (j === optIdx && j !== q.ans) btn.classList.add('wrong');
+  }
+  document.getElementById(`q-${qi}-exp`).classList.add('show');
+  quizAnswered++;
+  if (optIdx === q.ans) quizScore++;
+  document.getElementById('score-val').textContent = quizScore;
+  document.getElementById('q-answered').textContent = quizAnswered;
+}
+
+function resetQuiz() {
+  quizScore = 0;
+  quizAnswered = 0;
+  document.getElementById('score-val').textContent = 0;
+  document.getElementById('q-answered').textContent = 0;
+  buildQuiz();
+}
+
+// ===== INIT =====
+buildQuiz();
+</script>
+</body>
+</html>

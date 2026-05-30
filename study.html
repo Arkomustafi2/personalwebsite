@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Materials — Arko Mustafi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="blog-header">
+    <div class="section-label" style="position:relative; margin-bottom:1.5rem;">Resources</div>
+    <h1>MSc Study Materials</h1>
+    <p>Compiled guides and notes — M.Sc. EEE, University of Dhaka.</p>
+  </header>
+
+  <nav class="site-nav">
+    <ul>
+      <li><a href="index.html">← Home</a></li>
+    </ul>
+  </nav>
+
+  <div class="study-body">
+
+    <div class="subject-group reveal">
+      <h3 class="subject-title">Project Management</h3>
+      <ul class="material-list">
+        <li><a href="project_management.html">Before Incourse Materials</a></li>
+      </ul>
+    </div>
+
+    <div class="subject-group reveal">
+      <h3 class="subject-title">Advanced DSP (ADSP)</h3>
+      <ul class="material-list">
+        <li><a href="PPT_01 adaptive_filters_study_guide.html">PPT 01 — Adaptive Filters</a></li>
+        <li><a href="PPT_02 multirate_dsp_study_guide.html">PPT 02 — Multirate DSP</a></li>
+        <li><a href="PPT_03 polyphase_filterbanks_study_guide.html">PPT 03 — Polyphase Filterbanks</a></li>
+      </ul>
+    </div>
+
+    <div class="subject-group reveal">
+      <h3 class="subject-title">AI Systems (AIS)</h3>
+      <ul class="material-list">
+        <li><a href="AIS_StudyGuide.html">Before Incourse Materials</a></li>
+      </ul>
+    </div>
+
+    <div class="subject-group reveal">
+      <h3 class="subject-title">High Speed Networking</h3>
+      <ul class="material-list">
+        <li><a href="high_speed_networking_study_guide.html">Before Incourse Materials</a></li>
+      </ul>
+    </div>
+
+    <div class="subject-group reveal">
+      <h3 class="subject-title">Network Security</h3>
+      <ul class="material-list">
+        <li><a href="Lec2 classical_encryption_study_guide.html">Lec 2 — Classical Encryption</a></li>
+        <li><a href="Lec3 block_ciphers_des_study_guide.html">Lec 3 — Block Ciphers &amp; DES</a></li>
+        <li><a href="Lec4 block_cipher_modes_study_guide.html">Lec 4 — Block Cipher Modes</a></li>
+        <li><a href="Lec5 PRNG_StreamCiphers.html">Lec 5 — PRNG &amp; Stream Ciphers</a></li>
+        <li><a href="Lec6 NumberTheory.html">Lec 6 — Number Theory</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Arko Mustafi · University of Dhaka</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

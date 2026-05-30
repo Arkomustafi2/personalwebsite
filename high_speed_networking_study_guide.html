@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>High Speed Computer Networking — Study Guide | University of Dhaka</title>
+<style>
+:root{
+  --bg:#0f1117;--card:#1a1d27;--card2:#22263a;--border:#2e3354;
+  --text:#e2e6f0;--muted:#8892b0;
+  --accent:#00d4aa;--accent2:#7c3aed;--accent3:#3b82f6;--accent4:#f7c948;
+  --accent5:#f472b6;--accent6:#fb923c;--accent7:#34d399;
+  --red:#ef4444;--green:#22c55e;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+
+header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 22px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.hdr-left h1{font-size:1.1rem;color:var(--accent);}
+.hdr-left p{font-size:.78rem;color:var(--muted);}
+.prog-wrap{display:flex;align-items:center;gap:9px;font-size:.8rem;color:var(--muted);}
+.prog-outer{width:150px;height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-inner{height:100%;background:var(--accent);width:0%;transition:width .3s;}
+
+.timer-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:205px;}
+.timer-display{font-size:1.55rem;font-family:monospace;color:var(--accent4);letter-spacing:2px;}
+.timer-mode{display:flex;gap:8px;font-size:.74rem;}
+.timer-mode label{display:flex;align-items:center;gap:3px;cursor:pointer;color:var(--muted);}
+.timer-controls{display:flex;gap:5px;}
+.timer-controls button{padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.76rem;}
+.timer-controls button:hover{background:var(--border);}
+
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:12px 22px;background:var(--card);border-bottom:1px solid var(--border);}
+nav button{padding:7px 13px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;font-size:.81rem;transition:all .2s;}
+nav button.active{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent);}
+nav button:hover:not(.active){border-color:var(--accent);color:var(--text);}
+
+main{max-width:1100px;margin:0 auto;padding:26px 18px;}
+section{display:none;}
+section.active{display:block;}
+
+h2{font-size:1.25rem;color:var(--accent);margin-bottom:14px;}
+h3{font-size:1.02rem;color:var(--accent4);margin:18px 0 9px;}
+h4{font-size:.92rem;color:var(--accent5);margin:12px 0 6px;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.card2{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+.formula{background:#0a0e1a;border-left:4px solid var(--accent4);border-radius:8px;padding:13px 15px;margin:10px 0;font-family:monospace;font-size:.86rem;color:var(--accent4);white-space:pre;overflow-x:auto;}
+
+.step{display:flex;gap:11px;margin:9px 0;align-items:flex-start;}
+.step-num{min-width:26px;height:26px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;}
+.step-body{flex:1;}
+
+.alert{border-radius:8px;padding:11px 15px;margin:10px 0;border-left:4px solid;}
+.alert-info{background:#0e1a2e;border-color:var(--accent3);}
+.alert-warn{background:#1a1400;border-color:var(--accent4);}
+.alert-key{background:#0a1a18;border-color:var(--accent);}
+.alert-exam{background:#1a0e1a;border-color:var(--accent5);}
+.alert-info::before{content:"ℹ️ ";}.alert-warn::before{content:"⚠️ ";}.alert-key::before{content:"🔑 ";}.alert-exam::before{content:"📝 ";}
+
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.84rem;}
+th{background:var(--card2);color:var(--accent);padding:8px 11px;text-align:left;border:1px solid var(--border);}
+td{padding:7px 11px;border:1px solid var(--border);}
+tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+
+.summary-box{background:linear-gradient(135deg,#0a1a18,#0e1a2e);border:1px solid var(--accent);border-radius:12px;padding:18px;margin-bottom:18px;}
+.tl-item{display:flex;gap:13px;margin-bottom:12px;align-items:flex-start;}
+.tl-dot{width:13px;height:13px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+.tl-time{color:var(--accent4);font-size:.79rem;min-width:55px;font-family:monospace;}
+.tl-content strong{color:var(--text);}
+.tl-content span{color:var(--muted);font-size:.81rem;}
+
+.checklist{list-style:none;}
+.checklist li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.checklist li input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;}
+.checklist li.done label{text-decoration:line-through;color:var(--muted);}
+
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.73rem;font-weight:700;margin-left:5px;}
+.tag-teal{background:var(--accent);color:#000;}
+.tag-pink{background:var(--accent5);color:#000;}
+.tag-blue{background:var(--accent3);color:#fff;}
+.tag-orange{background:var(--accent6);color:#000;}
+
+/* Quiz */
+.q-block{background:var(--card2);border-radius:10px;padding:15px;margin-bottom:14px;}
+.q-block p{font-weight:600;margin-bottom:9px;}
+.q-opts{display:flex;flex-direction:column;gap:6px;}
+.q-opt{padding:7px 13px;border-radius:7px;border:1px solid var(--border);cursor:pointer;transition:all .2s;}
+.q-opt:hover{border-color:var(--accent);}
+.q-opt.correct{background:#052;border-color:var(--green);color:var(--green);}
+.q-opt.wrong{background:#300;border-color:var(--red);color:var(--red);}
+.q-exp{background:#0a1a18;border-left:3px solid var(--accent);padding:9px;border-radius:6px;margin-top:9px;font-size:.84rem;color:var(--muted);display:none;}
+.q-exp.show{display:block;}
+.score-bar{background:var(--card);border-radius:10px;padding:13px;text-align:center;margin-bottom:16px;font-size:1.1rem;}
+#resetBtn{padding:8px 20px;background:var(--accent5);border:none;border-radius:8px;color:#000;cursor:pointer;font-weight:700;}
+
+/* Calculator */
+.pp-input{width:100%;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:.88rem;margin:5px 0 10px;}
+.pp-btn{padding:9px 22px;background:var(--accent);border:none;border-radius:8px;color:#000;font-weight:700;cursor:pointer;font-size:.9rem;margin-top:6px;}
+.pp-btn:hover{opacity:.85;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <h1>🌐 High Speed Computer Networking — Study Guide</h1>
+    <p>M.Sc. | University of Dhaka &nbsp;|&nbsp; 31 Mar – 29 Apr 2026</p>
+  </div>
+  <div class="prog-wrap">
+    <span id="prog-text">0/10 done</span>
+    <div class="prog-outer"><div class="prog-inner" id="progBar"></div></div>
+  </div>
+  <div class="timer-box">
+    <div class="timer-display" id="timerDisplay">00:00:00</div>
+    <div class="timer-mode">
+      <label><input type="radio" name="tmode" value="sw" checked onchange="setMode('sw')"> Stopwatch</label>
+      <label><input type="radio" name="tmode" value="cd" onchange="setMode('cd')"> Countdown</label>
+      <input type="number" id="cdInput" value="60" min="1" max="999" style="width:48px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:2px 4px;font-size:.74rem;">
+    </div>
+    <div class="timer-controls">
+      <button onclick="startTimer()">▶ Start</button>
+      <button onclick="pauseTimer()">⏸ Pause</button>
+      <button onclick="resetTimer()">↺ Reset</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('s1',this)">📅 Study Plan</button>
+  <button onclick="showSection('s2',this)">⚡ Core Concepts</button>
+  <button onclick="showSection('s3',this)">🔀 Switching & Protocols</button>
+  <button onclick="showSection('s4',this)">🗺️ Topologies & LAN/WAN</button>
+  <button onclick="showSection('s5',this)">📡 Physical Layer & Devices</button>
+  <button onclick="showSection('s6',this)">🧮 Network Calculator</button>
+  <button onclick="showSection('s7',this)">🧠 Quiz (15 Qs)</button>
+</nav>
+
+<main>
+
+<!-- ===== TAB 1: STUDY PLAN ===== -->
+<section id="s1" class="active">
+<div class="summary-box">
+  <h2 style="margin-bottom:8px;">What this course is really about</h2>
+  <p>High Speed Computer Networking covers how data moves between computers at rates of Mbps, Gbps, and Tbps with low latency and high reliability. The course builds from foundational performance metrics (latency, bandwidth, reliability) through switching paradigms, OSI/TCP-IP architecture, and network topologies, up to cutting-edge physical layer techniques like QAM, OFDM, massive MIMO, and beamforming used in 5G and beyond. The connecting theme: every design decision is a tradeoff between speed, cost, reliability, and complexity — and you must know which tool solves which problem at which layer.</p>
+</div>
+
+<div class="card">
+  <h3>⏱️ 6-Hour Study Timeline</h3>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">0:00–0:45</div><div class="tl-content"><strong>Core Concepts: High data rate, Latency, Bandwidth, Reliability</strong><br><span>31 Mar notes — 4 key characteristics, 8 latency improvement methods, 7 bandwidth improvement methods, 9 reliability improvement methods</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">0:45–1:30</div><div class="tl-content"><strong>Circuit Switched vs Packet Switched Networks</strong><br><span>1 Apr notes — definitions, key features of each, OSI 7 layers vs TCP/IP 5 layers, encapsulation, addressing per layer</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">1:30–2:15</div><div class="tl-content"><strong>Network Topologies (7 types) + Comparison Table</strong><br><span>9 Aug notes — Point-to-point, Bus, Star, Ring, Mesh, Tree, Hybrid; cost/reliability/scalability table; physical vs logical topology</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2:15–3:00</div><div class="tl-content"><strong>LAN, MAN, WAN, PAN + Layer Mapping</strong><br><span>6 Aug notes — coverage, devices, addressing, routing per network type; LAN at L1+L2, MAN at L1+L2+L3, WAN multihop</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">3:00–4:00</div><div class="tl-content"><strong>Physical Layer Techniques (11 methods)</strong><br><span>15 Apr notes — QAM orders, channel coding, MIMO/massive MIMO, beamforming, high frequency bands, OFDM variants, fiber optics, full duplex, synchronization, adaptive modulation</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">4:00–4:45</div><div class="tl-content"><strong>High Speed LAN Technologies</strong><br><span>21 Apr notes — OSI-TCP/IP mapping, obsolete LANs (Token Ring, FDDI, ATM, ARCNET), Modern Ethernet (IEEE 802.3), Fiber Ethernet, Wi-Fi standards, SDN LAN, Data Centre LAN</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">4:45–5:30</div><div class="tl-content"><strong>Network Connecting Devices (all layers)</strong><br><span>29 Apr notes — Repeater, Hub, Bridge, Switch, Router, L4 Switch, Gateway, Proxy, Firewall; device-to-OSI-layer mapping table</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">5:30–6:00</div><div class="tl-content"><strong>Practice with Calculator + Full Quiz</strong><br><span>Use the Network Calculator → run Shannon capacity, modulation bits-per-symbol; complete 15-question quiz</span></div></div>
+</div>
+
+<div class="card">
+  <h3>✅ Progress Checklist</h3>
+  <ul class="checklist" id="checklist">
+    <li><input type="checkbox" id="c1" onchange="updateProgress()"><label for="c1">Know 4 key characteristics + 8 latency improvement methods</label></li>
+    <li><input type="checkbox" id="c2" onchange="updateProgress()"><label for="c2">Know 7 bandwidth improvement + 9 reliability improvement methods</label></li>
+    <li><input type="checkbox" id="c3" onchange="updateProgress()"><label for="c3">Can compare circuit-switched vs packet-switched networks</label></li>
+    <li><input type="checkbox" id="c4" onchange="updateProgress()"><label for="c4">Understand OSI 7 layers vs TCP/IP 5 layers + encapsulation</label></li>
+    <li><input type="checkbox" id="c5" onchange="updateProgress()"><label for="c5">Know all 7 topology types with cost/reliability/scalability tradeoffs</label></li>
+    <li><input type="checkbox" id="c6" onchange="updateProgress()"><label for="c6">Differentiate LAN, MAN, WAN, PAN — coverage, devices, addressing</label></li>
+    <li><input type="checkbox" id="c7" onchange="updateProgress()"><label for="c7">Understand QAM orders, OFDM, MIMO, beamforming, and channel coding</label></li>
+    <li><input type="checkbox" id="c8" onchange="updateProgress()"><label for="c8">Know obsolete vs modern LAN technologies + Wi-Fi standards</label></li>
+    <li><input type="checkbox" id="c9" onchange="updateProgress()"><label for="c9">Can map all 9 network devices to their OSI layer and function</label></li>
+    <li><input type="checkbox" id="c10" onchange="updateProgress()"><label for="c10">Know Shannon capacity formula and QAM bits-per-symbol calculation</label></li>
+  </ul>
+</div>
+</section>
+
+<!-- ===== TAB 2: CORE CONCEPTS ===== -->
+<section id="s2">
+<h2>⚡ Core Concepts of High Speed Networking (31 Mar 2026)</h2>
+
+<div class="card">
+  <h3>Definition & 4 Key Characteristics</h3>
+  <p>High speed computer communication refers to the transfer of data between computers or devices at <strong>very high data rates</strong> — typically Mbps, Gbps, or even Tbps.</p>
+  <div class="grid2" style="margin-top:12px;">
+    <div class="card2">① <strong>High Data Rate</strong> — the primary goal. Throughput measured in Mbps/Gbps/Tbps.</div>
+    <div class="card2">② <strong>Low Latency</strong> — minimal delay between transmission and reception.</div>
+    <div class="card2">③ <strong>High Bandwidth</strong> — wide frequency range available for data transmission.</div>
+    <div class="card2">④ <strong>Reliability</strong> — data arrives correctly and consistently without corruption or loss.</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>How Latency Can Be Improved (8 Methods)</h3>
+  <div class="alert alert-exam">Latency = propagation delay + queuing delay + processing delay + transmission delay. Each method below targets a specific component.</div>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Reduce Physical Distance</strong> — shorter distance → lower propagation delay. Achieved via <em>edge servers</em> (servers kept close to user's physical location, holding a cache of data to serve the user faster).</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Use High Speed Transmission Media</strong> — e.g., optical fiber (light-speed propagation, very low delay).</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Optimize Routing Path</strong> — data packets may take inefficient routes across the internet. Use intelligent routing protocols and traffic engineering to reduce hops between source and destination.</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Reduce Network Congestion</strong> — congestion increases queuing delay. Solutions: load balancing, traffic shedding, increasing network capacity.</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Use Faster Hardware</strong> — faster routers, switches, and NICs reduce processing delay.</div></div>
+  <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Efficient Protocol Design</strong> — protocol overhead adds delay. Streamlined headers and fewer round trips reduce latency.</div></div>
+  <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Edge Computing and Caching</strong> — process/store data near the end user so fewer requests travel to distant servers.</div></div>
+  <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Parallelism and Multiplexing</strong> — simultaneous processing of multiple data streams reduces overall wait time.</div></div>
+</div>
+
+<div class="card">
+  <h3>How Bandwidth Can Be Improved (7 Methods)</h3>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Use Higher Capacity Transmission Media</strong> — optical fiber offers orders of magnitude more bandwidth than copper.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Use Multiplexing Techniques</strong> — TDM, FDM, WDM, OFDM pack multiple signals onto one medium.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Increase Channel Frequency Range</strong> — wider frequency band → more bandwidth (Shannon's law).</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Increase SNR</strong> — achieved by better shielding, low noise amplifiers, improved channel conditions. Higher SNR → more bits per symbol.</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Use Advanced Modulation Techniques</strong> — like QAM (64-QAM, 256-QAM) and OFDM encode more bits per symbol.</div></div>
+  <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Expand Spectral Availability</strong> — use previously unused frequency bands (mmWave in 5G).</div></div>
+  <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Reduce Interference and Losses</strong> — better shielding, beamforming, interference cancellation.</div></div>
+</div>
+
+<div class="card">
+  <h3>How Reliability Can Be Improved (9 Methods)</h3>
+  <div class="grid2">
+    <div>
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Error Detection and Correction</strong> — add redundancy bits to detect or fix errors in transmission data (parity, CRC, FEC).</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Retransmission Protocol</strong> — if errors detected, receiver requests retransmission. Protocols: Stop-and-Wait ARQ, Go-Back-N ARQ (Automatic Repeat Request).</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Use Reliable Transmission Protocols</strong> — TCP provides ordered, error-checked delivery.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Redundancy in Systems</strong> — duplicate links, servers, or paths so failure of one doesn't disrupt service.</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Improve SNR</strong> — cleaner signal → fewer bit errors.</div></div>
+    </div>
+    <div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Use Robust Transmission Media</strong> — fiber optic is immune to electromagnetic interference.</div></div>
+      <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Channel Coding Technique</strong> — error correction codes (LDPC, Polar codes, Turbo codes) embedded in data.</div></div>
+      <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Network Design and Fault Tolerance</strong> — mesh topology, redundant routing.</div></div>
+      <div class="step"><div class="step-num">9</div><div class="step-body"><strong>Synchronization and Timing</strong> — precise clocking ensures receiver correctly samples bits.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Shannon's Capacity Formula (Key Formula)</h3>
+  <div class="alert alert-key">Shannon's theorem gives the theoretical maximum data rate for any channel.</div>
+  <div class="formula">C = B × log₂(1 + SNR)
+
+Where:
+  C   = Channel capacity (bits per second)
+  B   = Bandwidth (Hz)
+  SNR = Signal-to-Noise Ratio (linear, not dB)
+
+SNR (dB) → Linear: SNR_linear = 10^(SNR_dB / 10)
+
+Bits per Symbol (QAM):
+  64-QAM  → log₂(64)  = 6 bits/symbol
+  256-QAM → log₂(256) = 8 bits/symbol
+  1024-QAM→ log₂(1024)= 10 bits/symbol</div>
+</div>
+</section>
+
+<!-- ===== TAB 3: SWITCHING & PROTOCOLS ===== -->
+<section id="s3">
+<h2>🔀 Switching Paradigms & Protocol Architecture (1 Apr 2026)</h2>
+
+<div class="card">
+  <h3>Circuit Switched vs Packet Switched — Full Comparison</h3>
+  <div class="alert alert-exam">This comparison is exam-critical. Know every row in this table.</div>
+  <table>
+    <tr><th>Feature</th><th>Circuit Switched</th><th>Packet Switched</th></tr>
+    <tr><td><strong>Path setup</strong></td><td>Dedicated physical path established before communication starts</td><td>No dedicated path — each packet routed independently</td></tr>
+    <tr><td><strong>Bandwidth</strong></td><td>Reserved (constant data rate throughout)</td><td>Shared — used only when data is present</td></tr>
+    <tr><td><strong>Resource efficiency</strong></td><td>Inefficient — idle time wastes bandwidth</td><td>Efficient — bandwidth used on demand</td></tr>
+    <tr><td><strong>Latency</strong></td><td>Low latency after setup</td><td>Variable delay (latency and jitter)</td></tr>
+    <tr><td><strong>Packet loss</strong></td><td>No packet loss</td><td>Possible packet loss</td></tr>
+    <tr><td><strong>Routing</strong></td><td>Fixed path</td><td>Dynamic routing — each packet may take different path</td></tr>
+    <tr><td><strong>Example</strong></td><td>PSTN (Public Switched Telephone Network), old telephone exchange</td><td>The Internet</td></tr>
+  </table>
+  <div class="alert alert-key">Circuit switching: predictable, low jitter → good for real-time voice/video. Packet switching: flexible, efficient → good for data/internet traffic. Modern networks use both.</div>
+</div>
+
+<div class="card">
+  <h3>OSI Model — 7 Layers</h3>
+  <p>The OSI model is a <strong>layered protocol</strong> framework. Each layer takes service from layers below it and provides service to layers above it.</p>
+  <table>
+    <tr><th>Layer #</th><th>Name</th><th>Address Used</th><th>Function</th><th>TCP/IP Mapping</th></tr>
+    <tr><td>7</td><td><strong>Application</strong></td><td>—</td><td>User-facing services (HTTP, FTP, DNS)</td><td rowspan="3" style="text-align:center;vertical-align:middle;color:var(--accent);">Application Layer</td></tr>
+    <tr><td>6</td><td><strong>Presentation</strong></td><td>—</td><td>Data format, compression, encryption</td></tr>
+    <tr><td>5</td><td><strong>Session</strong></td><td>—</td><td>Manages sessions between applications</td></tr>
+    <tr><td>4</td><td><strong>Transport</strong></td><td>Port number</td><td>End-to-end delivery, TCP/UDP, flow control</td><td style="color:var(--accent);">Transport</td></tr>
+    <tr><td>3</td><td><strong>Network</strong></td><td>IP address</td><td>Logical addressing, routing</td><td style="color:var(--accent);">Network / Internet</td></tr>
+    <tr><td>2</td><td><strong>Data Link</strong></td><td>MAC address</td><td>Frame formation, error checking, MAC access</td><td style="color:var(--accent);">Data Link</td></tr>
+    <tr><td>1</td><td><strong>Physical</strong></td><td>—</td><td>Raw bit transmission — stream of bits</td><td style="color:var(--accent);">Physical</td></tr>
+  </table>
+  <div class="alert alert-key">OSI has 7 layers; TCP/IP has 5 layers. OSI layers 5, 6, 7 are merged into the single TCP/IP Application layer. Functionally there is no difference — OSI is a reference/educational model; TCP/IP is the engineering model actually used.</div>
+</div>
+
+<div class="card">
+  <h3>Encapsulation — How Data Travels Down the Stack</h3>
+  <div class="alert alert-info">Each layer adds its own header (and trailer at data link). This is called <strong>encapsulation</strong>. At the receiver, each layer strips its header — called <strong>decapsulation</strong>.</div>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Application layer</strong> creates data: e.g., "Hello" (TCP segment)</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Transport layer</strong> adds TCP Header → [TCP Header][Hello]</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Network layer</strong> adds IP Header → [IP Header][TCP Header][Hello]</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Data Link layer</strong> adds MAC Header + Trailer → [MAC Header][IP Header][TCP Header][Hello][Trailer] (trailer used for error checking)</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Physical layer</strong> converts everything to a stream of bits for transmission</div></div>
+  <div class="formula">Encapsulation structure (transmitting end):
+┌────────────┬────────────┬────────────┬─────────┬─────────────┐
+│ MAC Header │ IP Header  │ TCP Header │  Hello  │  Trailer    │
+│ (Data Link)│ (Network)  │(Transport) │  Data   │ (Error chk) │
+└────────────┴────────────┴────────────┴─────────┴─────────────┘
+→ Physical layer converts entire frame to stream of bits (010110...)</div>
+</div>
+
+<div class="card">
+  <h3>Why OSI vs TCP/IP?</h3>
+  <div class="grid2">
+    <div class="card2"><strong>Engineer's perspective:</strong> Works from physical layer. Overhead added at each layer going down, stripped going up. The intuitive model shows this clearly.</div>
+    <div class="card2"><strong>User's perspective:</strong> Works from application layer downward. TCP/IP is the model actually deployed. OSI is the reference/study model.</div>
+  </div>
+  <div class="alert alert-info">OSI Presentation and Session functions (compression, encryption, session management) are handled inside the TCP/IP Application layer — functionally no difference, just different grouping.</div>
+</div>
+</section>
+
+<!-- ===== TAB 4: TOPOLOGIES & LAN/WAN ===== -->
+<section id="s4">
+<h2>🗺️ Network Topologies, LAN, MAN & WAN (Aug 2026)</h2>
+
+<div class="card">
+  <h3>Network Topology — Definition</h3>
+  <p>Network topology describes how devices (nodes) and communication links are arranged in a computer network — both <strong>physically</strong> and <strong>logically</strong>. It directly affects performance, scalability, reliability, and cost.</p>
+</div>
+
+<div class="card">
+  <h3>7 Types of Network Topologies</h3>
+
+  <h4>1. Point-to-Point Topology</h4>
+  <div class="card2">Direct connection between exactly two devices (C₁ — C₂). Cheapest from cost perspective, simplest, but not scalable — only two nodes.</div>
+
+  <h4>2. Bus Topology</h4>
+  <div class="card2">All devices connected to a <strong>single backbone cable</strong>. Simple and low cost, easy to install. <em>Problems:</em> If backbone fails → entire network fails. Data collision occurs → traffic increases → congestion. Reliability↓ Cost↓ Scalability↓. Repeaters can be used to extend segments.</div>
+
+  <h4>3. Star Topology</h4>
+  <div class="card2">All devices connect to a <strong>central hub</strong>. Easy to manage and expand. Failure of one node doesn't affect others. <em>Weakness:</em> Central hub failure → entire network down. Scalable, reliability better than bus topology.</div>
+
+  <h4>4. Ring Topology</h4>
+  <div class="card2">Devices arranged in a circle. Data travels in <strong>one direction</strong>. No collision (controlled access). <em>Weakness:</em> Failure of one node can break the network (unless dual ring). Used for backbone support. Not scalable, not reliable.</div>
+
+  <h4>5. Mesh Topology</h4>
+  <div class="card2">Every device has a direct connection to every other device. <strong>Very reliable</strong>. High degree of redundancy. <em>Weakness:</em> Expensive and complex. Repeaters may still be needed.</div>
+
+  <h4>6. Tree Topology (Hierarchical)</h4>
+  <div class="card2">Star topology in hierarchy — Root → Hub → Devices. Scalable and organized. Root failure affects large sections.</div>
+
+  <h4>7. Hybrid Topology</h4>
+  <div class="card2">Combination of two or more topologies (e.g., Ring + Star, or Star + Bus). Very high scalability and flexibility. Cost varies.</div>
+
+  <h3>Topology Comparison Table</h3>
+  <div class="alert alert-exam">This table is directly from the notes — memorize it for the exam.</div>
+  <table>
+    <tr><th>Topology</th><th>Cost</th><th>Reliability</th><th>Scalability</th></tr>
+    <tr><td><strong>Bus</strong></td><td>Low</td><td>Low</td><td>Low</td></tr>
+    <tr><td><strong>Star</strong></td><td>Medium</td><td>High</td><td>High</td></tr>
+    <tr><td><strong>Ring</strong></td><td>Medium</td><td>Medium</td><td>Low</td></tr>
+    <tr><td><strong>Mesh</strong></td><td>High</td><td>Very High</td><td>Medium</td></tr>
+    <tr><td><strong>Tree</strong></td><td>Medium</td><td>High</td><td>High</td></tr>
+    <tr><td><strong>Hybrid</strong></td><td>Varies</td><td>High</td><td>Very High</td></tr>
+  </table>
+
+  <h4>Physical vs Logical Topology</h4>
+  <div class="grid2">
+    <div class="card2"><strong>Physical Topology:</strong> How devices are actually wired/connected in the real world.</div>
+    <div class="card2"><strong>Logical Topology:</strong> How data flows through the network — may differ from physical layout (e.g., Ethernet uses logical bus over physical star).</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>LAN, MAN, WAN, PAN — Coverage & Technical Comparison</h3>
+
+  <h4>1. Local Area Network (LAN)</h4>
+  <div class="card2">
+    • Covers small geographic area — home, office, building<br>
+    • Usually privately owned and managed<br>
+    • High speed, low latency. Ex: WiFi in your home<br><br>
+    <strong>Key insight:</strong> LAN is not just "small span" — it implies high speed, tight control, local administration, homogeneous network.<br><br>
+    <strong>Works at:</strong> Layer 1 (Physical) + Layer 2 (Data Link)<br>
+    <strong>Devices:</strong> Switches, Bridges, Access Points<br>
+    <strong>Addressing:</strong> MAC address. Usually no routing.
+  </div>
+
+  <h4>2. Metropolitan Area Network (MAN)</h4>
+  <div class="card2">
+    • Covers a city or large campus<br>
+    • Connects multiple LANs within a city/big campus<br>
+    • Often managed by service providers or large organizations<br>
+    • Medium to high speed<br><br>
+    <strong>Key insight:</strong> MAN is city-scale interconnection — shared infrastructure. Homogeneous network within city.<br><br>
+    <strong>Works at:</strong> Layer 1 (Physical) + Layer 2 + Layer 3 (Data Link + Network)<br>
+    <strong>Devices:</strong> Routers, Gateways, ISP Infrastructure<br>
+    <strong>Routing:</strong> Dynamic routing protocols<br>
+    <strong>Addressing:</strong> MAC + IP
+  </div>
+
+  <h4>3. Wide Area Network (WAN)</h4>
+  <div class="card2">
+    • Covers large geographic areas — country, continents<br>
+    • Connects multiple MANs and LANs<br>
+    • Uses public or leased communication links — CISP network, undersea cables<br>
+    • High latency compared to LAN<br><br>
+    <strong>Key insight:</strong> WAN implies long distance communication; heterogeneous infrastructure; reliance on telecom providers.<br><br>
+    <strong>Works at:</strong> All layers — multihop routing across long distances<br>
+    <strong>Devices:</strong> ISP Routers, Backbone Networks, Undersea Cables, Satellite Links<br>
+    <strong>Addressing:</strong> IP
+  </div>
+
+  <h4>4. Personal Area Network (PAN)</h4>
+  <div class="card2">Very short range — Bluetooth to the telephone. Range ~10m. Ex: Connecting phone to wireless earbuds.</div>
+
+  <h3>LAN / MAN / WAN Comparison Table</h3>
+  <table>
+    <tr><th>Feature</th><th>LAN</th><th>MAN</th><th>WAN</th></tr>
+    <tr><td>Coverage</td><td>Room / Building</td><td>City / Campus</td><td>Country / Continent</td></tr>
+    <tr><td>Speed</td><td>High (1G–400G)</td><td>Medium–High</td><td>Lower (high latency)</td></tr>
+    <tr><td>Latency</td><td>Very Low</td><td>Low–Medium</td><td>High</td></tr>
+    <tr><td>Ownership</td><td>Private</td><td>ISP / Organization</td><td>Telecom Providers</td></tr>
+    <tr><td>Addressing</td><td>MAC</td><td>MAC + IP</td><td>IP</td></tr>
+    <tr><td>OSI Layers</td><td>L1, L2</td><td>L1, L2, L3</td><td>All layers</td></tr>
+    <tr><td>Routing</td><td>Usually none</td><td>Dynamic protocols</td><td>Multihop routing</td></tr>
+    <tr><td>Devices</td><td>Switch, AP, Bridge</td><td>Router, Gateway, ISP infra</td><td>ISP Router, Undersea cables</td></tr>
+  </table>
+</div>
+</section>
+
+<!-- ===== TAB 5: PHYSICAL LAYER & DEVICES ===== -->
+<section id="s5">
+<h2>📡 Physical Layer Techniques & Network Devices (15 Apr + 21 Apr + 29 Apr 2026)</h2>
+
+<div class="card">
+  <h3>Physical Layer — Purpose</h3>
+  <p>The physical layer is concerned with transmitting raw bits. Its performance is measured by <strong>high data rate</strong> and <strong>low latency</strong>.</p>
+</div>
+
+<div class="card">
+  <h3>11 High Performance Techniques for Physical Layer</h3>
+
+  <div class="step"><div class="step-num">1</div><div class="step-body">
+    <strong>Advanced Modulation Techniques</strong> — Higher order QAM (64-QAM, 256-QAM, 1024-QAM). Increases bits per symbol. Tradeoff: high SNR required. The most widely used technique; requires low-noise channel. OFDM is another such technique.
+    <div class="formula">QAM Order → Bits/Symbol:
+  64-QAM   → log₂(64)   = 6  bits/symbol
+  256-QAM  → log₂(256)  = 8  bits/symbol
+  1024-QAM → log₂(1024) = 10 bits/symbol
+
+Channel condition → Modulation used:
+  Very noisy   → BPSK  (1 bit/symbol)
+  Moderate     → QPSK  (2 bits/symbol)
+  Good         → 16-QAM (4 bits/symbol)
+  Excellent    → 64/256-QAM (6-8 bits/symbol)</div>
+  </div></div>
+
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Channel Coding</strong> — Done for error control. Improves reliability, requires fewer retransmissions → lower latency. Codes: LDPC (Low Density Parity Check), Polar code. Used in 5G NR standard.</div></div>
+
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>MIMO and Massive MIMO</strong> — Multiple antennas at TX and RX. Multiple parallel spatial streams → higher throughput. For massive MIMO: hundreds of antennas used (like in 5G). Improves data rate and reliability due to redundancy in terms of antennas. Reduces latency as data is sent in parallel from each antenna.</div></div>
+
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Beamforming</strong> — Focuses signal energy towards a specific user instead of broadcasting in all directions. Improves SNR, reduces interference, enables faster and more reliable transmission.</div></div>
+
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>High Frequency Bands</strong> — More bandwidth → higher data rate. Tradeoff: short range, high attenuation (can be solved by beamforming). Mainly an issue for microwave communication; at higher frequencies we use separate optical fiber medium.</div></div>
+
+  <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Advanced Waveforms (5G and beyond)</strong> — Filtered OFDM, HEMC, FBMC → Reduces latency, reduces band interference.</div></div>
+
+  <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Fiber Optic Communication</strong> — Extremely high bandwidth, very low propagation delay. Technology: WDM (Wavelength Division Multiplexing), coherent optical detection.</div></div>
+
+  <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Full Duplex Communication</strong> — Doubles spectral efficiency, reduces waiting delay. Both TX and RX transmit simultaneously on the same channel.</div></div>
+
+  <div class="step"><div class="step-num">9</div><div class="step-body"><strong>Synchronization and Timing Optimization</strong> — Precise clocking. Reduces jitter and symbol misalignment.</div></div>
+
+  <div class="step"><div class="step-num">10</div><div class="step-body"><strong>Adaptive Techniques</strong> — Adaptive modulation and coding (AMC). System dynamically adjusts modulation based on current channel condition. Lets us achieve lower latency.</div></div>
+
+  <div class="step"><div class="step-num">11</div><div class="step-body"><strong>Hardware Level Innovation</strong> — High speed ADC/DAC, low noise amplifiers, RF front-end optimization. Allows faster signal processing, lower delay, low latency.</div></div>
+</div>
+
+<div class="card">
+  <h3>High Speed LAN Technologies (21 Apr 2026)</h3>
+  <h4>Obsolete LAN Technologies</h4>
+  <table>
+    <tr><th>Technology</th><th>Speed</th><th>Reason Obsolete</th></tr>
+    <tr><td>Token Ring</td><td>4–16 Mbps</td><td rowspan="7">Low speed, expensive, inefficient, replaced by Ethernet, rigid, hard maintenance, lack of flexibility — Ethernet dominance</td></tr>
+    <tr><td>FDDI (Fiber Distributed Data Interface)</td><td>100 Mbps</td></tr>
+    <tr><td>ATM (Asynchronous Transfer Mode)</td><td>155 Mbps</td></tr>
+    <tr><td>Frame Relay</td><td>Variable (→ 0.5–2.5 Mbps)</td></tr>
+    <tr><td>ARCNET</td><td>2.5 Mbps</td></tr>
+    <tr><td>Old Ethernet</td><td>10 Mbps</td></tr>
+    <tr><td>SONET</td><td>~2 Gbps</td></tr>
+  </table>
+
+  <h4>Modern High Speed LAN Technologies</h4>
+  <div class="card2">
+    <strong>① Modern Ethernet (IEEE 802.3)</strong><br>
+    Key variants: Gigabit Ethernet (1 Gbps) | 10 Gigabit Ethernet (10 Gbps) | 25/40/100/400 Gbps<br>
+    Main features: Works over twisted pair (Cat6/Cat7) and fiber. Uses switching. Highly scalable and cost effective. Supports full duplex communication.<br>
+    <strong>Why it dominates:</strong> Simple, cheap, extremely fast, backward compatible. Backbone of all modern LANs.
+  </div>
+  <div class="card2">
+    <strong>② Fiber-Based Ethernet</strong><br>
+    Ethernet running over optical fiber. Very high speed (10G–400G), long distance within campus/data centres. Used in: Data centres, university campus, electrical backbone networks.
+  </div>
+  <div class="card2">
+    <strong>③ Wi-Fi (Wireless LAN) — IEEE 802.11</strong><br>
+    Modern standards:<br>
+    • Wi-Fi 5 (802.11ac) → ~3.5 Gbps<br>
+    • Wi-Fi 6E (802.11ax) → ~9.6 Gbps<br>
+    • Wi-Fi 7 (802.11be) → ~30+ Gbps<br>
+    Features: Wireless connectivity, OFDM, MU-MIMO, beamforming. Supports home, office, mobile computing.
+  </div>
+  <div class="card2">
+    <strong>④ Software Defined LAN</strong><br>
+    Network controlled via software instead of hardware configuration. Used in enterprise networks, smart campuses. Features: Centralized control, Automation, Easy scalability, Integration with cloud.
+  </div>
+  <div class="card2">
+    <strong>⑤ Data Centre LAN Technologies</strong><br>
+    Leaf-Spine Architecture. High Speed Ethernet (25G, 100G, 400G). Features: Very low latency, high throughput, redundant path. Supports: Cloud computing, AI workloads, big data processing.
+  </div>
+  <div class="card2">
+    <strong>⑥ Power over Ethernet (PoE)</strong><br>
+    Ethernet cable carries both data and power. Used in: IP cameras, Wi-Fi access points, VoIP phones.
+  </div>
+  <div class="card2">
+    <strong>⑦ Time Sensitive Networking</strong><br>
+    Features: Deterministic delay, ultra-low latency, real-time communication. Used in: Industrial automation, Robotics, Autonomous Systems.
+  </div>
+</div>
+
+<div class="card">
+  <h3>Network Connecting Devices — All Layers (29 Apr 2026)</h3>
+  <div class="alert alert-exam">Device-to-layer mapping is a guaranteed exam question. Memorize the complete table.</div>
+  <table>
+    <tr><th>Device</th><th>OSI Layer</th><th>Main Function</th><th>Key Details</th></tr>
+    <tr><td><strong>Repeater</strong></td><td>Layer 1 (Physical)</td><td>Signal regeneration</td><td>Regenerates weak signal to extend transmission distance. No understanding of data or addresses. Works only with electrical/optical signals.</td></tr>
+    <tr><td><strong>Hub</strong></td><td>Layer 1 (Physical)</td><td>Broadcast transmission</td><td>Multiport repeater. Broadcasts incoming data to ALL ports. No filtering → inefficient and largely obsolete.</td></tr>
+    <tr><td><strong>Bridge</strong></td><td>Layer 2 (Data Link)</td><td>Frame filtering</td><td>Connects two LAN segments. Filters traffic based on MAC address. Reduces collisions. Becoming obsolete.</td></tr>
+    <tr><td><strong>Switch</strong></td><td>Layer 2 (Data Link)</td><td>MAC-based forwarding</td><td>More advanced than bridge. Maintains MAC address table. Sends data only to intended device (unicast). Supports VLAN (logical segmentation).</td></tr>
+    <tr><td><strong>Router</strong></td><td>Layer 3 (Network)</td><td>IP routing</td><td>Connects different networks (LAN→WAN). Determines best path using routing algorithm. Uses IP addressing and routing tables.</td></tr>
+    <tr><td><strong>L4 Switch (Multilayer Switch)</strong></td><td>Layer 4 (Transport)</td><td>Port-based forwarding</td><td>Routes traffic based on IP + port number. Used in high-performance networks like data centres. Enables load balancing.</td></tr>
+    <tr><td><strong>Gateway</strong></td><td>Layer 5–7 (Upper)</td><td>Protocol conversion</td><td>Connects networks with different protocols. Can translate data formats. Works across all layers.</td></tr>
+    <tr><td><strong>Proxy Server</strong></td><td>Layer 7 (Application)</td><td>Intermediary communication</td><td>Acts as intermediary between client and server. Provides caching, security, and access control.</td></tr>
+    <tr><td><strong>Firewall</strong></td><td>Layer 3–7</td><td>Security filtering</td><td>Filters traffic based on rules. Can operate at multiple layers (L3–L7).</td></tr>
+  </table>
+
+  <h4>Device Summary: Function → Device</h4>
+  <table>
+    <tr><th>Main Function</th><th>Device</th></tr>
+    <tr><td>Signal regeneration</td><td>Repeater</td></tr>
+    <tr><td>Broadcast transmission</td><td>Hub</td></tr>
+    <tr><td>Frame filtering</td><td>Bridge</td></tr>
+    <tr><td>MAC-based forwarding</td><td>Switch</td></tr>
+    <tr><td>IP routing</td><td>Router</td></tr>
+    <tr><td>Port-based forwarding</td><td>L4 Switch</td></tr>
+    <tr><td>Protocol conversion</td><td>Gateway</td></tr>
+    <tr><td>Intermediary communication</td><td>Proxy Server</td></tr>
+    <tr><td>Security filtering</td><td>Firewall</td></tr>
+  </table>
+  <div class="alert alert-key">Higher layer → device is more intelligent. Higher connectivity → layer to layer interaction. The higher the layer, the more the device "understands" about the data it handles.</div>
+</div>
+</section>
+
+<!-- ===== TAB 6: CALCULATOR ===== -->
+<section id="s6">
+<h2>🧮 Network Performance Calculator</h2>
+<div class="alert alert-info">Two calculators: Shannon Capacity (theoretical max data rate) and QAM Spectral Efficiency. Pre-loaded with example values from your notes.</div>
+
+<div class="card">
+  <h3>📶 Shannon Channel Capacity Calculator</h3>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">C = B × log₂(1 + SNR) — Gives theoretical maximum data rate</p>
+  <div class="grid2">
+    <div>
+      <label style="color:var(--muted);font-size:.84rem;">Bandwidth B (Hz)</label>
+      <input class="pp-input" id="sh_bw" type="number" value="20000000" placeholder="e.g. 20000000 = 20 MHz">
+      <label style="color:var(--muted);font-size:.84rem;">SNR (dB)</label>
+      <input class="pp-input" id="sh_snr" type="number" value="30" placeholder="e.g. 30 dB">
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:.84rem;color:var(--muted);">
+      <strong style="color:var(--accent4);">Formula Reminder:</strong><br><br>
+      SNR_linear = 10^(SNR_dB / 10)<br><br>
+      C = B × log₂(1 + SNR_linear)<br><br>
+      Result in bits/second → convert to Mbps or Gbps.
+    </div>
+  </div>
+  <button class="pp-btn" onclick="calcShannon()">▶ Calculate Shannon Capacity</button>
+  <div id="shannonResult" style="display:none;margin-top:16px;"></div>
+</div>
+
+<div class="card">
+  <h3>📡 QAM Modulation Analyser</h3>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">Enter QAM order to compute bits per symbol and throughput</p>
+  <div class="grid2">
+    <div>
+      <label style="color:var(--muted);font-size:.84rem;">QAM Order (e.g. 64, 256, 1024)</label>
+      <input class="pp-input" id="qam_order" type="number" value="256" placeholder="Must be power of 2">
+      <label style="color:var(--muted);font-size:.84rem;">Symbol Rate (Baud/s)</label>
+      <input class="pp-input" id="qam_baud" type="number" value="1000000" placeholder="e.g. 1000000 = 1 MBaud">
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:.84rem;color:var(--muted);">
+      <strong style="color:var(--accent4);">Key Relationship:</strong><br><br>
+      Bits/Symbol = log₂(QAM_Order)<br><br>
+      Bit Rate = Symbol Rate × Bits/Symbol<br><br>
+      Higher QAM → more bits/symbol → needs higher SNR.
+    </div>
+  </div>
+  <button class="pp-btn" id="qamBtn" onclick="calcQAM()" style="background:var(--accent3);">▶ Analyse QAM</button>
+  <div id="qamResult" style="display:none;margin-top:16px;"></div>
+</div>
+
+<div class="card">
+  <h3>🔁 ARQ Efficiency Calculator</h3>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">Compare Stop-and-Wait ARQ vs Go-Back-N ARQ efficiency</p>
+  <div class="grid2">
+    <div>
+      <label style="color:var(--muted);font-size:.84rem;">Propagation delay (ms)</label>
+      <input class="pp-input" id="arq_prop" type="number" value="10">
+      <label style="color:var(--muted);font-size:.84rem;">Transmission time per frame (ms)</label>
+      <input class="pp-input" id="arq_tx" type="number" value="1">
+      <label style="color:var(--muted);font-size:.84rem;">Window size N (Go-Back-N)</label>
+      <input class="pp-input" id="arq_win" type="number" value="7">
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:.84rem;color:var(--muted);">
+      <strong style="color:var(--accent4);">Formulas:</strong><br><br>
+      a = Propagation delay / Tx time<br><br>
+      Stop-and-Wait efficiency = 1 / (1 + 2a)<br><br>
+      Go-Back-N efficiency = N / (1 + 2a)  if N &lt; (1+2a)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 1  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if N ≥ (1+2a)
+    </div>
+  </div>
+  <button class="pp-btn" onclick="calcARQ()" style="background:var(--accent5);">▶ Calculate ARQ Efficiency</button>
+  <div id="arqResult" style="display:none;margin-top:16px;"></div>
+</div>
+</section>
+
+<!-- ===== TAB 7: QUIZ ===== -->
+<section id="s7">
+<h2>🧠 Quiz — 15 Questions</h2>
+<div class="score-bar">Score: <span id="scoreDisplay">0</span> / <span id="totalDisplay">0</span> &nbsp;&nbsp; <button id="resetBtn" onclick="resetQuiz()">↺ Reset Quiz</button></div>
+<div id="quizContainer"></div>
+</section>
+
+</main>
+
+<script>
+// ===== TAB SWITCHING =====
+function showSection(id,btn){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== PROGRESS =====
+function updateProgress(){
+  const boxes=document.querySelectorAll('#checklist input[type=checkbox]');
+  let done=0;
+  boxes.forEach(b=>{
+    b.parentElement.classList.toggle('done',b.checked);
+    if(b.checked)done++;
+  });
+  document.getElementById('prog-text').textContent=done+'/'+boxes.length+' done';
+  document.getElementById('progBar').style.width=(done/boxes.length*100)+'%';
+}
+
+// ===== TIMER =====
+let timerInterval=null,timerSec=0,timerMode='sw',timerRunning=false;
+function setMode(m){timerMode=m;resetTimer();}
+function startTimer(){
+  if(timerRunning)return;
+  if(timerMode==='cd'&&timerSec===0){const m=parseInt(document.getElementById('cdInput').value)||60;timerSec=m*60;}
+  timerRunning=true;
+  timerInterval=setInterval(()=>{
+    if(timerMode==='sw'){timerSec++;}
+    else{timerSec--;if(timerSec<=0){timerSec=0;clearInterval(timerInterval);timerRunning=false;document.getElementById('timerDisplay').style.color='var(--red)';alert('⏰ Time is up!');return;}}
+    renderTimer();
+  },1000);
+}
+function pauseTimer(){clearInterval(timerInterval);timerRunning=false;}
+function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerSec=0;document.getElementById('timerDisplay').style.color='var(--accent4)';renderTimer();}
+function renderTimer(){
+  const h=Math.floor(timerSec/3600),m=Math.floor((timerSec%3600)/60),s=timerSec%60;
+  document.getElementById('timerDisplay').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+// ===== SHANNON CALCULATOR =====
+function calcShannon(){
+  const B=parseFloat(document.getElementById('sh_bw').value)||0;
+  const snrDb=parseFloat(document.getElementById('sh_snr').value)||0;
+  if(B<=0){alert('Enter valid bandwidth');return;}
+  const snrLin=Math.pow(10,snrDb/10);
+  const C=B*Math.log2(1+snrLin);
+  const CMbps=(C/1e6).toFixed(3);
+  const CGbps=(C/1e9).toFixed(4);
+  const r=document.getElementById('shannonResult');
+  r.style.display='block';
+  r.innerHTML=`<h4 style="color:var(--accent);margin-bottom:10px;">📊 Shannon Capacity Results</h4>
+  <table>
+    <tr><th>Step</th><th>Formula</th><th>Value</th></tr>
+    <tr><td>SNR (dB) → Linear</td><td>10^(${snrDb}/10)</td><td><strong style="color:var(--accent4)">${snrLin.toFixed(2)}</strong></td></tr>
+    <tr><td>log₂(1 + SNR_linear)</td><td>log₂(1 + ${snrLin.toFixed(2)})</td><td><strong style="color:var(--accent4)">${Math.log2(1+snrLin).toFixed(4)} bits/symbol</strong></td></tr>
+    <tr><td><strong>Shannon Capacity C</strong></td><td>B × log₂(1 + SNR) = ${(B/1e6).toFixed(2)} MHz × ${Math.log2(1+snrLin).toFixed(4)}</td><td><strong style="color:var(--green)">${CMbps} Mbps = ${CGbps} Gbps</strong></td></tr>
+  </table>
+  <div class="alert alert-key" style="margin-top:10px;">This is the THEORETICAL MAXIMUM. Real-world throughput is always lower due to overhead, errors, protocol inefficiencies.</div>`;
+}
+
+// ===== QAM CALCULATOR =====
+function calcQAM(){
+  const order=parseFloat(document.getElementById('qam_order').value)||64;
+  const baud=parseFloat(document.getElementById('qam_baud').value)||1e6;
+  const bitsPerSym=Math.log2(order);
+  const bitRate=baud*bitsPerSym;
+  const bitRateMbps=(bitRate/1e6).toFixed(3);
+  let snrReq='';
+  if(order<=2)snrReq='Very noisy (BPSK equivalent)';
+  else if(order<=4)snrReq='Moderate (QPSK equivalent)';
+  else if(order<=16)snrReq='Good channel';
+  else if(order<=64)snrReq='Good–Excellent (high SNR)';
+  else snrReq='Excellent channel — very high SNR required';
+  const r=document.getElementById('qamResult');
+  r.style.display='block';
+  r.innerHTML=`<h4 style="color:var(--accent);margin-bottom:10px;">📊 QAM Analysis Results</h4>
+  <table>
+    <tr><th>Parameter</th><th>Calculation</th><th>Result</th></tr>
+    <tr><td>QAM Order</td><td>Given</td><td><strong style="color:var(--accent4)">${order}-QAM</strong></td></tr>
+    <tr><td>Bits per Symbol</td><td>log₂(${order})</td><td><strong style="color:var(--accent4)">${bitsPerSym} bits/symbol</strong></td></tr>
+    <tr><td>Symbol Rate</td><td>Given</td><td>${(baud/1e6).toFixed(3)} MBaud</td></tr>
+    <tr><td><strong>Bit Rate</strong></td><td>${baud/1e6} MBaud × ${bitsPerSym} bits/symbol</td><td><strong style="color:var(--green)">${bitRateMbps} Mbps</strong></td></tr>
+    <tr><td>Channel Requirement</td><td>—</td><td style="color:var(--accent5)">${snrReq}</td></tr>
+  </table>`;
+}
+
+// ===== ARQ CALCULATOR =====
+function calcARQ(){
+  const prop=parseFloat(document.getElementById('arq_prop').value)||10;
+  const tx=parseFloat(document.getElementById('arq_tx').value)||1;
+  const win=parseInt(document.getElementById('arq_win').value)||7;
+  const a=prop/tx;
+  const sawEff=1/(1+2*a);
+  const gbnNeeded=1+2*a;
+  const gbnEff=win>=gbnNeeded?1:(win/gbnNeeded);
+  const r=document.getElementById('arqResult');
+  r.style.display='block';
+  r.innerHTML=`<h4 style="color:var(--accent);margin-bottom:10px;">📊 ARQ Efficiency Results</h4>
+  <table>
+    <tr><th>Parameter</th><th>Formula</th><th>Value</th></tr>
+    <tr><td>a = Prop/Tx ratio</td><td>${prop}ms / ${tx}ms</td><td><strong style="color:var(--accent4)">${a.toFixed(3)}</strong></td></tr>
+    <tr><td>(1 + 2a) — pipeline slots</td><td>1 + 2×${a.toFixed(3)}</td><td><strong style="color:var(--accent4)">${gbnNeeded.toFixed(3)}</strong></td></tr>
+    <tr><td><strong>Stop-and-Wait Efficiency</strong></td><td>1 / (1 + 2a)</td><td><strong style="color:${sawEff>=0.5?'var(--green)':'var(--red)'}">${(sawEff*100).toFixed(2)}%</strong></td></tr>
+    <tr><td>Window size N</td><td>Given</td><td>${win}</td></tr>
+    <tr><td>N ≥ (1+2a)?</td><td>${win} ≥ ${gbnNeeded.toFixed(2)}?</td><td>${win>=gbnNeeded?'<span style="color:var(--green)">Yes → Efficiency = 100%</span>':'<span style="color:var(--accent4)">No → N/(1+2a)</span>'}</td></tr>
+    <tr><td><strong>Go-Back-N Efficiency</strong></td><td>${win>=gbnNeeded?'N ≥ (1+2a) so = 1':'N/(1+2a) = '+win+'/'+gbnNeeded.toFixed(3)}</td><td><strong style="color:var(--green)">${(gbnEff*100).toFixed(2)}%</strong></td></tr>
+  </table>
+  <div class="alert alert-key" style="margin-top:10px;">Go-Back-N is <strong>${((gbnEff/sawEff)).toFixed(2)}×</strong> more efficient than Stop-and-Wait for this configuration. Larger window → higher efficiency up to 100%.</div>`;
+}
+
+// ===== QUIZ =====
+const questions=[
+  {q:"Which of the following is NOT one of the 4 key characteristics of high speed computer networking?",opts:["High data rate","Low latency","High packet loss","High bandwidth"],ans:2,exp:"The 4 key characteristics are: High data rate, Low latency, High bandwidth, Reliability. High packet loss is a problem, not a characteristic — high speed networks aim to MINIMIZE packet loss."},
+  {q:"Edge servers improve latency primarily by:",opts:["Increasing bandwidth of the link","Keeping servers close to users' physical location with cached data","Using higher order QAM modulation","Reducing the number of protocol layers"],ans:1,exp:"Edge servers reduce physical distance between user and data. Shorter distance → lower propagation delay → lower latency. They hold a cache of data to serve the user locally without going to a distant central server."},
+  {q:"A circuit switched network is characterized by:",opts:["No dedicated path — each packet routed independently","Dynamic routing with possible packet loss","A dedicated physical path established before communication, with reserved bandwidth","Efficient bandwidth use since idle time doesn't waste resources"],ans:2,exp:"Circuit switching establishes a DEDICATED physical path (circuit) between sender and receiver BEFORE communication starts. Bandwidth is reserved (constant data rate). Example: PSTN. Idle time wastes bandwidth — this is a disadvantage."},
+  {q:"In the OSI model, which layer is responsible for logical addressing (IP address) and routing?",opts:["Layer 2 — Data Link","Layer 3 — Network","Layer 4 — Transport","Layer 5 — Session"],ans:1,exp:"Layer 3 (Network layer) handles logical addressing (IP addresses) and routing. It determines the best path for data. The Router is the device that operates at Layer 3."},
+  {q:"During encapsulation, what does the Data Link layer add to the packet?",opts:["IP header only","TCP header only","MAC header + Trailer (for error checking)","Nothing — data link is passive"],ans:2,exp:"The Data Link layer adds a MAC Header (for physical addressing between adjacent nodes) AND a Trailer (for error checking — usually CRC). This forms a frame. All other layers add only headers; the Data Link layer is the one that adds a trailer."},
+  {q:"Which network topology has the highest reliability but is also the most expensive?",opts:["Bus","Star","Ring","Mesh"],ans:3,exp:"Mesh topology has a direct connection between every pair of devices — very high redundancy → very reliable. However, this requires many links → expensive and complex. From the topology comparison table: Mesh = High cost, Very high reliability."},
+  {q:"A Star topology's main weakness is:",opts:["Data collision on the shared backbone","Failure of one node breaks the ring","Central hub failure brings down the entire network","High cost per device"],ans:2,exp:"In Star topology, all devices connect to a central hub/switch. If the central hub fails, the ENTIRE network goes down. The strength (one node failure doesn't affect others) and weakness (central device is a single point of failure) both arise from this centralized design."},
+  {q:"LAN operates primarily at which OSI layers?",opts:["Layer 3 and 4","Layer 1 and 2","Layer 5, 6, and 7","All 7 layers"],ans:1,exp:"LAN works primarily at Layer 1 (Physical) and Layer 2 (Data Link). Devices used: Switches, Bridges, Access Points. Addressing: MAC address. Usually no routing (no Layer 3) within a LAN."},
+  {q:"What distinguishes WAN from MAN and LAN regarding infrastructure?",opts:["WAN uses only wireless links","WAN uses heterogeneous infrastructure and relies on telecom providers","WAN operates at Layer 1 and 2 only","WAN uses MAC addressing exclusively"],ans:1,exp:"WAN implies long-distance communication using heterogeneous (mixed) infrastructure — includes CISP network, undersea cables, satellite links — and relies on telecom providers. This is why WAN has higher latency compared to LAN and MAN."},
+  {q:"In 256-QAM, how many bits are encoded per symbol?",opts:["4 bits","6 bits","8 bits","10 bits"],ans:2,exp:"Bits per symbol = log₂(QAM_order) = log₂(256) = 8 bits per symbol. This is why higher QAM orders give higher data rates — more information per symbol. The tradeoff is that higher QAM requires much higher SNR to distinguish the closely-spaced constellation points."},
+  {q:"Beamforming in MIMO systems primarily helps by:",opts:["Increasing the number of frequency bands","Focusing signal energy towards a specific user, improving SNR and reducing interference","Compressing data before transmission","Adding redundancy through channel coding"],ans:1,exp:"Beamforming focuses signal energy towards a specific user instead of broadcasting in all directions. This improves SNR for that user, reduces interference for others, and enables faster and more reliable transmission. It's crucial for 5G mmWave where high attenuation needs to be compensated."},
+  {q:"Which device operates at Layer 2 and maintains a MAC address table to send data only to the intended device (unicast)?",opts:["Hub","Repeater","Switch","Router"],ans:2,exp:"A Switch is more advanced than a bridge. It maintains a MAC address table and sends data only to the intended device (unicast) — not to all ports like a Hub. Supports VLAN for logical segmentation. Operates at Layer 2 (Data Link). This is why switches replaced hubs."},
+  {q:"A Router connects networks and determines the best path using:",opts:["MAC address table and frame inspection","IP addressing and routing algorithms/tables","Port numbers and session state","Application-level protocol headers"],ans:1,exp:"Router operates at Layer 3 (Network). It connects different networks (e.g., LAN→WAN), uses IP addressing and routing tables, and applies routing algorithms (OSPF, BGP, etc.) to determine the best path for each packet."},
+  {q:"LDPC (Low Density Parity Check) and Polar codes are examples of:",opts:["Advanced modulation techniques","Multiplexing methods","Channel coding techniques for error correction","Beamforming algorithms"],ans:2,exp:"LDPC and Polar codes are channel coding techniques used for error correction. Channel coding improves reliability by reducing the need for retransmissions, thus allowing lower latency. Both are used in 5G NR — Polar codes for control channels, LDPC for data channels."},
+  {q:"Modern Ethernet (IEEE 802.3) dominates because it is:",opts:["The only wireless standard","Simple, cheap, extremely fast, and backward compatible","Based on Token Ring principles","Limited to 10 Gbps maximum"],ans:1,exp:"Modern Ethernet dominates because it is: Simple (easy to deploy), Cheap (cost-effective at scale), Extremely fast (up to 400 Gbps), and Backward compatible (newer standards work with older equipment). It supports full duplex, uses switching, works over twisted pair and fiber. It is the backbone of all modern LANs."},
+];
+
+let score=0;
+function buildQuiz(){
+  let html='';
+  questions.forEach((q,qi)=>{
+    let opts='';
+    q.opts.forEach((o,oi)=>{
+      opts+=`<div class="q-opt" id="opt_${qi}_${oi}" onclick="answer(${qi},${oi})">${String.fromCharCode(65+oi)}. ${o}</div>`;
+    });
+    html+=`<div class="q-block" id="qblock_${qi}"><p>Q${qi+1}. ${q.q}</p><div class="q-opts">${opts}</div><div class="q-exp" id="exp_${qi}">💡 ${q.exp}</div></div>`;
+  });
+  document.getElementById('quizContainer').innerHTML=html;
+  document.getElementById('totalDisplay').textContent=questions.length;
+}
+function answer(qi,oi){
+  const block=document.getElementById('qblock_'+qi);
+  if(block.dataset.done)return;
+  block.dataset.done='1';
+  const correct=questions[qi].ans;
+  for(let i=0;i<questions[qi].opts.length;i++){
+    const el=document.getElementById('opt_'+qi+'_'+i);
+    if(i===correct)el.classList.add('correct');
+    else if(i===oi&&oi!==correct)el.classList.add('wrong');
+  }
+  document.getElementById('exp_'+qi).classList.add('show');
+  if(oi===correct)score++;
+  document.getElementById('scoreDisplay').textContent=score;
+}
+function resetQuiz(){score=0;document.getElementById('scoreDisplay').textContent=0;buildQuiz();}
+buildQuiz();
+</script>
+</body>
+</html>

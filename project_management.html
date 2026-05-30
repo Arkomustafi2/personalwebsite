@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Project Management — Study Guide | University of Dhaka</title>
+<style>
+:root{
+  --bg:#0f1117;--card:#1a1d27;--card2:#22263a;--border:#2e3354;
+  --text:#e2e6f0;--muted:#8892b0;
+  --accent:#00d4aa;--accent2:#7c3aed;--accent3:#3b82f6;--accent4:#f7c948;
+  --accent5:#f472b6;--accent6:#fb923c;
+  --red:#ef4444;--green:#22c55e;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:18px 24px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.header-left h1{font-size:1.15rem;color:var(--accent);}
+.header-left p{font-size:.8rem;color:var(--muted);}
+.progress-wrap{display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);}
+.progress-bar-outer{width:160px;height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.progress-bar-inner{height:100%;background:var(--accent);width:0%;transition:width .3s;}
+
+/* TIMER */
+.timer-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:210px;}
+.timer-display{font-size:1.6rem;font-family:monospace;color:var(--accent4);letter-spacing:2px;}
+.timer-controls{display:flex;gap:6px;}
+.timer-controls button{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.78rem;transition:background .2s;}
+.timer-controls button:hover{background:var(--border);}
+.timer-mode{display:flex;gap:6px;font-size:.75rem;}
+.timer-mode label{display:flex;align-items:center;gap:4px;cursor:pointer;color:var(--muted);}
+
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--border);}
+nav button{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;font-size:.82rem;transition:all .2s;}
+nav button.active{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent);}
+nav button:hover:not(.active){border-color:var(--accent);color:var(--text);}
+
+main{max-width:1100px;margin:0 auto;padding:28px 20px;}
+section{display:none;}
+section.active{display:block;}
+
+h2{font-size:1.3rem;color:var(--accent);margin-bottom:16px;}
+h3{font-size:1.05rem;color:var(--accent4);margin:18px 0 10px;}
+h4{font-size:.93rem;color:var(--accent5);margin:12px 0 6px;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.card2{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+.formula{background:#0a0e1a;border-left:4px solid var(--accent4);border-radius:8px;padding:14px 16px;margin:12px 0;font-family:monospace;font-size:.88rem;color:var(--accent4);white-space:pre;overflow-x:auto;}
+
+.step{display:flex;gap:12px;margin:10px 0;align-items:flex-start;}
+.step-num{min-width:28px;height:28px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;}
+.step-body{flex:1;}
+
+.alert{border-radius:8px;padding:12px 16px;margin:12px 0;border-left:4px solid;}
+.alert-info{background:#0e1a2e;border-color:var(--accent3);}
+.alert-warn{background:#1a1400;border-color:var(--accent4);}
+.alert-key{background:#0a1a18;border-color:var(--accent);}
+.alert-exam{background:#1a0e1a;border-color:var(--accent5);}
+.alert-info::before{content:"ℹ️ ";}.alert-warn::before{content:"⚠️ ";}.alert-key::before{content:"🔑 ";}.alert-exam::before{content:"📝 ";}
+
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.85rem;}
+th{background:var(--card2);color:var(--accent);padding:9px 12px;text-align:left;border:1px solid var(--border);}
+td{padding:8px 12px;border:1px solid var(--border);}
+tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+
+/* STUDY PLAN */
+.summary-box{background:linear-gradient(135deg,#0a1a18,#0e1a2e);border:1px solid var(--accent);border-radius:12px;padding:20px;margin-bottom:20px;}
+.tl-item{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+.tl-time{color:var(--accent4);font-size:.8rem;min-width:55px;font-family:monospace;}
+.tl-content strong{color:var(--text);}
+.tl-content span{color:var(--muted);font-size:.82rem;}
+
+.checklist{list-style:none;}
+.checklist li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.checklist li input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;}
+.checklist li.done label{text-decoration:line-through;color:var(--muted);}
+
+/* QUIZ */
+.q-block{background:var(--card2);border-radius:10px;padding:16px;margin-bottom:16px;}
+.q-block p{font-weight:600;margin-bottom:10px;}
+.q-opts{display:flex;flex-direction:column;gap:7px;}
+.q-opt{padding:8px 14px;border-radius:7px;border:1px solid var(--border);cursor:pointer;transition:all .2s;}
+.q-opt:hover{border-color:var(--accent);}
+.q-opt.correct{background:#052;border-color:var(--green);color:var(--green);}
+.q-opt.wrong{background:#300;border-color:var(--red);color:var(--red);}
+.q-exp{background:#0a1a18;border-left:3px solid var(--accent);padding:10px;border-radius:6px;margin-top:10px;font-size:.85rem;color:var(--muted);display:none;}
+.q-exp.show{display:block;}
+.score-bar{background:var(--card);border-radius:10px;padding:14px;text-align:center;margin-bottom:18px;font-size:1.1rem;}
+#resetBtn{padding:9px 22px;background:var(--accent5);border:none;border-radius:8px;color:#000;cursor:pointer;font-weight:700;}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:700;background:var(--accent2);color:#fff;margin-left:6px;}
+.tag.green{background:var(--green);color:#000;}
+.tag.orange{background:var(--accent6);color:#000;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>📘 Project Management — Complete Study Guide</h1>
+    <p>M.Sc. | University of Dhaka &nbsp;|&nbsp; Classes 1–9 &nbsp;|&nbsp; 2026</p>
+  </div>
+  <div class="progress-wrap">
+    <span id="prog-text">0/10 done</span>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progBar"></div></div>
+  </div>
+  <div class="timer-box">
+    <div class="timer-display" id="timerDisplay">00:00:00</div>
+    <div class="timer-mode">
+      <label><input type="radio" name="tmode" value="stopwatch" checked onchange="setMode(this.value)"> Stopwatch</label>
+      <label><input type="radio" name="tmode" value="countdown" onchange="setMode(this.value)"> Countdown</label>
+      <input type="number" id="cdInput" placeholder="min" min="1" max="999" style="width:52px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:2px 5px;font-size:.75rem;" value="60">
+    </div>
+    <div class="timer-controls">
+      <button onclick="startTimer()">▶ Start</button>
+      <button onclick="pauseTimer()">⏸ Pause</button>
+      <button onclick="resetTimer()">↺ Reset</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('s1',this)">📅 Study Plan</button>
+  <button onclick="showSection('s2',this)">🏗️ PM Fundamentals</button>
+  <button onclick="showSection('s3',this)">🏢 Organization & HR</button>
+  <button onclick="showSection('s4',this)">📡 Comm, Cost & Time</button>
+  <button onclick="showSection('s5',this)">⚠️ Scope, Risk & Procurement</button>
+  <button onclick="showSection('s6',this)">📐 PERT & EVM Calculator</button>
+  <button onclick="showSection('s7',this)">🧠 Quiz (15 Qs)</button>
+</nav>
+
+<main>
+
+<!-- ========== TAB 1: STUDY PLAN ========== -->
+<section id="s1" class="active">
+<div class="summary-box">
+  <h2 style="margin-bottom:8px;">What is this course really about?</h2>
+  <p>Project Management covers how organizations plan, execute, and close projects on time, within budget, and with expected quality. It applies structured knowledge areas (PMBOK) — from scope and scheduling through HR and risk — to real-world problems. The course emphasizes analytical tools like PERT, Earned Value Management (EVM), cost estimation methods, and organizational structures that determine how much authority a project manager holds. Mastery requires connecting theory (concepts) to quantitative problem-solving (formulas and worked examples).</p>
+</div>
+
+<div class="card">
+  <h3>⏱️ 6-Hour Study Timeline</h3>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">0:00–0:45</div><div class="tl-content"><strong>PM Fundamentals + PMBOK 9 Knowledge Areas</strong><br><span>Class 1 notes — definitions, competitive advantage, 5 characteristics, 9 knowledge areas, integration management</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">0:45–1:30</div><div class="tl-content"><strong>Organization Structures + Organizational Frames</strong><br><span>Class 2 notes — functional, weak/balanced/strong matrix, projectized, 4 frames, boundary types</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">1:30–2:30</div><div class="tl-content"><strong>HR Management — complete chapter</strong><br><span>Class 3 notes — HR vs slave, ILO, types of employees, collar jobs, salary compression, 6 core HR functions, evolution of HRM</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2:30–3:15</div><div class="tl-content"><strong>Communications Management (Class 4) + Cost Management (Class 5)</strong><br><span>3 processes, 3 communication types, 8 barriers, EVM formulas — CV, SV, CPI, SPI</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">3:15–4:00</div><div class="tl-content"><strong>Time Management + PERT (Class 6)</strong><br><span>5 key processes, PERT formula, network diagram, critical path calculation</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">4:00–4:45</div><div class="tl-content"><strong>Scope Management (Class 7) + Risk Management (Class 8)</strong><br><span>6 scope processes, WBS, scope creep, risk types, EVA, risk responses, risk register</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">4:45–5:30</div><div class="tl-content"><strong>Procurement Management (Class 9)</strong><br><span>6 procurement processes, make-or-buy analysis, contract types (FP, CPIF, CPFF), solicitation</span></div></div>
+  <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">5:30–6:00</div><div class="tl-content"><strong>Practice with Calculator + Full Quiz</strong><br><span>PERT calculator tab → run examples → complete 15-question quiz</span></div></div>
+</div>
+
+<div class="card">
+  <h3>✅ Progress Checklist</h3>
+  <ul class="checklist" id="checklist">
+    <li><input type="checkbox" id="c1" onchange="updateProgress()"><label for="c1">Understood definition & 5 characteristics of a project</label></li>
+    <li><input type="checkbox" id="c2" onchange="updateProgress()"><label for="c2">Memorized all 9 PMBOK knowledge areas</label></li>
+    <li><input type="checkbox" id="c3" onchange="updateProgress()"><label for="c3">Can compare 5 organizational structures (authority levels)</label></li>
+    <li><input type="checkbox" id="c4" onchange="updateProgress()"><label for="c4">Know the 4 organizational frames</label></li>
+    <li><input type="checkbox" id="c5" onchange="updateProgress()"><label for="c5">Understand HR management: functions, employee types, salary issues</label></li>
+    <li><input type="checkbox" id="c6" onchange="updateProgress()"><label for="c6">Know 3 communication processes + 3 method types + 8 barriers</label></li>
+    <li><input type="checkbox" id="c7" onchange="updateProgress()"><label for="c7">Can solve EVM problems: CV, SV, CPI, SPI</label></li>
+    <li><input type="checkbox" id="c8" onchange="updateProgress()"><label for="c8">Can calculate PERT expected time and find critical path</label></li>
+    <li><input type="checkbox" id="c9" onchange="updateProgress()"><label for="c9">Know scope management: 6 processes, WBS, scope creep</label></li>
+    <li><input type="checkbox" id="c10" onchange="updateProgress()"><label for="c10">Know risk types, responses, and contract types in procurement</label></li>
+  </ul>
+</div>
+</section>
+
+<!-- ========== TAB 2: PM FUNDAMENTALS ========== -->
+<section id="s2">
+<h2>🏗️ Project Management Fundamentals (Class 1 — 8 Mar 2026)</h2>
+
+<div class="card">
+  <h3>What is a Project?</h3>
+  <p>A project is a <strong>temporary endeavor</strong> undertaken to create a <strong>unique product, service, or result</strong>.</p>
+  <div class="grid2" style="margin-top:14px;">
+    <div class="card2"><strong>Examples:</strong><br>• Making a mobile app<br>• Building a bridge<br>• Software update</div>
+    <div class="card2"><strong>Key Traits:</strong><br>• Has a start and end date<br>• Produces something new or different<br>• Not routine work</div>
+  </div>
+  <div class="alert alert-key">A project differs from ongoing operations. Operations are continuous; projects are temporary and unique.</div>
+</div>
+
+<div class="card">
+  <h3>Project and Competitive Advantage</h3>
+  <p>Organizations undertake projects to <strong>create competitive advantage</strong>. Regular operations do not lead to competitive advantage — without it, a firm cannot survive in the market.</p>
+  <div class="card2"><strong>Examples:</strong> Annual design update of phones, software feature releases, new product launches.</div>
+</div>
+
+<div class="card">
+  <h3>5 Characteristics of a Project</h3>
+  <div class="grid2">
+    <div>
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Temporary</strong> — project does not last forever; it has a defined end.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Unique Deliverable</strong> — produces something new (product, service, or result).</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Progressive Elaboration</strong> — developed step by step as understanding grows.</div></div>
+    </div>
+    <div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Resource Constraints</strong> — limited by time, cost, people, and material (the main parameters).</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Purpose Driven</strong> — every project has a clear, defined purpose.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>PMBOK — 9 Knowledge Areas</h3>
+  <div class="alert alert-exam">The PMBOK (Project Management Body of Knowledge) is a standard guide for project management. It includes 9 knowledge areas. Areas 2–9 run parallel throughout the project; Integration Management (1) controls and connects everything.</div>
+  <table>
+    <tr><th>#</th><th>Knowledge Area</th><th>Purpose</th></tr>
+    <tr><td>1</td><td><strong>Project Integration Management</strong></td><td>Combines all parts of the project. Acts like a controller. Ensures everything works together.</td></tr>
+    <tr><td>2</td><td>Project Scope Management</td><td>Defines what work will be done. Prevents extra/unwanted work.</td></tr>
+    <tr><td>3</td><td>Project Time Management</td><td>Scheduling tasks; ensuring project finishes on time.</td></tr>
+    <tr><td>4</td><td>Project Cost Management</td><td>Budget planning; controlling expenses.</td></tr>
+    <tr><td>5</td><td>Project Quality Management</td><td>Ensures output is good and standard.</td></tr>
+    <tr><td>6</td><td>Project HR Management</td><td>Managing team members; assigning roles and responsibilities.</td></tr>
+    <tr><td>7</td><td>Project Communications Management</td><td>Sharing information properly; keeps everyone updated.</td></tr>
+    <tr><td>8</td><td>Project Risk Management</td><td>Identifying problems before they happen; making backup plans.</td></tr>
+    <tr><td>9</td><td>Project Procurement Management</td><td>Buying goods/services from outside the organization.</td></tr>
+  </table>
+  <div class="alert alert-key">Areas 2–9 must run <strong>parallel throughout the project</strong>. Scope, time, cost, quality, HR, communication, risk, procurement all happen together. This is why Integration Management (#1) controls and connects everything.</div>
+</div>
+
+<div class="card">
+  <h3>Risk Arises From Knowledge Areas</h3>
+  <table>
+    <tr><th>Knowledge Area</th><th>Risk Source</th></tr>
+    <tr><td>Scope</td><td>Poor scope definition</td></tr>
+    <tr><td>Time</td><td>Errors in estimating time</td></tr>
+    <tr><td>HR</td><td>Poor conflict management</td></tr>
+    <tr><td>Communication</td><td>Poor communication planning</td></tr>
+    <tr><td>Risk (itself)</td><td>Ignoring risks</td></tr>
+  </table>
+</div>
+</section>
+
+<!-- ========== TAB 3: ORGANIZATION & HR ========== -->
+<section id="s3">
+<h2>🏢 Organization, Structures & HR Management (Classes 2 & 3)</h2>
+
+<div class="card">
+  <h3>What is an Organization?</h3>
+  <p>An organization is a <strong>group of people working together in a coordinated way to achieve common goals</strong>. It is not a building — it is the people and their coordinated activities. Every project needs to be done within an organization because it requires planning, coordination, and teamwork.</p>
+  <div class="alert alert-info"><strong>Organizational Boundary:</strong> The limit that separates an organization from its external environment (customers, suppliers, government, society).<br><br>Example: A factory interacts with → Customers (selling products) → Government (regulations) → Society (employment, environment impact)</div>
+  <div class="alert alert-key">An organization is an <strong>open system</strong> — it constantly interacts with its environment. It takes inputs (people, materials, information), processes them, and produces outputs (products, services), while adapting to feedback.</div>
+</div>
+
+<div class="card">
+  <h3>Types of Organizational Boundaries</h3>
+  <div class="grid2">
+    <div class="card2"><strong>Horizontal Boundary:</strong> Separates different departments or units at the <em>same level</em> (e.g., Marketing, Finance, HR). Focus: coordination and collaboration across functions.<br><br>Breaking horizontal boundaries → cross-functional teamwork.</div>
+    <div class="card2"><strong>Vertical Boundary:</strong> Separates levels of hierarchy — CEO → Manager → Employee. Defines authority and reporting relationships.<br><br>Reducing vertical boundaries → flatter structure, faster communication and decision-making.</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>5 Types of Organizational Structures</h3>
+  <div class="alert alert-exam">This comparison is exam-critical. Know the PM authority % for each type.</div>
+  <table>
+    <tr><th>Structure Type</th><th>PM Authority</th><th>Control of Resources</th><th>Role of Functional Manager</th><th>Example</th></tr>
+    <tr><td><strong>Functional</strong></td><td>Very low (≈0%)</td><td>Functional manager</td><td>Very strong</td><td>Toyota — engineering dept. works separately from marketing</td></tr>
+    <tr><td><strong>Weak Matrix</strong></td><td>Limited (0–25%)</td><td>Functional manager</td><td>Strong</td><td>Project coordinator organizes meetings but cannot make decisions</td></tr>
+    <tr><td><strong>Balanced Matrix</strong></td><td>Low–Moderate (15–60%)</td><td>Shared</td><td>Medium</td><td>IT project — PM controls schedule; functional manager controls staff</td></tr>
+    <tr><td><strong>Strong Matrix</strong></td><td>Moderate–High (50–95%)</td><td>Project manager</td><td>Weak</td><td>Software company running multiple projects simultaneously</td></tr>
+    <tr><td><strong>Projectized</strong></td><td>High–Almost Total (85–100%)</td><td>Project manager</td><td>Minimal</td><td>Construction companies, film production teams</td></tr>
+  </table>
+  <div class="card2"><strong>Key insight:</strong> As you move from Functional → Projectized, PM authority increases and functional manager authority decreases. Projectized orgs have teams dedicated to projects and high flexibility.</div>
+</div>
+
+<div class="card">
+  <h3>4 Organizational Frames (Ways to View Organizations)</h3>
+  <div class="grid2">
+    <div class="card2"><strong>1. Structural Frame</strong><br>Focuses on roles, responsibilities, coordinations, and control. Organizational charts define this frame.<br><em>Ex: A company defining job descriptions clearly.</em></div>
+    <div class="card2"><strong>2. Political Frame (Office Politics)</strong><br>Organizations are coalitions of individuals and interest groups. Conflict of power is a key issue.<br><em>Ex: Departments competing for budget.</em></div>
+    <div class="card2"><strong>3. Human Resource Frame</strong><br>Focuses on harmony between needs of the organization and needs of the people.<br><em>Ex: Employee training programs, work-life balance policies.</em></div>
+    <div class="card2"><strong>4. Symbolic Frame</strong><br>Focuses on symbols and meanings related to events. Culture is important.<br><em>Ex: Company rituals, slogans, branding. Apple Inc. emphasizing innovation culture.</em></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Project Human Resource Management (Class 3 — 6 Apr 2026)</h3>
+  <div class="alert alert-key">Resource = valuable asset. Project HR management means managing the <strong>people</strong> involved in a project — team members, project managers, engineers, workers, staff.</div>
+
+  <h4>Human Slave vs Human Resource</h4>
+  <table>
+    <tr><th>Dimension</th><th>Slave</th><th>Human Resource</th></tr>
+    <tr><td>Freedom</td><td>No</td><td>Yes</td></tr>
+    <tr><td>Rights</td><td>None</td><td>Legal rights</td></tr>
+    <tr><td>Motivation</td><td>Fear and force</td><td>Salary, growth, respect</td></tr>
+    <tr><td>Treatment</td><td>Property/tool</td><td>Asset</td></tr>
+  </table>
+  <div class="card2"><strong>ILO (International Labour Organization):</strong> Founded 1919, later became part of UN. Protects workers' rights, promotes fair working conditions, works for social justice.<br><br><strong>Bangladesh Labour Act 2006</strong> controls: workers' rights, working conditions, employer responsibilities.</div>
+
+  <h4>Types of Jobs (Collar Jobs)</h4>
+  <table>
+    <tr><th>Type</th><th>Description</th><th>Examples</th></tr>
+    <tr><td><strong>Blue Collar</strong></td><td>Physical, skilled or semi-skilled labor</td><td>Factory workers, electricians, drivers</td></tr>
+    <tr><td><strong>White Collar</strong></td><td>Office or professional/mental work</td><td>Teachers, engineers, bankers</td></tr>
+    <tr><td><strong>Brown Collar</strong></td><td>Work related to environment/sustainability</td><td>Solar panel technicians, waste management workers</td></tr>
+  </table>
+
+  <h4>Types of Employees</h4>
+  <div class="grid2">
+    <div class="card2"><strong>Exempt Employees:</strong> Do NOT get overtime pay. Usually high-level or professional jobs.<br><em>Ex: Managers, engineers, company executives.</em></div>
+    <div class="card2"><strong>Non-exempt Employees:</strong> GET overtime pay. Usually hourly or lower-level jobs.<br><em>Ex: Factory workers, clerks, technicians.</em></div>
+  </div>
+
+  <h4>Salary Issues</h4>
+  <div class="grid2">
+    <div class="card2"><strong>Salary Compression:</strong> New employees get almost the same salary as experienced employees.<br><em>Problem → Senior workers feel unfair treatment; motivation decreases.</em></div>
+    <div class="card2"><strong>Salary Inversion:</strong> New employees get MORE salary than older employees.<br><em>Problem → Creates anger and dissatisfaction.</em></div>
+  </div>
+
+  <h4>Sources of Dissatisfaction</h4>
+  <p>Things that make workers unhappy: Low salary, poor working conditions, no job security, bad management, lack of recognition.</p>
+  <div class="card2"><strong>Salary Remuneration</strong> = Total payment given to employees. Includes: Basic salary + bonus + allowances.<br><strong>Perks</strong> = Extra benefits besides salary (free lunch, company car, health insurance, paid vacation). Purpose: increase motivation, attract employees.</div>
+
+  <h4>6 Core/General Functions of HR</h4>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Recruitment & Selection:</strong> Finding and hiring the right people. HR identifies vacancies → advertises → collects applicants → selects through tests and interviews.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Training & Development:</strong> Improving employees' skills. Training = short-term, job-specific. Development = long-term, prepares for future roles. Increases productivity, efficiency, career growth.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Performance Management:</strong> Evaluating and improving employee performance. HR sets standards, monitors work, gives feedback, conducts appraisals.</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Compensation & Benefits:</strong> Paying employees and providing rewards. Salary + wages + bonuses + health insurance + leave + perks. Ensures fair and competitive pay.</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Employee Relations:</strong> Maintaining healthy relationship between employees and management. Handles conflicts, grievances, and communication. Good relations create positive work environment and increase job satisfaction.</div></div>
+  <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Compliance & Legal Issues:</strong> Ensures organization follows labor laws and regulations (wages, working hours, safety, employee rights). Helps avoid legal problems and ensures ethical practices.</div></div>
+
+  <h4>Evolution of Human Resource Concept</h4>
+  <table>
+    <tr><th>Era</th><th>Period</th><th>Key Feature</th></tr>
+    <tr><td>Pre-industrial</td><td>Before 18th century</td><td>Work based on slavery, feudalism, craftsmanship. Workers = property/tools.</td></tr>
+    <tr><td>Industrial Revolution</td><td>18th–19th century</td><td>Rise of factories, mass employment, workers treated like machines. Poor conditions, labor unrest.</td></tr>
+    <tr><td>Early Personnel Management</td><td>Early 20th century</td><td>Workers seen as people to manage. Labor laws introduced, trade unions emerged.</td></tr>
+    <tr><td>Human Relations Movement</td><td>1930s–1950s</td><td>Productivity depends on social/psychological factors. Workers need motivation, recognition, good environment.</td></tr>
+    <tr><td>Emergence of HR Concept</td><td>1960s–1980s</td><td>Employees are valuable assets. Focused on training, development, performance.</td></tr>
+    <tr><td>Modern HRM</td><td>1990s–present</td><td>Strategic role in business, talent management, leadership development. Key to competitive advantage.</td></tr>
+  </table>
+  <div class="alert alert-info"><strong>Employee Turnover:</strong> The percentage of employees who leave an organization — voluntarily or involuntarily — and need to be replaced within a specific period.</div>
+</div>
+</section>
+
+<!-- ========== TAB 4: COMM, COST & TIME ========== -->
+<section id="s4">
+<h2>📡 Communications, Cost & Time Management (Classes 4, 5 & 6)</h2>
+
+<div class="card">
+  <h3>Project Communications Management (Class 4 — 22 Apr 2026)</h3>
+  <div class="alert alert-exam">Projects fail very often because of poor communication — not because of technical problems.</div>
+  <p>Good communication helps to: keep stakeholders informed, reduce misunderstandings and conflicts, improve decision making, coordinate team activities, track project progress.</p>
+
+  <h4>Communication Management as a Process (3 Steps)</h4>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Plan Communication Management:</strong> Determines how communication will happen. Who needs information? What information? When? How will it be delivered?</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Manage Communications:</strong> Creating and distributing information. Activities: sending reports, conducting meetings, sharing project updates, responding to stakeholder questions. Tools: Email, Meetings, Phone/Video call, Dashboard.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Monitor Communications:</strong> Ensures communication is working effectively. Checks: Are stakeholders receiving the information? Are there misunderstandings? Is communication clear?</div></div>
+
+  <h4>3 Types of Communication Methods</h4>
+  <table>
+    <tr><th>Type</th><th>Description</th><th>Examples</th></tr>
+    <tr><td><strong>Interactive</strong></td><td>Two-way communication — real-time exchange</td><td>Meetings, phone calls, video conferences</td></tr>
+    <tr><td><strong>Push</strong></td><td>Information sent to specific people (one direction)</td><td>Email, reports, letters</td></tr>
+    <tr><td><strong>Pull</strong></td><td>Information stored somewhere; people access it when needed</td><td>Website, knowledge base, project portal</td></tr>
+  </table>
+
+  <h4>8 Barriers to Communication</h4>
+  <table>
+    <tr><th>#</th><th>Barrier</th><th>Result</th></tr>
+    <tr><td>1</td><td><strong>Language barriers</strong> — team members speak different languages</td><td>Misinterpretation of instructions, wrong interpretation of tasks</td></tr>
+    <tr><td>2</td><td><strong>Cultural barriers</strong> — some cultures communicate directly, others indirectly</td><td>Important problems may not be reported; feedback misunderstood</td></tr>
+    <tr><td>3</td><td><strong>Organizational barriers</strong> — too many management layers, strict communication channels</td><td>Information delay or distorted</td></tr>
+    <tr><td>4</td><td><strong>Physical barriers</strong> — people physically separated</td><td>Remote teams, different time zones, poor internet connection</td></tr>
+    <tr><td>5</td><td><strong>Psychological barriers</strong> — stress, fear of criticism, lack of trust, personal conflict</td><td>People may hide information</td></tr>
+    <tr><td>6</td><td><strong>Information overload</strong> — too much information can be harmful</td><td>Too many emails, long reports, multiple communication channels</td></tr>
+    <tr><td>7</td><td><strong>Technological barriers</strong> — problems with communication tools</td><td>Miscommunication</td></tr>
+    <tr><td>8</td><td><strong>Filtering of information</strong> — some information is internally modified or hidden</td><td>Distorted or incomplete information reaching decision-makers</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Project Cost Management (Class 5 — 13 Apr 2026)</h3>
+  <p>Focuses on planning, estimating, budgeting, and controlling costs so that the project can be completed within the approved budget.</p>
+  <div class="alert alert-key"><strong>Objectives:</strong> (1) Ensure project is completed within approved budget. (2) Control cost overruns. (3) Optimize resource utilization.</div>
+
+  <h4>4 Main Processes of Project Cost Management</h4>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Cost Planning:</strong> Defines how project cost will be estimated.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Cost Estimation:</strong> Predicts the cost of resources needed for the project.<br>
+    <em>Methods:</em> Analogous (based on past project), Parametric (statistical models), Bottom-up (detailed activity level), Three-point estimation.
+  </div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Cost Budgeting:</strong> Aggregates estimated cost to establish total project budget. Includes: Cost baseline + Contingency reserve (PM's reserve for known unknowns) + Management reserve (Higher authority's reserve for unknown unknowns).<br>
+    <div class="formula">Project Budget = Cost Estimate + Contingency Reserve (PM) + Management Reserve (HA)
+Cost Baseline = determined by Project Manager</div>
+  </div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Cost Control:</strong> Monitors project spending and manages changes to the budget. Uses <strong>Earned Value Management (EVM)</strong>.</div></div>
+
+  <h4>Three-Point Estimation Formula</h4>
+  <div class="formula">Weighted Average (Expected Cost), E = (O + 4M + P) / 6
+
+Where:
+  O = Optimistic estimate
+  M = Most Likely estimate
+  P = Pessimistic estimate</div>
+
+  <h4>Earned Value Management (EVM) — Critical for Exam</h4>
+  <div class="alert alert-exam">EVM formulas are heavily tested. Know all 5 metrics and what the results mean.</div>
+  <table>
+    <tr><th>Term</th><th>Symbol</th><th>Meaning</th></tr>
+    <tr><td>Planned Value</td><td><strong>PV</strong></td><td>How much work was supposed to be done (by value)</td></tr>
+    <tr><td>Earned Value</td><td><strong>EV</strong></td><td>How much work was actually completed (by value)</td></tr>
+    <tr><td>Actual Cost</td><td><strong>AC</strong></td><td>How much was actually spent</td></tr>
+  </table>
+  <div class="formula">Cost Variance        CV = EV – AC     (negative = over budget)
+Schedule Variance    SV = EV – PV     (negative = behind schedule)
+
+Cost Performance Index        CPI = EV / AC    (< 1 = over budget;  > 1 = under budget)
+Schedule Performance Index    SPI = EV / PV    (< 1 = behind schedule; > 1 = ahead)</div>
+
+  <div class="card2"><strong>Example from notes:</strong> EV = $40,000 | PV = $50,000 | AC = $95,000<br><br>
+  CV = 40,000 – 95,000 = <strong>–$55,000</strong> → Over budget (budget overrun)<br>
+  SV = 40,000 – 50,000 = <strong>–$10,000</strong> → Behind schedule<br>
+  CPI = 40,000 / 95,000 = <strong>0.42</strong> → Over budget<br>
+  SPI = 40,000 / 50,000 = <strong>0.80</strong> → Behind schedule</div>
+</div>
+
+<div class="card">
+  <h3>Project Time Management (Class 6 — 19 Apr 2026)</h3>
+  <p>Focuses on planning, scheduling, and controlling how time is used so a project is completed on schedule.</p>
+  <div class="alert alert-info">The three constraints of a project: <strong>Scope, Time, Budget</strong>.</div>
+
+  <h4>5 Key Processes of Time Management</h4>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Activity Definition:</strong> Break the project into smaller tasks (activities). Ex: Build a website → Design, Coding, Testing, Deployment.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Activity Sequencing:</strong> Decide the order of tasks. Some must happen first; some can run parallel. Tools: Network diagnosis, Dependency mapping.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Activity Duration Estimation:</strong> Estimate how long each task will take. Methods: Expert judgement, Analogous estimation, Three-point estimation (Optimistic, Most likely, Pessimistic).</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Schedule Development:</strong> Create the actual timeline. Tools: Gantt chart, Critical Path Method (CPM), Program Evaluation Review Technique (PERT).</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Schedule Control:</strong> Track progress and adjust when needed. Compare planned vs actual value → Handle delays → Update schedule.</div></div>
+
+  <h4>PERT — Program Evaluation Review Technique</h4>
+  <div class="alert alert-key">PERT is a network-based project scheduling method that helps managers estimate the minimum time needed to complete a project by analyzing the time and dependencies of each activity.</div>
+  <div class="formula">Expected Time (TE) = (O + 4M + P) / 6
+
+O = Optimistic time
+M = Most Likely time
+P = Pessimistic time</div>
+
+  <h4>Worked Example from Notes — Website Development Project</h4>
+  <table>
+    <tr><th>Activity</th><th>Description</th><th>Predecessor</th><th>O</th><th>M</th><th>P</th><th>TE = (O+4M+P)/6</th></tr>
+    <tr><td>A</td><td>Requirement gathering</td><td>–</td><td>2</td><td>4</td><td>6</td><td>(2+16+6)/6 = <strong>4</strong></td></tr>
+    <tr><td>B</td><td>User interface design</td><td>A</td><td>3</td><td>5</td><td>7</td><td>(3+20+7)/6 = <strong>5</strong></td></tr>
+    <tr><td>C</td><td>Backend setup</td><td>A</td><td>2</td><td>3</td><td>8</td><td>(2+12+8)/6 = <strong>3.67</strong></td></tr>
+    <tr><td>D</td><td>Integration</td><td>B, C</td><td>4</td><td>6</td><td>10</td><td>(4+24+10)/6 = <strong>6.33</strong></td></tr>
+    <tr><td>E</td><td>Testing</td><td>D</td><td>2</td><td>3</td><td>4</td><td>(2+12+4)/6 = <strong>3</strong></td></tr>
+  </table>
+
+  <h4>Network Diagram & Critical Path</h4>
+  <div class="card2" style="font-family:monospace;">
+    Start → [A] → [B] → [D] → [E] → End<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C] → [D] → [E] → End
+  </div>
+  <table>
+    <tr><th>Path</th><th>Calculation</th><th>Total</th></tr>
+    <tr><td>A → B → D → E</td><td>4 + 5 + 6.33 + 3</td><td><strong>18.33 ≈ 19</strong> <span class="tag green">CRITICAL PATH</span></td></tr>
+    <tr><td>A → C → D → E</td><td>4 + 3.67 + 6.33 + 3</td><td><strong>17</strong></td></tr>
+  </table>
+  <div class="alert alert-exam">The <strong>Critical Path</strong> = the path with the MAXIMUM time. This path has zero float — any delay on the critical path delays the entire project. The critical path here is A→B→D→E = 19 days.</div>
+</div>
+</section>
+
+<!-- ========== TAB 5: SCOPE, RISK & PROCUREMENT ========== -->
+<section id="s5">
+<h2>⚠️ Scope, Risk & Procurement Management (Classes 7, 8 & 9)</h2>
+
+<div class="card">
+  <h3>Project Scope Management (Class 7 — 20 Apr 2026)</h3>
+  <p>Project scope management ensures that a project includes <strong>only the work required</strong> to complete the project successfully — and nothing extra. It defines what is included and what is NOT included in a project.</p>
+  <div class="alert alert-exam"><strong>Scope Creep</strong> = uncontrolled expansion of project scope → NOT allowed. Without scope management: projects may grow uncontrollably; cost and time increase unexpectedly; team may lose focus on objectives.</div>
+
+  <h4>6 Main Processes in Project Scope Management</h4>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Plan Scope Management:</strong> Defines how scope will be defined, validated, and controlled.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Collect Requirements:</strong> Gathers expectations from stakeholders.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Define Scope:</strong> Converts requirements into a clear project scope statement. Tools: Interview, Survey, Workshop.</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Create WBS (Work Breakdown Structure):</strong> Breaks project into smaller manageable parts.</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Validate Scope:</strong> Formal acceptance of completed deliverables by stakeholders.</div></div>
+  <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Control Scope:</strong> Monitors changes during the project. Prevents uncontrolled expansion. Any change must go through change control system.</div></div>
+
+  <h4>E-Commerce Website Example (from notes)</h4>
+  <table>
+    <tr><th>IN Scope</th><th>OUT of Scope</th></tr>
+    <tr><td>User registration and login</td><td>Mobile app development</td></tr>
+    <tr><td>Product catalogue</td><td>AI recommendation system</td></tr>
+    <tr><td>Shopping cart system</td><td>International shipping integration</td></tr>
+    <tr><td>Payment gateway integration (bkash/credit card)</td><td>Warehouse automation system</td></tr>
+    <tr><td>Order tracking system + Admin panel</td><td>—</td></tr>
+  </table>
+
+  <h4>WBS (Work Breakdown Structure) Example</h4>
+  <div class="card2">
+    <strong>1. Front End (User Interface):</strong> Homepage design → Product page → Cart page → Checkout page<br>
+    <strong>2. Back End Development:</strong> User authentication → Product database → Order processing system<br>
+    <strong>3. Payment Systems:</strong> Integrate bkash/credit card → Payment confirmation system<br>
+    <strong>4. Admin Panel:</strong> Add/remove orders → Manage orders → View reports<br>
+    <strong>5. Testing:</strong> Security testing → Performance testing → User acceptance testing
+  </div>
+</div>
+
+<div class="card">
+  <h3>Project Risk Management (Class 8 — 30 Apr 2026)</h3>
+  <div class="alert alert-key">A risk is any uncertain event or condition that, if it occurs, can have positive (opportunity) or negative (threat) impact on a project.<br><strong>Change is the father of risk.</strong></div>
+  <div class="grid2">
+    <div class="card2"><strong>Positive Risk</strong> → Creates opportunity (e.g., technology advancing faster than expected)</div>
+    <div class="card2"><strong>Negative Risk</strong> → Creates threat (e.g., key team member leaving the project)</div>
+  </div>
+
+  <h4>4 Processes of Risk Management</h4>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Risk Identification:</strong> Determining risks that are likely to affect a project.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Risk Quantification:</strong> Evaluating risks to assess possible project outcomes. Methods: EVA (Expected Monetary Value analysis), PERT estimation, Simulation, Expert judgement, Delphi method.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Risk Response Development:</strong> Taking steps to enhance opportunities and develop responses to each threat.<br>• Risk Avoidance: Eliminate the cause of the risk<br>• Risk Acceptance: Accept the consequences if risk occurs<br>• Risk Mitigation: Reduce the impact or probability of the risk</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Risk Response Control:</strong> Responding to risks over the course of the project. Uses a Risk Register. Includes: risk monitoring, risk audit, variance & trend analysis, reserve analysis, technical performance measurement, meetings & reviews.</div></div>
+
+  <h4>3 Types of Project Risk</h4>
+  <table>
+    <tr><th>Type</th><th>Description</th></tr>
+    <tr><td><strong>Market Risk</strong></td><td>Associated with determining if the new product will be useful to the organization or marketable — will users accept or use the product/service?</td></tr>
+    <tr><td><strong>Financial Risk</strong></td><td>Associated with determining if the organization can afford to undertake the project and if the project is the best way to use company's financial resources.</td></tr>
+    <tr><td><strong>Technology Risk</strong></td><td>Associated with determining if the project is technically feasible and if technology can become obsolete before the useful product can be produced.</td></tr>
+  </table>
+  <div class="alert alert-info"><strong>Residual Risk:</strong> Risk that remains after all risk responses have been implemented.<br><strong>Risk Register Contains:</strong> Identified risks, impact, response plan, current status, probability.</div>
+</div>
+
+<div class="card">
+  <h3>Project Procurement Management (Class 9 — 22 Apr 2026)</h3>
+  <p>Procurement generally means acquiring goods or services from an outside source.</p>
+  <div class="card2">
+    <strong>4 Core Knowledge Areas:</strong> Scope, Time, Cost, Quality<br>
+    <strong>4 Facilitating Knowledge Areas:</strong> Procurement, Human Resource, Communication, Risk
+  </div>
+
+  <h4>Causes / Reasons for Procurement</h4>
+  <p>1. To provide flexibility for the organization to focus on core business.<br>2. To gain access to technical skills, expertise, and technologies that the organization doesn't possess.</p>
+
+  <h4>6 Procurement Management Processes</h4>
+  <table>
+    <tr><th>Process</th><th>Description</th><th>Phase</th></tr>
+    <tr><td><strong>1. Procurement Planning</strong></td><td>Identifying which project needs can best be met using products/services outside the organization. Make-or-buy analysis.</td><td>Planning</td></tr>
+    <tr><td><strong>2. Solicitation Planning</strong></td><td>Documenting product requirements and identifying potential vendors (material, parts, components).</td><td>Planning</td></tr>
+    <tr><td><strong>3. Solicitation</strong></td><td>Obtaining quotations, bids, offers, or proposals from vendors. Request for Quotation (RFQ).</td><td>Executing</td></tr>
+    <tr><td><strong>4. Source Selection</strong></td><td>Selecting the best offer for the best product from vendors.</td><td>Executing</td></tr>
+    <tr><td><strong>5. Contract Administration</strong></td><td>Managing the contractual relationship with the vendor.</td><td>Controlling</td></tr>
+    <tr><td><strong>6. Contract Closeout</strong></td><td>Formal closing of the contract. Verifies all work was completed correctly and satisfactorily.</td><td>Closing</td></tr>
+  </table>
+
+  <div class="card2"><strong>Project Phases:</strong> Initializing → Planning → Executing → Controlling → Closing</div>
+
+  <h4>Make-or-Buy Analysis</h4>
+  <div class="alert alert-key">A process to determine whether a particular product or service should be made inside the organization or purchased from outside. Considers: What to make/buy, How much, When (timing).</div>
+
+  <h4>Contract Types — Buyer vs Vendor Risk</h4>
+  <table>
+    <tr><th>Contract Type</th><th>Buyer Risk</th><th>Vendor Risk</th><th>Notes</th></tr>
+    <tr><td><strong>Fixed Price (FP)</strong></td><td>Low</td><td>High</td><td>Vendor bears cost overrun risk</td></tr>
+    <tr><td><strong>Fixed Price Incentive (FPI)</strong></td><td>Medium-Low</td><td>Medium-High</td><td>Incentive for vendor to control costs</td></tr>
+    <tr><td><strong>Cost + Incentive Fee (CPIF)</strong></td><td>Medium</td><td>Medium</td><td>Cost reimbursed + predetermined fee structure. CPIF = Cost + Predetermined fee + Incentive bonus</td></tr>
+    <tr><td><strong>Cost + Fixed Fee (CPFF)</strong></td><td>Medium-High</td><td>Medium-Low</td><td>Cost reimbursed + fixed fee regardless of outcome</td></tr>
+    <tr><td><strong>Cost + Percentage of Cost</strong></td><td>High</td><td>Low</td><td>Used for research-type projects (সহজে জিনিস মাপা যায় না)</td></tr>
+  </table>
+
+  <div class="card2">
+    <strong>Example calculation from notes:</strong><br>
+    Estimated Cost: 10,000 Tk | Actual Cost: 9,000 Tk<br>
+    Savings = 10,000 – 9,000 = 1,000 Tk<br>
+    Cost = estimate থেকে কম হলে → incentive POSITIVE (25%)<br>
+    Positive Incentive = 1,000 × 25% = <strong>250 Tk</strong><br>
+    Cost = estimate থেকে বেশি হলে → incentive NEGATIVE
+  </div>
+</div>
+</section>
+
+<!-- ========== TAB 6: PERT & EVM CALCULATOR ========== -->
+<section id="s6">
+<h2>📐 PERT & EVM Interactive Calculator</h2>
+<div class="alert alert-info">Enter your activity data to automatically compute PERT expected times and Earned Value metrics. Pre-loaded with the website development example from your notes.</div>
+
+<div class="card">
+  <h3>🔧 PERT Expected Time Calculator</h3>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">Enter Optimistic (O), Most Likely (M), Pessimistic (P) values for up to 6 activities.</p>
+  <div id="pertInputs"></div>
+  <button class="pp-btn" onclick="calcPERT()" style="margin-top:10px;padding:9px 22px;background:var(--accent);border:none;border-radius:8px;color:#000;font-weight:700;cursor:pointer;font-size:.9rem;">▶ Calculate PERT</button>
+  <div id="pertResult" style="display:none;margin-top:18px;"></div>
+</div>
+
+<div class="card">
+  <h3>💰 Earned Value Management (EVM) Calculator</h3>
+  <div class="grid2">
+    <div>
+      <label style="color:var(--muted);font-size:.85rem;">Planned Value (PV) $</label><br>
+      <input id="ev_pv" type="number" value="50000" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);margin:6px 0;"><br>
+      <label style="color:var(--muted);font-size:.85rem;">Earned Value (EV) $</label><br>
+      <input id="ev_ev" type="number" value="40000" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);margin:6px 0;">
+    </div>
+    <div>
+      <label style="color:var(--muted);font-size:.85rem;">Actual Cost (AC) $</label><br>
+      <input id="ev_ac" type="number" value="95000" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);margin:6px 0;">
+    </div>
+  </div>
+  <button onclick="calcEVM()" style="padding:9px 22px;background:var(--accent3);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;margin-top:8px;">▶ Calculate EVM</button>
+  <div id="evmResult" style="display:none;margin-top:18px;"></div>
+</div>
+</section>
+
+<!-- ========== TAB 7: QUIZ ========== -->
+<section id="s7">
+<h2>🧠 Quiz — 15 Questions</h2>
+<div class="score-bar">Score: <span id="scoreDisplay">0</span> / <span id="totalDisplay">0</span> &nbsp;&nbsp; <button id="resetBtn" onclick="resetQuiz()">↺ Reset Quiz</button></div>
+<div id="quizContainer"></div>
+</section>
+
+</main>
+
+<script>
+// ===== TAB SWITCHING =====
+function showSection(id, btn){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== PROGRESS =====
+function updateProgress(){
+  const boxes=document.querySelectorAll('#checklist input[type=checkbox]');
+  let done=0;
+  boxes.forEach((b,i)=>{
+    b.parentElement.classList.toggle('done',b.checked);
+    if(b.checked)done++;
+  });
+  document.getElementById('prog-text').textContent=done+'/'+boxes.length+' done';
+  document.getElementById('progBar').style.width=(done/boxes.length*100)+'%';
+}
+
+// ===== TIMER =====
+let timerInterval=null, timerSeconds=0, timerMode='stopwatch', timerRunning=false;
+function setMode(m){
+  timerMode=m;
+  resetTimer();
+}
+function startTimer(){
+  if(timerRunning)return;
+  if(timerMode==='countdown'){
+    const mins=parseInt(document.getElementById('cdInput').value)||60;
+    if(timerSeconds===0)timerSeconds=mins*60;
+  }
+  timerRunning=true;
+  timerInterval=setInterval(()=>{
+    if(timerMode==='stopwatch'){
+      timerSeconds++;
+    } else {
+      timerSeconds--;
+      if(timerSeconds<=0){
+        timerSeconds=0;
+        clearInterval(timerInterval);
+        timerRunning=false;
+        document.getElementById('timerDisplay').style.color='var(--red)';
+        alert('⏰ Time is up!');
+        return;
+      }
+    }
+    renderTimer();
+  },1000);
+}
+function pauseTimer(){
+  clearInterval(timerInterval);
+  timerRunning=false;
+}
+function resetTimer(){
+  clearInterval(timerInterval);
+  timerRunning=false;
+  timerSeconds=0;
+  document.getElementById('timerDisplay').style.color='var(--accent4)';
+  renderTimer();
+}
+function renderTimer(){
+  const h=Math.floor(timerSeconds/3600);
+  const m=Math.floor((timerSeconds%3600)/60);
+  const s=timerSeconds%60;
+  document.getElementById('timerDisplay').textContent=
+    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+// ===== PERT CALCULATOR =====
+const defaultActs=[
+  {name:'A – Requirement Gathering',o:2,m:4,p:6},
+  {name:'B – UI Design',o:3,m:5,p:7},
+  {name:'C – Backend Setup',o:2,m:3,p:8},
+  {name:'D – Integration',o:4,m:6,p:10},
+  {name:'E – Testing',o:2,m:3,p:4},
+  {name:'F – (Optional)',o:0,m:0,p:0},
+];
+function buildPertInputs(){
+  let html='';
+  defaultActs.forEach((a,i)=>{
+    html+=`<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <input id="act${i}" value="${a.name}" style="flex:2;min-width:160px;padding:7px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;">
+      <label style="color:var(--muted);font-size:.8rem;">O:</label><input id="o${i}" type="number" value="${a.o}" style="width:60px;padding:7px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+      <label style="color:var(--muted);font-size:.8rem;">M:</label><input id="m${i}" type="number" value="${a.m}" style="width:60px;padding:7px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+      <label style="color:var(--muted);font-size:.8rem;">P:</label><input id="p${i}" type="number" value="${a.p}" style="width:60px;padding:7px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+    </div>`;
+  });
+  document.getElementById('pertInputs').innerHTML=html;
+}
+function calcPERT(){
+  let rows='';
+  for(let i=0;i<6;i++){
+    const name=document.getElementById('act'+i).value.trim();
+    const o=parseFloat(document.getElementById('o'+i).value)||0;
+    const m=parseFloat(document.getElementById('m'+i).value)||0;
+    const p=parseFloat(document.getElementById('p'+i).value)||0;
+    if(!name||(!o&&!m&&!p))continue;
+    const te=((o+4*m+p)/6).toFixed(2);
+    rows+=`<tr><td>${name}</td><td>${o}</td><td>${m}</td><td>${p}</td><td><strong style="color:var(--accent4)">${te}</strong></td><td style="font-family:monospace;font-size:.8rem;">(${o}+4×${m}+${p})/6</td></tr>`;
+  }
+  const result=document.getElementById('pertResult');
+  result.style.display='block';
+  result.innerHTML=`<h4 style="color:var(--accent);margin-bottom:10px;">📊 PERT Results</h4>
+  <table><tr><th>Activity</th><th>O</th><th>M</th><th>P</th><th>Expected Time TE</th><th>Formula</th></tr>${rows}</table>
+  <div class="alert alert-key" style="margin-top:12px;">Formula: TE = (O + 4M + P) / 6 &nbsp;|&nbsp; Then find all paths and identify the <strong>Critical Path (maximum total time)</strong>.</div>`;
+}
+buildPertInputs();
+
+// ===== EVM CALCULATOR =====
+function calcEVM(){
+  const pv=parseFloat(document.getElementById('ev_pv').value)||0;
+  const ev=parseFloat(document.getElementById('ev_ev').value)||0;
+  const ac=parseFloat(document.getElementById('ev_ac').value)||0;
+  const cv=(ev-ac).toFixed(2);
+  const sv=(ev-pv).toFixed(2);
+  const cpi=(ev/ac).toFixed(3);
+  const spi=(ev/pv).toFixed(3);
+  const cvStatus=cv>=0?'<span style="color:var(--green)">✅ Under Budget</span>':'<span style="color:var(--red)">❌ Over Budget</span>';
+  const svStatus=sv>=0?'<span style="color:var(--green)">✅ Ahead of Schedule</span>':'<span style="color:var(--red)">❌ Behind Schedule</span>';
+  const cpiStatus=cpi>=1?'<span style="color:var(--green)">✅ Under Budget (CPI > 1)</span>':'<span style="color:var(--red)">❌ Over Budget (CPI < 1)</span>';
+  const spiStatus=spi>=1?'<span style="color:var(--green)">✅ Ahead of Schedule</span>':'<span style="color:var(--red)">❌ Behind Schedule</span>';
+  const r=document.getElementById('evmResult');
+  r.style.display='block';
+  r.innerHTML=`<h4 style="color:var(--accent);margin-bottom:10px;">📊 EVM Results</h4>
+  <table>
+    <tr><th>Metric</th><th>Formula</th><th>Value</th><th>Interpretation</th></tr>
+    <tr><td><strong>Cost Variance (CV)</strong></td><td>EV – AC = ${ev} – ${ac}</td><td><strong style="color:${cv>=0?'var(--green)':'var(--red)'}">${cv}</strong></td><td>${cvStatus}</td></tr>
+    <tr><td><strong>Schedule Variance (SV)</strong></td><td>EV – PV = ${ev} – ${pv}</td><td><strong style="color:${sv>=0?'var(--green)':'var(--red)'}">${sv}</strong></td><td>${svStatus}</td></tr>
+    <tr><td><strong>CPI</strong></td><td>EV / AC = ${ev} / ${ac}</td><td><strong style="color:${cpi>=1?'var(--green)':'var(--red)'}">${cpi}</strong></td><td>${cpiStatus}</td></tr>
+    <tr><td><strong>SPI</strong></td><td>EV / PV = ${ev} / ${pv}</td><td><strong style="color:${spi>=1?'var(--green)':'var(--red)'}">${spi}</strong></td><td>${spiStatus}</td></tr>
+  </table>
+  <div class="formula">Given: PV = $${pv} | EV = $${ev} | AC = $${ac}
+CV  = ${cv} → ${parseFloat(cv)>=0?'Under budget':'Over budget'}
+SV  = ${sv} → ${parseFloat(sv)>=0?'Ahead of schedule':'Behind schedule'}
+CPI = ${cpi} → ${parseFloat(cpi)>=1?'Under budget':'Over budget'}
+SPI = ${spi} → ${parseFloat(spi)>=1?'Ahead':'Behind'} schedule</div>`;
+}
+
+// ===== QUIZ =====
+const questions=[
+  {q:"A project is best defined as:",opts:["A permanent activity of an organization","A temporary endeavor to create a unique product, service, or result","A daily operational task with no start or end","A routine process that repeats every month"],ans:1,exp:"A project is TEMPORARY (has start and end) and produces something UNIQUE. Routine/ongoing activities are operations, not projects."},
+  {q:"In PMBOK, which knowledge area acts as the 'controller' that combines all other areas?",opts:["Project Risk Management","Project Communications Management","Project Integration Management","Project Scope Management"],ans:2,exp:"Project Integration Management (#1) combines all parts of the project. Knowledge areas 2–9 run parallel; Integration connects and controls everything."},
+  {q:"In which organizational structure does the Project Manager have the LEAST authority (close to 0%)?",opts:["Balanced Matrix","Strong Matrix","Projectized","Functional Organization"],ans:3,exp:"Functional Organization has very low (≈0%) PM authority. The functional manager dominates. This is the traditional department-based structure (e.g., Toyota's engineering department)."},
+  {q:"A project coordinator who organizes meetings but cannot make decisions is typical of which structure?",opts:["Projectized","Strong Matrix","Weak Matrix","Balanced Matrix"],ans:2,exp:"Weak Matrix — PM has very limited authority (0–25%). They are essentially coordinators, not decision-makers. Functional managers dominate."},
+  {q:"Which organizational frame focuses on symbols, culture, and meanings?",opts:["Structural Frame","Political Frame","Human Resource Frame","Symbolic Frame"],ans:3,exp:"Symbolic Frame focuses on symbols and meanings related to events. Culture is important here. Example: Apple Inc. emphasizing innovation culture, company rituals, slogans, branding."},
+  {q:"An employee who does NOT receive overtime pay and typically holds a high-level professional job is called:",opts:["Non-exempt employee","Blue collar worker","Exempt employee","Contract worker"],ans:2,exp:"Exempt employees do not get overtime pay. They are usually in high-level or professional positions: managers, engineers, company executives."},
+  {q:"Given EV = $40,000, PV = $50,000, AC = $95,000, what is the Cost Variance (CV)?",opts:["–$55,000 (over budget)","–$10,000 (under budget)","$10,000 (ahead)","$55,000 (under budget)"],ans:0,exp:"CV = EV – AC = $40,000 – $95,000 = –$55,000. Negative CV means OVER BUDGET. The project spent $55,000 more than the value of work completed."},
+  {q:"If CPI = 0.42 and SPI = 0.80, the project is:",opts:["Under budget and ahead of schedule","Over budget and behind schedule","Under budget but behind schedule","Over budget but ahead of schedule"],ans:1,exp:"CPI < 1 = over budget. SPI < 1 = behind schedule. Both metrics are below 1, meaning the project is performing poorly on both cost and schedule dimensions."},
+  {q:"In PERT, the expected time formula TE = (O + 4M + P) / 6 is a:",opts:["Simple average of three estimates","Weighted average — Most Likely given 4x weight","Pessimistic-biased estimate","Only the optimistic and pessimistic average"],ans:1,exp:"PERT uses a WEIGHTED average. Most Likely (M) is given 4x the weight of Optimistic (O) and Pessimistic (P), reflecting that the most likely outcome carries more probability."},
+  {q:"In the website development PERT example (A→B→D→E vs A→C→D→E), which is the critical path?",opts:["A→C→D→E = 17 days","A→B→D→E ≈ 19 days","A→B→C→D→E","A→D→E"],ans:1,exp:"Critical Path = path with MAXIMUM expected time. A→B→D→E = 4+5+6.33+3 = 18.33 ≈ 19 days. A→C→D→E = 4+3.67+6.33+3 = 17 days. The critical path has zero float."},
+  {q:"Scope Creep refers to:",opts:["Reducing project scope after planning","Uncontrolled expansion of project scope — not allowed","A method to validate project deliverables","The formal process of adding features with stakeholder approval"],ans:1,exp:"Scope Creep = uncontrolled expansion of scope. It is NOT allowed in proper project management. Without scope control, costs and time increase unexpectedly and the team loses focus."},
+  {q:"Which type of project risk asks: 'Will users accept or use this product?'",opts:["Financial Risk","Technology Risk","Market Risk","Residual Risk"],ans:2,exp:"Market Risk is associated with determining if the new product will be useful to the organization or marketable to others — whether users will accept or use the product or service."},
+  {q:"A contract type where the buyer bears HIGH risk and the vendor bears LOW risk is:",opts:["Fixed Price (FP)","Cost + Percentage of Cost","Fixed Price Incentive (FPI)","Cost + Fixed Fee (CPFF)"],ans:1,exp:"Cost + Percentage of Cost: The more the vendor spends, the more they earn — so the vendor has no incentive to control costs. This puts HIGH risk on the buyer. Used for research-type projects."},
+  {q:"Which of the following is a 'Pull' communication method?",opts:["Email sent to team members","Project status meeting","Phone call with stakeholder","Company knowledge base / project portal"],ans:3,exp:"Pull communication = information stored somewhere; people ACCESS it WHEN NEEDED. Examples: website, knowledge base, project portal. Push = sent to specific people. Interactive = two-way."},
+  {q:"The ILO (International Labour Organization) was founded in:",opts:["1945","1932","1919","1956"],ans:2,exp:"ILO was founded in 1919 and later became part of the United Nations. It protects workers' rights, promotes fair working conditions, and works for social justice globally."},
+];
+
+let score=0, answered=0;
+function buildQuiz(){
+  let html='';
+  questions.forEach((q,qi)=>{
+    let opts='';
+    q.opts.forEach((o,oi)=>{
+      opts+=`<div class="q-opt" id="opt_${qi}_${oi}" onclick="answer(${qi},${oi})">${String.fromCharCode(65+oi)}. ${o}</div>`;
+    });
+    html+=`<div class="q-block" id="qblock_${qi}">
+      <p>Q${qi+1}. ${q.q}</p>
+      <div class="q-opts">${opts}</div>
+      <div class="q-exp" id="exp_${qi}">💡 ${q.exp}</div>
+    </div>`;
+  });
+  document.getElementById('quizContainer').innerHTML=html;
+  document.getElementById('totalDisplay').textContent=questions.length;
+}
+function answer(qi,oi){
+  const block=document.getElementById('qblock_'+qi);
+  if(block.dataset.done)return;
+  block.dataset.done='1';
+  const correct=questions[qi].ans;
+  for(let i=0;i<questions[qi].opts.length;i++){
+    const el=document.getElementById('opt_'+qi+'_'+i);
+    if(i===correct)el.classList.add('correct');
+    else if(i===oi&&oi!==correct)el.classList.add('wrong');
+  }
+  document.getElementById('exp_'+qi).classList.add('show');
+  answered++;
+  if(oi===correct)score++;
+  document.getElementById('scoreDisplay').textContent=score;
+}
+function resetQuiz(){
+  score=0;answered=0;
+  document.getElementById('scoreDisplay').textContent=0;
+  buildQuiz();
+}
+buildQuiz();
+</script>
+</body>
+</html>
