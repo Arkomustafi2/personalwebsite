@@ -306,22 +306,22 @@
 <div class="setup-overlay" id="setupOverlay">
   <div class="setup-card">
     <div class="setup-title">⚡ One-time Setup</div>
-    <div class="setup-sub">Connect your Google Sheet so entries are saved automatically. Takes 5 minutes.</div>
+    <div class="setup-sub">Two parts: Google Apps Script (the database) + Cloudflare Worker (the CORS bridge). Both free.</div>
     <div class="setup-steps">
       <div class="setup-step">
         <div class="step-num">1</div>
-        <div class="step-text">Go to <a href="https://script.google.com" target="_blank" style="color:var(--accent)">script.google.com</a> → New Project → paste the <code>GoogleAppsScript.gs</code> file I gave you.</div>
+        <div class="step-text"><strong style="color:var(--text)">GAS:</strong> Go to <a href="https://script.google.com" target="_blank" style="color:var(--accent)">script.google.com</a> → New Project → paste <code>GoogleAppsScript.gs</code>. Deploy as Web App (<em>Execute as: Me, Anyone</em>). Copy the <code>/exec</code> URL.</div>
       </div>
       <div class="setup-step">
         <div class="step-num">2</div>
-        <div class="step-text">Click <code>Deploy</code> → <code>New Deployment</code> → <code>Web App</code>. Set <em>Execute as: Me</em> and <em>Who has access: Anyone</em>.</div>
+        <div class="step-text"><strong style="color:var(--text)">Worker:</strong> Go to <a href="https://workers.cloudflare.com" target="_blank" style="color:var(--accent)">workers.cloudflare.com</a> → free account → Create Worker → paste <code>cloudflare-worker.js</code>. In Settings → Variables add <code>GAS_URL</code> = your GAS exec URL. Deploy.</div>
       </div>
       <div class="setup-step">
         <div class="step-num">3</div>
-        <div class="step-text">Copy the deployment URL that looks like <code>https://script.google.com/macros/s/.../exec</code> and paste it below.</div>
+        <div class="step-text">Copy the Worker URL (looks like <code>https://your-worker.workers.dev</code>) and paste it below.</div>
       </div>
     </div>
-    <input class="setup-input" id="urlInput" placeholder="https://script.google.com/macros/s/.../exec" />
+    <input class="setup-input" id="urlInput" placeholder="https://your-worker.workers.dev" />
     <div style="display:flex;gap:8px;">
       <button class="btn-save-url" onclick="saveUrl()" style="flex:1">Save & Continue →</button>
       <button class="btn-save-url" onclick="testConnection()" style="background:var(--bg3);color:var(--accent);border:1px solid var(--accent);width:auto;padding:12px 16px;">Test</button>
@@ -584,9 +584,9 @@ window.onload = () => {
 
 function saveUrl() {
   const url = document.getElementById('urlInput').value.trim();
-  if (!url.includes('script.google.com')) { 
-    alert("That URL doesn't look right. It should start with: https://script.google.com/macros/s/"); 
-    return; 
+  if (!url.startsWith('https://')) {
+    alert('URL must start with https://');
+    return;
   }
   GAS_URL = url;
   localStorage.setItem('gas_url', url);
