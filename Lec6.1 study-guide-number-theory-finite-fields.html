@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Theory & Finite Fields — Study Guide</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #1a1d27;
+  --card2: #22263a;
+  --border: #2e3354;
+  --text: #e2e6f0;
+  --muted: #8892b0;
+  --accent4: #f7c948;
+  --accent: #00b4d8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:0.97rem;line-height:1.65}
+/* === HEADER === */
+.site-header{position:sticky;top:0;z-index:100;background:#131621;border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.header-title{flex:0 0 auto}
+.header-title h1{font-size:1.05rem;font-weight:700;color:var(--accent4);letter-spacing:.03em}
+.header-title p{font-size:0.72rem;color:var(--muted);margin-top:2px}
+.progress-wrap{flex:1;min-width:160px}
+.progress-label{font-size:0.72rem;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.progress-bar{background:var(--card2);border-radius:99px;height:7px;overflow:hidden;border:1px solid var(--border)}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00b4d8,#06d6a0);border-radius:99px;width:0%;transition:width .4s}
+/* === POMODORO === */
+.pomo-wrap{flex:0 0 auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 14px;text-align:center;min-width:160px}
+.pomo-display{font-size:1.5rem;font-family:monospace;font-weight:700;color:var(--accent4);letter-spacing:.08em;transition:color .2s}
+.pomo-display.flash{color:#ef233c;animation:flashAnim .5s 3}
+@keyframes flashAnim{0%,100%{opacity:1}50%{opacity:0.2}}
+.pomo-modes{display:flex;gap:4px;margin:5px 0}
+.pomo-modes button,.pomo-ctrl button{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 7px;font-size:0.65rem;cursor:pointer;transition:all .2s}
+.pomo-modes button:hover,.pomo-modes button.active,.pomo-ctrl button:hover{background:var(--accent4);color:#000;border-color:var(--accent4)}
+.pomo-ctrl{display:flex;gap:6px;margin-top:4px;justify-content:center}
+.pomo-ctrl button{padding:4px 12px;font-size:0.72rem}
+/* === NAV === */
+nav{background:var(--card);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.nav-btn{display:inline-block;padding:11px 18px;font-size:0.82rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+.nav-btn:hover{color:var(--text)}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* === SECTIONS === */
+.section{display:none;padding:28px 20px;max-width:1040px;margin:0 auto}
+.section.active{display:block}
+/* === CARDS === */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
+.card h2{font-size:1.1rem;font-weight:700;margin-bottom:12px}
+.card h3{font-size:0.97rem;font-weight:600;margin-bottom:8px;color:var(--accent)}
+/* === FORMULA === */
+.formula{background:var(--card2);border-left:3px solid var(--accent4);color:var(--accent4);font-family:'Courier New',monospace;font-size:0.88rem;padding:14px 18px;border-radius:6px;white-space:pre;overflow-x:auto;margin:10px 0}
+/* === STEPS === */
+.step{display:flex;gap:14px;align-items:flex-start;margin:10px 0;padding:12px 16px;background:var(--card2);border-radius:8px}
+.step-num{background:var(--accent);color:#000;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.78rem;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-body p{color:var(--text);margin-bottom:6px;font-size:0.9rem}
+/* === ALERTS === */
+.alert{border-left:4px solid;padding:12px 16px;border-radius:6px;margin:12px 0;font-size:0.9rem}
+.alert-info{border-color:#4895ef;background:rgba(72,149,239,.1)}
+.alert-warn{border-color:#f77f00;background:rgba(247,127,0,.1)}
+.alert-key{border-color:#06d6a0;background:rgba(6,214,160,.1)}
+.alert-exam{border-color:#ef233c;background:rgba(239,35,60,.1)}
+/* === TABLES === */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:0.88rem}
+th{background:var(--card2);padding:10px 12px;text-align:left;font-weight:600;color:var(--accent)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:hover td{background:rgba(255,255,255,.03)}
+.mono{font-family:monospace}
+/* === TWO-COL === */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:640px){.two-col{grid-template-columns:1fr}}
+/* === CHECKLIST === */
+.checklist{padding:0}
+.checklist label{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:0.9rem}
+.checklist label:hover{background:var(--card2)}
+.checklist input[type=checkbox]{accent-color:var(--accent4);width:15px;height:15px;flex-shrink:0}
+.checklist h3{font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:14px 0 4px 12px}
+/* === RESOURCE LINKS === */
+.resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+.resource-link{display:block;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--accent);font-size:0.82rem;text-decoration:none;transition:all .2s}
+.resource-link:hover{border-color:var(--accent);background:rgba(0,180,216,.08)}
+.resource-link span{display:block;color:var(--muted);font-size:0.72rem;margin-top:3px}
+/* === INTERACTIVE TOOL === */
+.pp-input{background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px 14px;font-family:monospace;font-size:0.95rem;width:100%;margin:6px 0}
+.pp-input:focus{outline:none;border-color:var(--accent4)}
+.pp-btn{background:var(--accent4);color:#000;border:none;border-radius:8px;padding:12px 28px;font-weight:700;cursor:pointer;font-size:0.95rem;margin-top:10px;transition:opacity .2s}
+.pp-btn:hover{opacity:.85}
+.tool-result{display:none;margin-top:18px}
+.error-box{background:rgba(239,35,60,.15);border:1px solid #ef233c;border-radius:8px;padding:12px 16px;color:#ff6b7a;font-size:0.88rem;margin-top:10px}
+/* === SECTION ACCENTS === */
+#div-gcd{--accent:#00b4d8}
+#mod-arith{--accent:#9d4edd}
+#groups-fields{--accent:#f77f00}
+#finite-fields{--accent:#06d6a0}
+#calc{--accent:#f7c948}
+/* shared accent on card h3 per section */
+#div-gcd .card h3{color:#00b4d8}
+#mod-arith .card h3{color:#9d4edd}
+#groups-fields .card h3{color:#f77f00}
+#finite-fields .card h3{color:#06d6a0}
+#calc .card h3{color:#f7c948}
+#div-gcd .nav-btn-accent,.nav-btn[data-tab="div-gcd"].active{border-bottom-color:#00b4d8;color:#00b4d8}
+/* small tag badge */
+.badge{display:inline-block;font-size:0.67rem;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:8px;text-transform:uppercase;letter-spacing:.05em}
+.badge-key{background:rgba(6,214,160,.2);color:#06d6a0}
+.badge-exam{background:rgba(239,35,60,.2);color:#ef233c}
+.badge-algo{background:rgba(248,201,72,.2);color:#f7c948}
+/* modulo table wrapper for small display */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* highlight table diagonal */
+.hl{background:rgba(0,180,216,.13);font-weight:700}
+/* section break heading */
+.section-hd{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:26px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+/* algorithm code block */
+.algo{background:var(--card2);border-radius:8px;padding:16px 20px;font-family:monospace;font-size:0.87rem;color:#aef0ff;line-height:1.8;overflow-x:auto;white-space:pre;border:1px solid var(--border);margin:12px 0}
+/* pill tag */
+.tag{display:inline-block;background:var(--card2);border:1px solid var(--border);border-radius:4px;font-size:0.7rem;padding:2px 8px;margin:2px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header">
+  <div class="header-title">
+    <h1>Number Theory &amp; Finite Fields</h1>
+    <p>Cryptography Lecture 6 · University of Dhaka</p>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Progress</span><span id="progress-text">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  <div class="pomo-wrap">
+    <div class="pomo-display" id="pomo-display">25:00</div>
+    <div class="pomo-modes">
+      <button onclick="setMode(25)" class="active" id="btn-work">Work 25m</button>
+      <button onclick="setMode(5)" id="btn-short">Break 5m</button>
+      <button onclick="setMode(15)" id="btn-long">Long 15m</button>
+    </div>
+    <div class="pomo-ctrl">
+      <button onclick="startStopPomodoro()" id="pomo-startstop">Start</button>
+      <button onclick="resetPomodoro()">Reset</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <button class="nav-btn active" onclick="showSection('study-plan',this)">📅 Study Plan</button>
+  <button class="nav-btn" onclick="showSection('div-gcd',this)" style="--accent:#00b4d8">🔢 Divisibility &amp; GCD</button>
+  <button class="nav-btn" onclick="showSection('mod-arith',this)" style="--accent:#9d4edd">➕ Modular Arithmetic</button>
+  <button class="nav-btn" onclick="showSection('groups-fields',this)" style="--accent:#f77f00">🏗️ Groups, Rings &amp; Fields</button>
+  <button class="nav-btn" onclick="showSection('finite-fields',this)" style="--accent:#06d6a0">🔒 Finite Fields &amp; GF(2ⁿ)</button>
+  <button class="nav-btn" onclick="showSection('calc',this)" style="--accent:#f7c948">🧮 Calculator</button>
+</nav>
+
+<!-- ================================================================
+     TAB 1 — STUDY PLAN
+     ================================================================ -->
+<div class="section active" id="study-plan">
+
+  <div class="card">
+    <h2>📖 What This Lecture Is Really About</h2>
+    <p style="color:var(--muted);margin-bottom:10px">Number theory is the arithmetic engine beneath modern cryptography. Every strong cipher — AES, RSA, elliptic-curve — relies on algebraic structures where addition, multiplication, and <em>inversion</em> are closed, predictable, and computationally hard to reverse without a secret. This lecture builds the mathematical foundation from first principles: divisibility and GCD lead to modular arithmetic, which leads to groups and rings, which lead to <strong>finite (Galois) fields</strong> — the precise structures AES operates in. The polynomial field GF(2<sup>n</sup>) is not abstract; it is the byte-level algebra inside SubBytes and MixColumns.</p>
+    <div class="alert alert-key">The core takeaway: a <strong>Galois field GF(pⁿ)</strong> is a finite set where you can add, subtract, multiply <em>and divide</em> — all staying inside the set. That closure under division is what makes crypto math tractable.</div>
+  </div>
+
+  <div class="card">
+    <h2>✅ Topic Checklist</h2>
+    <div class="checklist" id="main-checklist">
+
+      <h3>Divisibility &amp; GCD</h3>
+      <label><input type="checkbox" onchange="updateProgress()"> Understand the definition of divisibility (b | a means a = mb)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Know the four properties of divisibility (a|1, symmetry, transitivity, linear combination)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Division algorithm: a = qn + r, where 0 ≤ r &lt; n</label>
+      <label><input type="checkbox" onchange="updateProgress()"> GCD definition and the "relatively prime" concept</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Euclidean Algorithm — trace GCD(1970, 1066) = 2 manually</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Extended Euclidean Algorithm — find ax + by = gcd(a, b)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Compute multiplicative inverse using Extended Euclid (e.g. 550⁻¹ in GF(1759) = 355)</label>
+
+      <h3>Modular Arithmetic</h3>
+      <label><input type="checkbox" onchange="updateProgress()"> Definition of "a mod n" and the term "residue"</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Congruence: a ≡ b (mod n) iff n | (a−b)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Three modular operation rules (addition, subtraction, multiplication)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Reproduce the Z₈ addition table from memory</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Modular arithmetic properties: commutative, associative, distributive, identity, additive inverse</label>
+
+      <h3>Groups, Rings, Fields</h3>
+      <label><input type="checkbox" onchange="updateProgress()"> Group axioms: CAIN — Closure, Associativity, Identity, iNverse</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Abelian group (+ commutativity)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Cyclic group and generator element</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Ring = abelian group under + and closed multiplication with distributivity</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Field = ring where multiplication also forms abelian group (excluding 0)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Hierarchy: Group → Ring → Commutative Ring → Integral Domain → Field</label>
+
+      <h3>Finite Fields</h3>
+      <label><input type="checkbox" onchange="updateProgress()"> Finite field order must be pⁿ (prime power)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> GF(p) = integers {0,…,p−1} mod p — forms a finite field</label>
+      <label><input type="checkbox" onchange="updateProgress()"> GF(7) multiplication table — every row is a permutation (no zeros except row 0)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Polynomial arithmetic — ordinary, with coefs mod p, and mod irreducible polynomial</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Irreducible polynomial definition — no divisors other than 1 and itself</label>
+      <label><input type="checkbox" onchange="updateProgress()"> GF(2³) = {0,1,x,x+1,x²,x²+1,x²+x,x²+x+1} mod (x³+x+1)</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Addition in GF(2ⁿ) = XOR; Multiplication = shift &amp; XOR + reduction</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Polynomial GCD and Extended Euclidean for polynomial inverses</label>
+      <label><input type="checkbox" onchange="updateProgress()"> Generator element concept in a finite field</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📚 Recommended Resources</h2>
+    <div class="resource-grid">
+      <a class="resource-link" href="https://www.youtube.com/playlist?list=PL2jykFOD1AWb07OLiZfyHajn5zxpBe7GF" target="_blank">
+        MIT OCW Cryptography (6.875) <span>YouTube Playlist</span>
+      </a>
+      <a class="resource-link" href="https://www.khanacademy.org/computing/computer-science/cryptography" target="_blank">
+        Khan Academy Cryptography <span>Free interactive course</span>
+      </a>
+      <a class="resource-link" href="https://en.wikipedia.org/wiki/Finite_field" target="_blank">
+        Finite Field — Wikipedia <span>Galois field theory</span>
+      </a>
+      <a class="resource-link" href="https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm" target="_blank">
+        Extended Euclidean Algorithm <span>Wikipedia with worked table</span>
+      </a>
+      <a class="resource-link" href="https://www.youtube.com/watch?v=fmFANmMTM4k" target="_blank">
+        Modular Arithmetic — 3Blue1Brown <span>Visual intuition for mod</span>
+      </a>
+      <a class="resource-link" href="https://www.wolframalpha.com/calculators/modular-arithmetic-calculator" target="_blank">
+        Wolfram Alpha — Modular Calc <span>Verify computations online</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     TAB 2 — DIVISIBILITY & GCD
+     ================================================================ -->
+<div class="section" id="div-gcd">
+
+  <p class="section-hd">Divisibility</p>
+
+  <div class="card">
+    <h3>Definition of Divisibility <span class="badge badge-key">KEY</span></h3>
+    <p>A non-zero integer <strong>b divides a</strong> (written <code>b | a</code>) if there exists an integer m such that:</p>
+    <div class="formula">a = m × b       (a, b, m all integers)</div>
+    <p>We say <em>b divides into a with no remainder</em>, and call b a <strong>divisor</strong> of a.</p>
+    <div class="alert alert-info">
+      <strong>Examples:</strong> All of {1,2,3,4,6,8,12,24} divide 24. Also: 13|182, −5|30, 17|289, −3|33, 17|0.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Properties of Divisibility <span class="badge badge-exam">Exam</span></h3>
+    <table>
+      <thead><tr><th>Property</th><th>Statement</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>If a|1</td><td>then a = ±1</td><td>1|1 → a=1; −1|1 → a=−1</td></tr>
+        <tr><td>If a|b and b|a</td><td>then a = ±b</td><td>6|12 and 12|6? No — illustrates constraint</td></tr>
+        <tr><td>Any b ≠ 0</td><td>b | 0</td><td>5|0 since 0 = 0×5</td></tr>
+        <tr><td>Transitivity</td><td>If a|b and b|c then a|c</td><td>11|66 and 66|198 → 11|198</td></tr>
+        <tr><td>Linear Combination</td><td>If b|g and b|h then b|(mg+nh) for all integers m,n</td><td>b=7,g=14,h=63,m=3,n=2 → 7|168</td></tr>
+      </tbody>
+    </table>
+    <div class="alert alert-warn">The linear combination property is extremely important in GCD proofs and Extended Euclidean derivations.</div>
+  </div>
+
+  <div class="card">
+    <h3>Division Algorithm</h3>
+    <p>For integers a and positive n, there exist <em>unique</em> integers q (quotient) and r (residue) such that:</p>
+    <div class="formula">a = q × n + r        where  0 ≤ r &lt; n,  q = ⌊a/n⌋</div>
+    <p>The remainder r is called the <strong>residue</strong>. This is the foundation for modular arithmetic.</p>
+    <div class="alert alert-info">Example: 70 ÷ 15 → 70 = 4×15 + 10. So q=4, r=10.</div>
+  </div>
+
+  <p class="section-hd">Greatest Common Divisor (GCD)</p>
+
+  <div class="card">
+    <h3>GCD Definition <span class="badge badge-key">KEY</span></h3>
+    <p>The <strong>GCD(a, b)</strong> is the largest integer that divides both a and b evenly.</p>
+    <div class="formula">GCD(60, 24) = 12      (largest divisor of both)</div>
+    <p>Special cases: <code>gcd(0, 0) = 0</code>. When <code>GCD(a,b) = 1</code>, a and b are called <strong>relatively prime</strong>.</p>
+    <div class="alert alert-exam"><strong>Exam fact:</strong> GCD(8,15) = 1, so 8 and 15 are relatively prime. This is essential for modular inverses — an inverse of b mod m exists if and only if GCD(b, m) = 1.</div>
+  </div>
+
+  <div class="card">
+    <h3>Euclidean Algorithm <span class="badge badge-algo">Algorithm</span></h3>
+    <p>Uses the key theorem: <strong>GCD(a, b) = GCD(b, a mod b)</strong>. Reduces the problem until remainder = 0.</p>
+    <div class="algo">Euclid(a, b):
+  if b = 0  then return a
+  else       return Euclid(b, a mod b)</div>
+
+    <p style="margin-top:12px;font-weight:600">Worked Example: GCD(1970, 1066)</p>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>Step</th><th>Dividend (a)</th><th>Divisor (b)</th><th>Quotient q</th><th>Remainder r = a − q×b</th><th>Next call</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1970</td><td>1066</td><td>1</td><td class="hl">904</td><td>GCD(1066, 904)</td></tr>
+        <tr><td>2</td><td>1066</td><td>904</td><td>1</td><td class="hl">162</td><td>GCD(904, 162)</td></tr>
+        <tr><td>3</td><td>904</td><td>162</td><td>5</td><td class="hl">94</td><td>GCD(162, 94)</td></tr>
+        <tr><td>4</td><td>162</td><td>94</td><td>1</td><td class="hl">68</td><td>GCD(94, 68)</td></tr>
+        <tr><td>5</td><td>94</td><td>68</td><td>1</td><td class="hl">26</td><td>GCD(68, 26)</td></tr>
+        <tr><td>6</td><td>68</td><td>26</td><td>2</td><td class="hl">16</td><td>GCD(26, 16)</td></tr>
+        <tr><td>7</td><td>26</td><td>16</td><td>1</td><td class="hl">10</td><td>GCD(16, 10)</td></tr>
+        <tr><td>8</td><td>16</td><td>10</td><td>1</td><td class="hl">6</td><td>GCD(10, 6)</td></tr>
+        <tr><td>9</td><td>10</td><td>6</td><td>1</td><td class="hl">4</td><td>GCD(6, 4)</td></tr>
+        <tr><td>10</td><td>6</td><td>4</td><td>1</td><td class="hl">2</td><td>GCD(4, 2)</td></tr>
+        <tr><td>11</td><td>4</td><td>2</td><td>2</td><td class="hl">0</td><td>→ return 2</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert alert-key" style="margin-top:8px"><strong>Result: GCD(1970, 1066) = 2</strong></div>
+  </div>
+
+  <div class="card">
+    <h3>Large Number GCD: GCD(1160718174, 316258250)</h3>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>Dividend</th><th>Divisor</th><th>Quotient</th><th>Remainder</th></tr></thead>
+      <tbody>
+        <tr><td>1160718174</td><td>316258250</td><td>3</td><td>211943424</td></tr>
+        <tr><td>316258250</td><td>211943424</td><td>1</td><td>104314826</td></tr>
+        <tr><td>211943424</td><td>104314826</td><td>2</td><td>3313772</td></tr>
+        <tr><td>104314826</td><td>3313772</td><td>31</td><td>1587894</td></tr>
+        <tr><td>3313772</td><td>1587894</td><td>2</td><td>137984</td></tr>
+        <tr><td>1587894</td><td>137984</td><td>11</td><td>70070</td></tr>
+        <tr><td>137984</td><td>70070</td><td>1</td><td>67914</td></tr>
+        <tr><td>70070</td><td>67914</td><td>1</td><td>2156</td></tr>
+        <tr><td>67914</td><td>2156</td><td>31</td><td>1078</td></tr>
+        <tr><td>2156</td><td>1078</td><td>2</td><td class="hl">0</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert alert-key"><strong>Result: GCD = 1078</strong></div>
+  </div>
+
+  <div class="card">
+    <h3>Extended Euclidean Algorithm <span class="badge badge-key">KEY</span></h3>
+    <p>Beyond computing GCD(a,b), the Extended version finds integers x and y such that:</p>
+    <div class="formula">a·x + b·y = d = gcd(a, b)</div>
+    <p>If GCD(a,b) = 1, then x is the multiplicative inverse of a mod b. This is critical for cryptographic key generation.</p>
+
+    <div class="algo">EXTENDED_EUCLID(m, b):
+  Initialize:
+    (A1, A2, A3) = (1, 0, m)
+    (B1, B2, B3) = (0, 1, b)
+
+  Loop:
+    if B3 = 0:  return A3 = gcd(m,b),  no inverse exists
+    if B3 = 1:  return gcd = B3 = 1,  B2 = b⁻¹ mod m
+
+    Q  = A3 div B3
+    (T1, T2, T3) = (A1 − Q·B1,  A2 − Q·B2,  A3 − Q·B3)
+    (A1, A2, A3) = (B1, B2, B3)
+    (B1, B2, B3) = (T1, T2, T3)
+    goto Loop</div>
+
+    <p style="margin-top:14px;font-weight:600">Worked Example: Find 550⁻¹ mod 1759</p>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:8px">We want x such that 550·x ≡ 1 (mod 1759). Call EXTENDED_EUCLID(1759, 550).</p>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>Q</th><th>A1</th><th>A2</th><th>A3</th><th>B1</th><th>B2</th><th>B3</th></tr></thead>
+      <tbody>
+        <tr><td>—</td><td>1</td><td>0</td><td>1759</td><td>0</td><td>1</td><td>550</td></tr>
+        <tr><td>3</td><td>0</td><td>1</td><td>550</td><td>1</td><td>−3</td><td>109</td></tr>
+        <tr><td>5</td><td>1</td><td>−3</td><td>109</td><td>−5</td><td>16</td><td>5</td></tr>
+        <tr><td>21</td><td>−5</td><td>16</td><td>5</td><td>106</td><td>−339</td><td>4</td></tr>
+        <tr><td>1</td><td>106</td><td>−339</td><td>4</td><td>−111</td><td class="hl">355</td><td class="hl">1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert alert-key"><strong>B3 = 1 → GCD = 1 → Inverse exists. B2 = 355 → 550⁻¹ mod 1759 = 355.</strong><br>Verify: 550 × 355 = 195250. 195250 / 1759 = 111 remainder 1. ✓</div>
+
+    <p style="margin-top:14px;font-weight:600">Step-by-step derivation trace (Q=3 first iteration)</p>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Initialize: (A1,A2,A3) = (1,0,1759) and (B1,B2,B3) = (0,1,550)</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>B3 ≠ 0 and B3 ≠ 1 → compute Q = A3 div B3 = 1759 div 550 = 3</p>
+        <div class="formula">T3 = A3 − Q×B3 = 1759 − 3×550 = 1759 − 1650 = 109
+T1 = A1 − Q×B1 = 1 − 3×0  = 1
+T2 = A2 − Q×B2 = 0 − 3×1  = −3</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Shift: (A1,A2,A3) ← (B1,B2,B3) = (0,1,550). (B1,B2,B3) ← (T1,T2,T3) = (1,−3,109)</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>Repeat with Q = 550 div 109 = 5. Continue until B3 = 1 → read off B2 as inverse.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================================================================
+     TAB 3 — MODULAR ARITHMETIC
+     ================================================================ -->
+<div class="section" id="mod-arith">
+
+  <p class="section-hd">Core Definitions</p>
+
+  <div class="card">
+    <h3>Modulo Operator &amp; Residue <span class="badge badge-key">KEY</span></h3>
+    <p>For integer a and positive modulus n, <code>a mod n</code> is the <strong>remainder</strong> when a is divided by n.</p>
+    <div class="formula">a mod n = r       where  a = q·n + r,  0 ≤ r ≤ n−1</div>
+    <p>r is called a <strong>residue</strong> of a mod n. The set of all residues is Z<sub>n</sub> = {0, 1, …, n−1}.</p>
+    <div class="alert alert-info">
+      <strong>Modulo reduction:</strong> Different values can have the same residue. E.g.:<br>
+      −12 mod 7 = −5 mod 7 = 2 mod 7 = 9 mod 7 = <strong>2</strong>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Congruence</h3>
+    <p>a and b are <strong>congruent modulo n</strong> (written a ≡ b mod n) if they have the same remainder when divided by n:</p>
+    <div class="formula">a mod n = b mod n   ⟺   n | (a − b)</div>
+    <p><strong>Example:</strong> 100 mod 11 = 1. 34 mod 11 = 1. So 100 ≡ 34 (mod 11).</p>
+  </div>
+
+  <p class="section-hd">Modular Arithmetic Rules</p>
+
+  <div class="card">
+    <h3>Three Fundamental Operations <span class="badge badge-exam">Exam</span></h3>
+    <p>Reduction can be applied before or after any arithmetic operation:</p>
+    <div class="step">
+      <div class="step-num">+</div>
+      <div class="step-body">
+        <p><strong>Addition:</strong></p>
+        <div class="formula">(a + b) mod n = [(a mod n) + (b mod n)] mod n</div>
+        <p style="color:var(--muted)">Example: (11+15) mod 8 = 26 mod 8 = 2.  [(11 mod 8)+(15 mod 8)] mod 8 = [3+7] mod 8 = 10 mod 8 = 2 ✓</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">−</div>
+      <div class="step-body">
+        <p><strong>Subtraction:</strong></p>
+        <div class="formula">(a − b) mod n = [(a mod n) − (b mod n)] mod n</div>
+        <p style="color:var(--muted)">Example: (11−15) mod 8 = −4 mod 8 = 4.  [(3)−(7)] mod 8 = −4 mod 8 = 4 ✓</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">×</div>
+      <div class="step-body">
+        <p><strong>Multiplication:</strong></p>
+        <div class="formula">(a × b) mod n = [(a mod n) × (b mod n)] mod n</div>
+        <p style="color:var(--muted)">Example: (11×15) mod 8 = 165 mod 8 = 5.  [(3)×(7)] mod 8 = 21 mod 8 = 5 ✓</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Modular Arithmetic Properties</h3>
+    <table>
+      <thead><tr><th>Property</th><th>Addition</th><th>Multiplication</th></tr></thead>
+      <tbody>
+        <tr><td>Commutative</td><td>(w+x) mod n = (x+w) mod n</td><td>(w×x) mod n = (x×w) mod n</td></tr>
+        <tr><td>Associative</td><td>[(w+x)+y] mod n = [w+(x+y)] mod n</td><td>[(w×x)×y] mod n = [w×(x×y)] mod n</td></tr>
+        <tr><td>Distributive</td><td colspan="2">[w×(x+y)] mod n = [(w×x)+(w×y)] mod n</td></tr>
+        <tr><td>Additive Identity</td><td>(0+w) mod n = w mod n</td><td>—</td></tr>
+        <tr><td>Multiplicative Identity</td><td>—</td><td>(1×w) mod n = w mod n</td></tr>
+        <tr><td>Additive Inverse</td><td colspan="2">For each w ∈ Zₙ, ∃ z : w+z ≡ 0 (mod n)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="section-hd">Z₈ Operation Tables</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Modulo-8 Addition Table</h3>
+      <div class="tbl-scroll">
+      <table style="font-family:monospace;text-align:center;font-size:0.85rem">
+        <thead><tr><th>+</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr></thead>
+        <tbody>
+          <tr><td><strong>0</strong></td><td class="hl">0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
+          <tr><td><strong>1</strong></td><td>1</td><td class="hl">2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>0</td></tr>
+          <tr><td><strong>2</strong></td><td>2</td><td>3</td><td class="hl">4</td><td>5</td><td>6</td><td>7</td><td>0</td><td>1</td></tr>
+          <tr><td><strong>3</strong></td><td>3</td><td>4</td><td>5</td><td class="hl">6</td><td>7</td><td>0</td><td>1</td><td>2</td></tr>
+          <tr><td><strong>4</strong></td><td>4</td><td>5</td><td>6</td><td>7</td><td class="hl">0</td><td>1</td><td>2</td><td>3</td></tr>
+          <tr><td><strong>5</strong></td><td>5</td><td>6</td><td>7</td><td>0</td><td>1</td><td class="hl">2</td><td>3</td><td>4</td></tr>
+          <tr><td><strong>6</strong></td><td>6</td><td>7</td><td>0</td><td>1</td><td>2</td><td>3</td><td class="hl">4</td><td>5</td></tr>
+          <tr><td><strong>7</strong></td><td>7</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td class="hl">6</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="alert alert-info" style="margin-top:8px">Notice the cyclic "wrap-around". Each row is a cyclic permutation of 0–7.</div>
+    </div>
+
+    <div class="card">
+      <h3>Modulo-8 Multiplication Table</h3>
+      <div class="tbl-scroll">
+      <table style="font-family:monospace;text-align:center;font-size:0.85rem">
+        <thead><tr><th>×</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr></thead>
+        <tbody>
+          <tr><td><strong>0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td><strong>1</strong></td><td>0</td><td class="hl">1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
+          <tr><td><strong>2</strong></td><td>0</td><td>2</td><td class="hl">4</td><td>6</td><td>0</td><td>2</td><td>4</td><td>6</td></tr>
+          <tr><td><strong>3</strong></td><td>0</td><td>3</td><td>6</td><td class="hl">1</td><td>4</td><td>7</td><td>2</td><td>5</td></tr>
+          <tr><td><strong>4</strong></td><td>0</td><td>4</td><td>0</td><td>4</td><td class="hl">0</td><td>4</td><td>0</td><td>4</td></tr>
+          <tr><td><strong>5</strong></td><td>0</td><td>5</td><td>2</td><td>7</td><td>4</td><td class="hl">1</td><td>6</td><td>3</td></tr>
+          <tr><td><strong>6</strong></td><td>0</td><td>6</td><td>4</td><td>2</td><td>0</td><td>6</td><td class="hl">4</td><td>2</td></tr>
+          <tr><td><strong>7</strong></td><td>0</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td class="hl">1</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="alert alert-warn" style="margin-top:8px">Row 4 has repeated values — Z₈ is NOT a field because 8 is not prime. Elements like 2, 4, 6 have no multiplicative inverse.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================================================================
+     TAB 4 — GROUPS, RINGS, FIELDS
+     ================================================================ -->
+<div class="section" id="groups-fields">
+
+  <p class="section-hd">Algebraic Structures</p>
+
+  <div class="card">
+    <h3>Group <span class="badge badge-exam">Exam</span></h3>
+    <p>A <strong>Group</strong> G = (S, ·) is a set S with a binary operation · satisfying <strong>CAIN</strong>:</p>
+    <div class="step">
+      <div class="step-num">C</div>
+      <div class="step-body"><p><strong>Closure:</strong> For all a,b ∈ S, a·b ∈ S</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">A</div>
+      <div class="step-body"><p><strong>Associativity:</strong> (a·b)·c = a·(b·c) for all a,b,c ∈ S</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">I</div>
+      <div class="step-body"><p><strong>Identity:</strong> ∃ e ∈ S such that e·a = a·e = a for all a ∈ S</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">N</div>
+      <div class="step-body"><p><strong>iNverse:</strong> For each a ∈ S, ∃ a⁻¹ ∈ S such that a·a⁻¹ = e</p></div>
+    </div>
+    <div class="alert alert-key" style="margin-top:10px">If additionally a·b = b·a (commutativity), the group is called an <strong>Abelian group</strong>.</div>
+  </div>
+
+  <div class="card">
+    <h3>Cyclic Group</h3>
+    <p><strong>Exponentiation:</strong> Define aᵏ = a·a·…·a (k times). Let e = a⁰ (identity).</p>
+    <p>A group is <strong>cyclic</strong> if every element b ∈ G can be expressed as b = aᵏ for some fixed element a and integer k. That fixed element a is called a <strong>generator</strong> of the group.</p>
+    <div class="alert alert-info">Example: Z₇ = {0,1,2,3,4,5,6} under addition mod 7 is cyclic — 1 is a generator (1,2,3,4,5,6,0,1,…).</div>
+  </div>
+
+  <div class="card">
+    <h3>Ring</h3>
+    <p>A <strong>Ring</strong> R = (S, +, ×) is a set with TWO operations (addition and multiplication) where:</p>
+    <div class="two-col">
+      <div>
+        <p><strong>Under addition:</strong></p>
+        <p style="color:var(--muted);font-size:0.88rem">Forms an abelian group (closure, associative, identity 0, inverse −a, commutative)</p>
+      </div>
+      <div>
+        <p><strong>Under multiplication:</strong></p>
+        <p style="color:var(--muted);font-size:0.88rem">Closure + Associativity + Distributive over addition: a(b+c) = ab + ac</p>
+      </div>
+    </div>
+    <div class="alert alert-info" style="margin-top:10px">If multiplication is also commutative → <strong>Commutative Ring</strong>. If multiplication has an identity and no zero-divisors → <strong>Integral Domain</strong>.</div>
+  </div>
+
+  <div class="card">
+    <h3>Field <span class="badge badge-key">KEY</span></h3>
+    <p>A <strong>Field</strong> F = (S, +, ×) has TWO operations where BOTH form abelian groups (the multiplicative group excludes 0). A field satisfies ALL ring properties plus:</p>
+    <div class="step">
+      <div class="step-num">M4</div>
+      <div class="step-body"><p>Commutativity of multiplication: a×b = b×a</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">M5</div>
+      <div class="step-body"><p>Multiplicative identity: ∃ 1 ∈ F such that 1×a = a</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">M7</div>
+      <div class="step-body"><p>Multiplicative inverse: for each a ≠ 0 ∈ F, ∃ a⁻¹ ∈ F such that a×a⁻¹ = 1</p></div>
+    </div>
+    <div class="alert alert-exam">A field is where you can do <strong>all four arithmetic operations</strong> — add, subtract, multiply, and DIVIDE — without leaving the set. ℝ and ℚ are infinite fields. Cryptography needs finite fields.</div>
+  </div>
+
+  <div class="card">
+    <h3>Hierarchy: Group → Ring → Field</h3>
+    <table>
+      <thead><tr><th>Axiom</th><th>Group</th><th>Abelian Group</th><th>Ring</th><th>Commutative Ring</th><th>Integral Domain</th><th>Field</th></tr></thead>
+      <tbody>
+        <tr><td>A1 Closure (+)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>A2 Associativity (+)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>A3 Additive Identity</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>A4 Additive Inverse</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>A5 Commutativity (+)</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>M1 Closure (×)</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>M2 Associativity (×)</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>M3 Distributive Laws</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>M4 Commutativity (×)</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>M5 Multiplicative Identity</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td>M6 No Zero Divisors</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td>M7 Multiplicative Inverse</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ================================================================
+     TAB 5 — FINITE FIELDS & GF(2ⁿ)
+     ================================================================ -->
+<div class="section" id="finite-fields">
+
+  <p class="section-hd">Galois Fields</p>
+
+  <div class="card">
+    <h3>Finite (Galois) Fields <span class="badge badge-key">KEY</span></h3>
+    <p>A finite field contains a <em>finite</em> number of elements. It has been proven that:</p>
+    <div class="formula">A finite field must have exactly p^n elements, where p is prime and n ≥ 1.</div>
+    <p>Finite fields are called <strong>Galois fields</strong>, denoted <strong>GF(pⁿ)</strong>. The two most important for cryptography are GF(p) and GF(2ⁿ).</p>
+    <div class="alert alert-exam">Z₈ is NOT a field (8 = 2³ but arithmetic mod 8 doesn't give every element a multiplicative inverse). GF(8) = GF(2³) requires polynomial arithmetic mod an irreducible degree-3 polynomial.</div>
+  </div>
+
+  <div class="card">
+    <h3>GF(p) — Prime Field</h3>
+    <p>GF(p) is the set {0, 1, …, p−1} with arithmetic operations modulo prime p. Because p is prime, every non-zero element has a multiplicative inverse (found via Extended Euclid). All four operations stay inside the set.</p>
+    <div class="alert alert-key">GF(p) forms a finite field — arithmetic is "well-behaved". You can add, subtract, multiply and divide without leaving {0,…,p−1}.</div>
+
+    <h3 style="margin-top:16px">GF(7) Multiplication Table</h3>
+    <div class="tbl-scroll">
+    <table style="font-family:monospace;text-align:center;font-size:0.85rem">
+      <thead><tr><th>×</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead>
+      <tbody>
+        <tr><td><strong>0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+        <tr><td><strong>1</strong></td><td>0</td><td class="hl">1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr>
+        <tr><td><strong>2</strong></td><td>0</td><td>2</td><td class="hl">4</td><td>6</td><td>1</td><td>3</td><td>5</td></tr>
+        <tr><td><strong>3</strong></td><td>0</td><td>3</td><td>6</td><td class="hl">2</td><td>5</td><td>1</td><td>4</td></tr>
+        <tr><td><strong>4</strong></td><td>0</td><td>4</td><td>1</td><td>5</td><td class="hl">2</td><td>6</td><td>3</td></tr>
+        <tr><td><strong>5</strong></td><td>0</td><td>5</td><td>3</td><td>1</td><td>6</td><td class="hl">4</td><td>2</td></tr>
+        <tr><td><strong>6</strong></td><td>0</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td class="hl">1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert alert-info">Each row 1–6 is a <em>permutation</em> of {1,2,3,4,5,6} — no repeated zeros → every non-zero element has an inverse. Contrast with Z₈ multiplication table.</div>
+  </div>
+
+  <p class="section-hd">Polynomial Arithmetic</p>
+
+  <div class="card">
+    <h3>Polynomial Arithmetic — Three Levels</h3>
+    <table>
+      <thead><tr><th>Level</th><th>What changes</th><th>Result structure</th></tr></thead>
+      <tbody>
+        <tr><td>Ordinary polynomial arithmetic</td><td>Standard coefficient arithmetic (ℤ)</td><td>Polynomial ring — infinite, not a field</td></tr>
+        <tr><td>Poly arithmetic with coefs mod p</td><td>Each coefficient is computed mod prime p</td><td>Polynomial ring over GF(p)</td></tr>
+        <tr><td>Poly arithmetic with coefs mod p AND polynomials mod m(x)</td><td>Coefficients mod p + remainder mod irreducible m(x)</td><td><strong>Finite field GF(pⁿ)</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Ordinary Polynomial Arithmetic — Worked Example</h3>
+    <p>Let f(x) = x³ + x² + 2 and g(x) = x² − x + 1</p>
+    <div class="step">
+      <div class="step-num">+</div>
+      <div class="step-body">
+        <p><strong>Addition:</strong> Add corresponding coefficients</p>
+        <div class="formula">f(x) + g(x) = (x³+x²+2) + (x²−x+1) = x³ + 2x² − x + 3</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">−</div>
+      <div class="step-body">
+        <p><strong>Subtraction:</strong></p>
+        <div class="formula">f(x) − g(x) = (x³+x²+2) − (x²−x+1) = x³ + x + 1</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">×</div>
+      <div class="step-body">
+        <p><strong>Multiplication:</strong> Distribute every term</p>
+        <div class="formula">f(x) × g(x) = (x³+x²+2)(x²−x+1)
+  = x⁵ − x⁴ + x³
+  +   x⁴ − x³ + x²
+  + 2x² − 2x + 2
+─────────────────
+  = x⁵ + 3x² − 2x + 2</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Polynomial Arithmetic mod 2 — Binary Polynomials</h3>
+    <p>Coefficients are in {0, 1} (mod 2). Addition = XOR. Let f(x) = x³+x² and g(x) = x²+x+1:</p>
+    <div class="step">
+      <div class="step-num">+</div>
+      <div class="step-body">
+        <p><strong>Addition (XOR on coefficients):</strong></p>
+        <div class="formula">f(x) + g(x) = (1·x³ + 1·x² + 0·x + 0) + (0·x³ + 1·x² + 1·x + 1)
+              = x³ + (1⊕1)x² + (0⊕1)x + (0⊕1)
+              = x³ + 0·x² + x + 1
+              = x³ + x + 1</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">×</div>
+      <div class="step-body">
+        <p><strong>Multiplication:</strong> Distribute and reduce coefs mod 2</p>
+        <div class="formula">f(x) × g(x) = (x³+x²)(x²+x+1)
+  = x⁵+x⁴+x³
+  +   x⁴+x³+x²
+─────────────── (coefs mod 2)
+  = x⁵ + (1+1)x⁴ + (1+1)x³ + x²
+  = x⁵ + x²</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Irreducible Polynomials &amp; Polynomial Division</h3>
+    <p>For any polynomial f(x), we can write: <strong>f(x) = q(x)·g(x) + r(x)</strong>, where r(x) = f(x) mod g(x).</p>
+    <p>A polynomial g(x) is <strong>irreducible</strong> (prime) if it has no divisors other than 1 and itself. Arithmetic modulo an irreducible polynomial forms a <strong>field</strong>.</p>
+    <div class="alert alert-key">x³+x+1 is irreducible over GF(2). It is the reducing polynomial for GF(2³) in the slide examples.</div>
+    <p style="margin-top:10px">Polynomial GCD generalizes the Euclidean algorithm directly:</p>
+    <div class="algo">Euclid(a(x), b(x)):
+  if b(x) = 0  then return a(x)
+  else          return Euclid(b(x), a(x) mod b(x))</div>
+  </div>
+
+  <p class="section-hd">GF(2³) — Complete Example</p>
+
+  <div class="card">
+    <h3>GF(2³) = GF(8) Structure</h3>
+    <p>Elements: polynomials of degree &lt; 3 with binary coefficients, reduced mod <strong>m(x) = x³+x+1</strong>:</p>
+    <div class="formula">GF(2³) = {0, 1, x, x+1, x², x²+1, x²+x, x²+x+1}
+            = {000, 001, 010, 011, 100, 101, 110, 111}  (in bit-string notation)</div>
+
+    <h3 style="margin-top:16px">GF(2³) Addition Table (mod x³+x+1)</h3>
+    <p style="color:var(--muted);font-size:0.82rem">Addition = XOR on bit strings. No reduction needed.</p>
+    <div class="tbl-scroll">
+    <table style="font-family:monospace;text-align:center;font-size:0.78rem">
+      <thead><tr><th>+</th><th>0</th><th>1</th><th>x</th><th>x+1</th><th>x²</th><th>x²+1</th><th>x²+x</th><th>x²+x+1</th></tr></thead>
+      <tbody>
+        <tr><td><strong>0</strong></td><td class="hl">0</td><td>1</td><td>x</td><td>x+1</td><td>x²</td><td>x²+1</td><td>x²+x</td><td>x²+x+1</td></tr>
+        <tr><td><strong>1</strong></td><td>1</td><td class="hl">0</td><td>x+1</td><td>x</td><td>x²+1</td><td>x²</td><td>x²+x+1</td><td>x²+x</td></tr>
+        <tr><td><strong>x</strong></td><td>x</td><td>x+1</td><td class="hl">0</td><td>1</td><td>x²+x</td><td>x²+x+1</td><td>x²</td><td>x²+1</td></tr>
+        <tr><td><strong>x+1</strong></td><td>x+1</td><td>x</td><td>1</td><td class="hl">0</td><td>x²+x+1</td><td>x²+x</td><td>x²+1</td><td>x²</td></tr>
+        <tr><td><strong>x²</strong></td><td>x²</td><td>x²+1</td><td>x²+x</td><td>x²+x+1</td><td class="hl">0</td><td>1</td><td>x</td><td>x+1</td></tr>
+        <tr><td><strong>x²+1</strong></td><td>x²+1</td><td>x²</td><td>x²+x+1</td><td>x²+x</td><td>1</td><td class="hl">0</td><td>x+1</td><td>x</td></tr>
+        <tr><td><strong>x²+x</strong></td><td>x²+x</td><td>x²+x+1</td><td>x²</td><td>x²+1</td><td>x</td><td>x+1</td><td class="hl">0</td><td>1</td></tr>
+        <tr><td><strong>x²+x+1</strong></td><td>x²+x+1</td><td>x²+x</td><td>x²+1</td><td>x²</td><td>x+1</td><td>x</td><td>1</td><td class="hl">0</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Computational Example — GF(2³) Arithmetic</h3>
+    <p>In GF(2³): (x²+1) = 101₂ and (x²+x+1) = 111₂</p>
+
+    <p style="font-weight:600;margin-top:12px">1. Addition:</p>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Map polynomials to bit strings: (x²+1) = 101₂, (x²+x+1) = 111₂</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>XOR the bit strings: 101 XOR 111 = 010₂ = x</p>
+        <div class="formula">101
+⊕ 111
+─────
+  010  → polynomial: x</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Verify algebraically: (x²+1) + (x²+x+1) = 2x² + x + 2 ≡ 0·x² + x + 0 = <strong>x</strong> (mod 2) ✓</p>
+      </div>
+    </div>
+
+    <p style="font-weight:600;margin-top:16px">2. Multiplication of (x+1) × (x²+1):</p>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Expand algebraically:</p>
+        <div class="formula">(x+1)(x²+1) = x(x²+1) + 1(x²+1)
+            = x³+x + x²+1
+            = x³+x²+x+1</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Verify via bit shift: (x+1) = 011₂, (x²+1) = 101₂</p>
+        <div class="formula">  101 &lt;&lt; 1  = 1010   (= x³+x)
+  101 &lt;&lt; 0  = 0101   (= x²+1)
+─────────────────
+  1010 XOR 0101 = 1111₂ = x³+x²+x+1</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Now reduce mod m(x) = x³+x+1 = 1011₂ (degree &lt; 3 must be enforced):</p>
+        <div class="formula">x³+x²+x+1 mod (x³+x+1):
+  = 1·(x³+x+1) + x²   → quotient 1, remainder x²
+  i.e.: 1111 XOR 1011 = 0100₂ = <strong>x²</strong></div>
+      </div>
+    </div>
+    <div class="alert alert-key"><strong>(x+1) × (x²+1) = x² in GF(2³)</strong>  |  In bits: 011 × 101 = 100</div>
+  </div>
+
+  <div class="card">
+    <h3>Computational Considerations — Hardware Efficiency</h3>
+    <table>
+      <thead><tr><th>Operation</th><th>Mathematical</th><th>Hardware Implementation</th></tr></thead>
+      <tbody>
+        <tr><td>Coefficient representation</td><td>Binary polynomial (coefs 0 or 1)</td><td>Bit strings — compact, direct</td></tr>
+        <tr><td>Addition in GF(2ⁿ)</td><td>Polynomial addition mod 2</td><td>XOR of bit strings — single gate</td></tr>
+        <tr><td>Multiplication step 1</td><td>Polynomial multiply (no mod)</td><td>Shift &amp; XOR (like long multiplication)</td></tr>
+        <tr><td>Multiplication step 2 (reduction)</td><td>Mod irreducible polynomial</td><td>Repeated XOR with irreducible poly bit string</td></tr>
+        <tr><td>Inverse</td><td>Extended Euclidean on polynomials</td><td>Lookup table for small n (e.g. AES uses n=8)</td></tr>
+      </tbody>
+    </table>
+    <div class="alert alert-exam">AES operates in GF(2⁸) with irreducible polynomial x⁸+x⁴+x³+x+1. SubBytes is multiplicative inverse in GF(2⁸). MixColumns is matrix multiplication in GF(2⁸). All operations reduce to bit XOR and shifts.</div>
+  </div>
+
+  <div class="card">
+    <h3>Using a Generator in GF(pⁿ)</h3>
+    <p>A <strong>generator g</strong> is an element whose successive powers produce every non-zero element in the field:</p>
+    <div class="formula">GF(pⁿ)\{0} = { g⁰, g¹, g², …, g^{q-2} }    where q = pⁿ</div>
+    <p>A generator can be created from the <em>root</em> of the irreducible polynomial. With a generator, multiplication reduces to <strong>adding exponents</strong>:</p>
+    <div class="formula">a × b = g^i × g^j = g^{(i+j) mod (q-1)}</div>
+    <div class="alert alert-info">This is how fast finite-field multiplication is implemented in practice — precompute a discrete log table, convert to exponents, add, convert back.</div>
+  </div>
+
+</div>
+
+<!-- ================================================================
+     TAB 6 — INTERACTIVE CALCULATOR
+     ================================================================ -->
+<div class="section" id="calc">
+
+  <div class="card">
+    <h3>Extended Euclidean Algorithm Calculator</h3>
+    <p>Computes GCD(m, b) and finds b⁻¹ mod m (multiplicative inverse) using the Extended Euclidean Algorithm. Pre-filled with the slide example: 550⁻¹ mod 1759.</p>
+
+    <div class="two-col" style="margin-top:14px">
+      <div>
+        <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:4px">Modulus m (must be prime for inverse to always exist)</label>
+        <input class="pp-input" id="inp-m" type="number" value="1759" min="2" placeholder="e.g. 1759">
+      </div>
+      <div>
+        <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:4px">Value b (find b⁻¹ mod m)</label>
+        <input class="pp-input" id="inp-b" type="number" value="550" min="1" placeholder="e.g. 550">
+      </div>
+    </div>
+    <button class="pp-btn" onclick="runExtGcd()">▶ Run Extended Euclid</button>
+
+    <div id="calc-error" class="error-box" style="display:none"></div>
+
+    <div class="tool-result" id="calc-result">
+      <div class="alert alert-key" id="calc-summary" style="margin-bottom:14px"></div>
+      <p style="font-weight:600;margin-bottom:8px">Step-by-step table:</p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Iteration</th><th>Q</th><th>A1</th><th>A2</th><th>A3</th><th>B1</th><th>B2</th><th>B3</th></tr></thead>
+          <tbody id="calc-tbody"></tbody>
+        </table>
+      </div>
+      <div id="calc-verify" class="alert alert-info" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>GCD Euclidean Algorithm Visualizer</h3>
+    <p>Trace GCD(a, b) step by step.</p>
+    <div class="two-col">
+      <div>
+        <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:4px">a</label>
+        <input class="pp-input" id="gcd-a" type="number" value="1970" min="0">
+      </div>
+      <div>
+        <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:4px">b</label>
+        <input class="pp-input" id="gcd-b" type="number" value="1066" min="0">
+      </div>
+    </div>
+    <button class="pp-btn" onclick="runGcd()">▶ Trace GCD</button>
+    <div class="tool-result" id="gcd-result">
+      <div class="alert alert-key" id="gcd-summary" style="margin-bottom:12px"></div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Step</th><th>a</th><th>b</th><th>q = ⌊a/b⌋</th><th>r = a − q·b</th></tr></thead>
+          <tbody id="gcd-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>GF(2ⁿ) Addition (XOR) Demo</h3>
+    <p>Enter two polynomials as binary bit strings (e.g. 101 = x²+1). Result = XOR = addition in GF(2ⁿ).</p>
+    <div class="two-col">
+      <div>
+        <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:4px">Polynomial A (binary)</label>
+        <input class="pp-input" id="xor-a" value="101" pattern="[01]+" placeholder="e.g. 101">
+      </div>
+      <div>
+        <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:4px">Polynomial B (binary)</label>
+        <input class="pp-input" id="xor-b" value="111" pattern="[01]+" placeholder="e.g. 111">
+      </div>
+    </div>
+    <button class="pp-btn" onclick="runXor()">▶ Compute A ⊕ B</button>
+    <div class="tool-result" id="xor-result">
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Input</th><th>Binary</th><th>Polynomial</th></tr></thead>
+          <tbody id="xor-tbody"></tbody>
+        </table>
+      </div>
+      <div class="alert alert-key" id="xor-summary" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer style="text-align:center;padding:24px 0 16px;color:var(--muted);font-size:0.8rem;border-top:1px solid var(--border);margin-top:40px;">
+  © Arko Mustafi — All rights reserved. · University of Dhaka · EEE
+</footer>
+
+<script>
+/* ==========================================
+   SECTION SWITCHING
+   ========================================== */
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* ==========================================
+   PROGRESS BAR
+   ========================================== */
+function updateProgress() {
+  const all  = document.querySelectorAll('#main-checklist input[type=checkbox]');
+  const done = document.querySelectorAll('#main-checklist input[type=checkbox]:checked');
+  const pct  = all.length ? Math.round((done.length / all.length) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = pct + '%';
+}
+
+/* ==========================================
+   POMODORO
+   ========================================== */
+let pomodoroInterval = null;
+let pomodoroLeft = 25 * 60;
+let pomodoroRunning = false;
+
+function startStopPomodoro() {
+  if (pomodoroRunning) {
+    clearInterval(pomodoroInterval);
+    pomodoroInterval = null;
+    pomodoroRunning = false;
+    document.getElementById('pomo-startstop').textContent = 'Start';
+  } else {
+    pomodoroRunning = true;
+    document.getElementById('pomo-startstop').textContent = 'Pause';
+    pomodoroInterval = setInterval(tickPomodoro, 1000);
+  }
+}
+
+function resetPomodoro() {
+  clearInterval(pomodoroInterval);
+  pomodoroInterval = null;
+  pomodoroRunning = false;
+  document.getElementById('pomo-startstop').textContent = 'Start';
+  updatePomodoroDisplay();
+}
+
+function setMode(minutes) {
+  clearInterval(pomodoroInterval);
+  pomodoroInterval = null;
+  pomodoroRunning = false;
+  pomodoroLeft = minutes * 60;
+  document.getElementById('pomo-startstop').textContent = 'Start';
+  ['btn-work','btn-short','btn-long'].forEach(id => document.getElementById(id).classList.remove('active'));
+  if (minutes === 25) document.getElementById('btn-work').classList.add('active');
+  else if (minutes === 5)  document.getElementById('btn-short').classList.add('active');
+  else if (minutes === 15) document.getElementById('btn-long').classList.add('active');
+  updatePomodoroDisplay();
+}
+
+function tickPomodoro() {
+  if (pomodoroLeft <= 0) {
+    clearInterval(pomodoroInterval);
+    pomodoroInterval = null;
+    pomodoroRunning = false;
+    document.getElementById('pomo-startstop').textContent = 'Start';
+    flashAndBeep();
+    return;
+  }
+  pomodoroLeft--;
+  updatePomodoroDisplay();
+}
+
+function updatePomodoroDisplay() {
+  const m = Math.floor(pomodoroLeft / 60);
+  const s = pomodoroLeft % 60;
+  document.getElementById('pomo-display').textContent =
+    String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function flashAndBeep() {
+  const disp = document.getElementById('pomo-display');
+  disp.classList.add('flash');
+  setTimeout(() => disp.classList.remove('flash'), 1600);
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 300, 600].forEach(delay => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + delay / 1000);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay / 1000 + 0.25);
+      osc.start(ctx.currentTime + delay / 1000);
+      osc.stop(ctx.currentTime + delay / 1000 + 0.25);
+    });
+  } catch(e) {}
+}
+
+/* ==========================================
+   EXTENDED EUCLIDEAN CALCULATOR
+   ========================================== */
+function runExtGcd() {
+  const errEl = document.getElementById('calc-error');
+  const resEl = document.getElementById('calc-result');
+  errEl.style.display = 'none';
+  resEl.style.display = 'none';
+
+  const m = parseInt(document.getElementById('inp-m').value);
+  const b = parseInt(document.getElementById('inp-b').value);
+
+  if (isNaN(m) || isNaN(b) || m < 2 || b < 1) {
+    errEl.textContent = 'Error: m must be ≥ 2 and b must be ≥ 1.';
+    errEl.style.display = 'block'; return;
+  }
+  if (b >= m) {
+    errEl.textContent = 'Error: b must be less than m.';
+    errEl.style.display = 'block'; return;
+  }
+
+  // Extended Euclidean
+  let A1=1, A2=0, A3=m;
+  let B1=0, B2=1, B3=b;
+
+  const rows = [];
+  let iter = 0;
+  const MAX = 200;
+
+  // Initial state
+  rows.push({iter: '—', Q:'—', A1, A2, A3, B1, B2, B3});
+
+  while (B3 !== 0 && B3 !== 1 && iter < MAX) {
+    iter++;
+    const Q = Math.floor(A3 / B3);
+    const T1 = A1 - Q * B1;
+    const T2 = A2 - Q * B2;
+    const T3 = A3 - Q * B3;
+    A1=B1; A2=B2; A3=B3;
+    B1=T1; B2=T2; B3=T3;
+    rows.push({iter, Q, A1, A2, A3, B1, B2, B3});
+  }
+
+  const tbody = document.getElementById('calc-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    const highlighted = r.B3 === 1;
+    tr.innerHTML = `
+      <td>${r.iter}</td>
+      <td>${r.Q}</td>
+      <td>${r.A1}</td><td>${r.A2}</td><td>${r.A3}</td>
+      <td class="${highlighted?'hl':''}">${r.B1}</td>
+      <td class="${highlighted?'hl':''}">${r.B2}</td>
+      <td class="${highlighted?'hl':''}">${r.B3}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const summary = document.getElementById('calc-summary');
+  const verifyEl = document.getElementById('calc-verify');
+
+  if (B3 === 0) {
+    const g = A3;
+    summary.innerHTML = `GCD(${m}, ${b}) = ${g}. Since GCD ≠ 1, the inverse of ${b} mod ${m} does <strong>not exist</strong>.`;
+    verifyEl.innerHTML = '';
+  } else {
+    // B3 === 1, inverse is B2 mod m
+    let inv = ((B2 % m) + m) % m;
+    summary.innerHTML = `GCD(${m}, ${b}) = 1 ✓ &nbsp;→&nbsp; <strong>${b}⁻¹ mod ${m} = ${inv}</strong>`;
+    const check = (b * inv) % m;
+    verifyEl.innerHTML = `Verification: ${b} × ${inv} = ${b*inv}, and ${b*inv} mod ${m} = <strong>${check}</strong> ${check===1?'✓ Correct!':'✗ Error!'}`;
+  }
+
+  resEl.style.display = 'block';
+}
+
+/* ==========================================
+   GCD VISUALIZER
+   ========================================== */
+function runGcd() {
+  let a = parseInt(document.getElementById('gcd-a').value);
+  let b = parseInt(document.getElementById('gcd-b').value);
+  const resEl = document.getElementById('gcd-result');
+
+  if (isNaN(a) || isNaN(b) || a < 0 || b < 0) { resEl.style.display='none'; return; }
+
+  const rows = [];
+  let step = 1;
+  while (b !== 0) {
+    const q = Math.floor(a / b);
+    const r = a - q * b;
+    rows.push({step: step++, a, b, q, r});
+    a = b; b = r;
+  }
+
+  const tbody = document.getElementById('gcd-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    const last = r.r === 0;
+    tr.innerHTML = `<td>${r.step}</td><td>${r.a}</td><td>${r.b}</td><td>${r.q}</td><td class="${last?'hl':''}">${r.r}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('gcd-summary').innerHTML =
+    `GCD(${document.getElementById('gcd-a').value}, ${document.getElementById('gcd-b').value}) = <strong>${a}</strong>`;
+  resEl.style.display = 'block';
+}
+
+/* ==========================================
+   XOR / GF(2^n) ADDITION
+   ========================================== */
+function binToPolyStr(bin) {
+  if (!bin || parseInt(bin, 2) === 0) return '0';
+  const n = bin.length;
+  const terms = [];
+  for (let i = 0; i < n; i++) {
+    if (bin[i] === '1') {
+      const exp = n - 1 - i;
+      if (exp === 0) terms.push('1');
+      else if (exp === 1) terms.push('x');
+      else terms.push(`x^${exp}`);
+    }
+  }
+  return terms.join(' + ') || '0';
+}
+
+function runXor() {
+  const aStr = document.getElementById('xor-a').value.replace(/[^01]/g,'');
+  const bStr = document.getElementById('xor-b').value.replace(/[^01]/g,'');
+
+  if (!aStr || !bStr) return;
+
+  // Pad to same length
+  const len = Math.max(aStr.length, bStr.length);
+  const aPad = aStr.padStart(len, '0');
+  const bPad = bStr.padStart(len, '0');
+
+  // XOR
+  let result = '';
+  for (let i = 0; i < len; i++) {
+    result += (parseInt(aPad[i]) ^ parseInt(bPad[i])).toString();
+  }
+  // Remove leading zeros but keep at least 1
+  const resultTrimmed = result.replace(/^0+/, '') || '0';
+
+  const tbody = document.getElementById('xor-tbody');
+  tbody.innerHTML = `
+    <tr><td>A</td><td class="mono">${aPad}</td><td>${binToPolyStr(aPad)}</td></tr>
+    <tr><td>B</td><td class="mono">${bPad}</td><td>${binToPolyStr(bPad)}</td></tr>
+    <tr style="background:rgba(249,201,72,.06)"><td><strong>A ⊕ B</strong></td><td class="mono">${result}</td><td>${binToPolyStr(result)}</td></tr>`;
+
+  document.getElementById('xor-summary').innerHTML =
+    `<strong>${aPad} ⊕ ${bPad} = ${result}</strong> → Polynomial: <strong>${binToPolyStr(result)}</strong>`;
+
+  document.getElementById('xor-result').style.display = 'block';
+}
+
+/* ==========================================
+   INIT
+   ========================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  showSection('study-plan', document.querySelector('.nav-btn'));
+  updateProgress();
+  updatePomodoroDisplay();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message Authentication Codes — Study Guide | Arko Mustafi</title>
+  <!-- ─── Uses the same stylesheet as the home site ─── -->
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ═══════════════════════════════════════════════
+       STUDY GUIDE EXTENSIONS
+       Extends styles.css — never duplicates home tokens.
+       Uses same CSS variables: --ink, --accent, --surface,
+       --font-display, --font-mono, --radius, --transition
+    ═══════════════════════════════════════════════ */
+
+    /* ─── Page hero (compact, not full-height) ─── */
+    .page-hero {
+      min-height: 60vh;
+      padding: 8rem 8vw 5rem;
+      justify-content: flex-end;
+    }
+
+    .hero-back {
+      position: absolute;
+      top: 2rem;
+      left: 8vw;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(247,244,238,0.5);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color var(--transition);
+      z-index: 10;
+    }
+    .hero-back:hover { color: var(--accent); }
+    .hero-back::before { content: '←'; }
+
+    .hero-lecture-badge {
+      position: absolute;
+      top: 2rem;
+      right: 8vw;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: rgba(247,244,238,0.35);
+      text-transform: uppercase;
+    }
+
+    /* ─── Pomodoro — fixed bottom-right floating widget ─── */
+    .pomo-float {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 200;
+      background: var(--ink);
+      border: 1px solid rgba(192,135,63,0.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      min-width: 175px;
+      box-shadow: var(--shadow-lg);
+      transition: transform var(--transition);
+    }
+    .pomo-float:hover { transform: translateY(-2px); }
+    .pomo-toggle-btn {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.6rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pomo-float.collapsed .pomo-body { display: none; }
+    .pomo-float.collapsed { min-width: 0; padding: 0.6rem 0.9rem; }
+
+    .pomo-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .pomo-display {
+      font-family: var(--font-mono);
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: var(--surface);
+      letter-spacing: 0.1em;
+      text-align: center;
+      margin-bottom: 0.6rem;
+    }
+    .pomo-display.flash { animation: pomoFlash 0.5s 4; }
+    @keyframes pomoFlash {
+      0%,100% { color: var(--surface); }
+      50%      { color: #ef5350; }
+    }
+    .pomo-ring {
+      width: 100%;
+      height: 3px;
+      background: rgba(192,135,63,0.2);
+      border-radius: 99px;
+      margin-bottom: 0.7rem;
+      overflow: hidden;
+    }
+    .pomo-ring-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      width: 100%;
+      transition: width 1s linear;
+    }
+    .pomo-modes {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 0.6rem;
+    }
+    .pomo-modes button {
+      flex: 1;
+      background: none;
+      border: 1px solid rgba(192,135,63,0.25);
+      color: rgba(247,244,238,0.45);
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.05em;
+      padding: 4px 0;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .pomo-modes button.active,
+    .pomo-modes button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(192,135,63,0.08);
+    }
+    .pomo-ctrl {
+      display: flex;
+      gap: 6px;
+    }
+    .pomo-ctrl button {
+      flex: 1;
+      background: none;
+      border: 1px solid rgba(192,135,63,0.3);
+      color: rgba(247,244,238,0.6);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      padding: 5px 0;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .pomo-ctrl button:hover { border-color: var(--accent); color: var(--accent); }
+    #pomo-start.running { color: #ef5350; border-color: #ef5350; }
+
+    /* ─── Study sub-nav (tab bar, below site-nav) ─── */
+    .study-nav {
+      position: sticky;
+      top: 60px;   /* sits below site-nav height */
+      z-index: 90;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 8vw;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .study-nav::-webkit-scrollbar { display: none; }
+
+    .study-tab {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 1.1rem;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+    .study-tab:hover { color: var(--ink); }
+    .study-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .progress-strip {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding-left: 1.5rem;
+      flex-shrink: 0;
+    }
+    .progress-strip-bar {
+      width: 80px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-strip-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.4s;
+    }
+    .progress-strip-pct {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    /* ─── Study content panels ─── */
+    .study-panel { display: none; }
+    .study-panel.active { display: block; }
+
+    /* ─── Section wrapper inside panels ─── */
+    .sg-section {
+      padding: 4rem 8vw;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .sg-section.alt { background: var(--surface-2); max-width: 100%; }
+    .sg-section.alt .sg-inner { max-width: 1100px; margin: 0 auto; }
+
+    /* ─── Section label (matches home .section-label) ─── */
+    .sg-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .sg-label::after {
+      content: '';
+      flex: 1;
+      max-width: 60px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.4;
+    }
+
+    /* ─── Cards (extends the white-card pattern from home projects) ─── */
+    .sg-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .sg-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition);
+    }
+    .sg-card:hover::before { transform: scaleX(1); }
+    .sg-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+    .sg-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: var(--ink);
+      margin-bottom: 0.75rem;
+    }
+    .sg-card p { font-size: 0.92rem; }
+
+    /* Dark card (for formulas, matching home about-section dark) */
+    .sg-card.dark {
+      background: var(--ink-soft);
+      border-color: rgba(255,255,255,0.07);
+    }
+    .sg-card.dark h3 { color: var(--surface); }
+    .sg-card.dark p  { color: rgba(247,244,238,0.65); }
+
+    /* ─── Formula block (DM Mono, matches home .cv-btn mono aesthetic) ─── */
+    .formula {
+      background: var(--ink);
+      border-left: 3px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      padding: 1rem 1.2rem;
+      border-radius: var(--radius);
+      white-space: pre;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+      line-height: 1.7;
+    }
+
+    /* ─── Step (derivation) — matches home .timeline-item pattern ─── */
+    .step-list { margin: 0.75rem 0; }
+    .step-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      padding: 0.9rem 1rem;
+      background: var(--surface-2);
+      border-radius: var(--radius);
+    }
+    .step-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--surface);
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .step-body { flex: 1; }
+    .step-body p { font-size: 0.9rem; margin-bottom: 0.4rem; }
+
+    /* ─── Alert boxes ─── */
+    .alert {
+      border-left: 3px solid;
+      padding: 0.8rem 1rem;
+      border-radius: var(--radius);
+      margin: 0.9rem 0;
+      font-size: 0.9rem;
+    }
+    .alert-gold  { border-color: var(--accent);   background: var(--accent-pale); color: #6b4a1a; }
+    .alert-blue  { border-color: var(--accent-2); background: rgba(61,107,140,0.08); color: #1e3d52; }
+    .alert-red   { border-color: #c0392b;         background: rgba(192,57,43,0.07); color: #7b1f1f; }
+    .alert-green { border-color: #27ae60;         background: rgba(39,174,96,0.07); color: #1a5c34; }
+
+    /* ─── Key badge (matches home .tag aesthetic) ─── */
+    .kbadge {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border: 1px solid rgba(192,135,63,0.4);
+      color: var(--accent);
+      border-radius: 2px;
+      text-transform: uppercase;
+      margin-left: 0.5rem;
+    }
+    .kbadge.exam { border-color: #c0392b; color: #c0392b; }
+    .kbadge.algo { border-color: var(--accent-2); color: var(--accent-2); }
+
+    /* ─── Tables ─── */
+    .sg-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+    .sg-table th {
+      background: var(--surface-2);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 2px solid var(--accent);
+    }
+    .sg-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      color: #3a3d4a;
+      vertical-align: top;
+    }
+    .sg-table tr:hover td { background: var(--accent-pale); }
+    .hl-cell { background: rgba(192,135,63,0.1); font-weight: 600; color: var(--accent); }
+
+    /* ─── Two column grid ─── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    .three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+    @media (max-width: 800px) { .three-col { grid-template-columns: 1fr; } }
+
+    /* ─── Checklist (study plan) ─── */
+    .sg-checklist { list-style: none; padding: 0; }
+    .sg-checklist li label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background var(--transition);
+      font-size: 0.9rem;
+      color: #3a3d4a;
+    }
+    .sg-checklist li label:hover { background: var(--accent-pale); }
+    .sg-checklist li input[type=checkbox] {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+    .sg-checklist h4 {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 1rem 0.75rem 0.25rem;
+      font-weight: 500;
+    }
+
+    /* ─── Resource links (matches .contact-link from home) ─── */
+    .resource-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(210px,1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .resource-link {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0.7rem 1.1rem;
+      border: 1px solid var(--border);
+      color: var(--ink-soft);
+      border-radius: 2px;
+      transition: all var(--transition);
+      text-decoration: none;
+      display: block;
+    }
+    .resource-link span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.62rem;
+      margin-top: 3px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .resource-link:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-pale); }
+
+    /* ─── Interactive calculator inputs (matches home .cv-btn style) ─── */
+    .calc-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--ink);
+      margin: 0.4rem 0;
+      transition: border-color var(--transition);
+    }
+    .calc-input:focus { outline: none; border-color: var(--accent); }
+    .calc-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.8rem 1.8rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 2px;
+      margin-top: 0.75rem;
+      cursor: pointer;
+      transition: background var(--transition), transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .calc-btn:hover { background: #a67435; transform: translateY(-1px); }
+    .calc-result { display: none; margin-top: 1.5rem; }
+    .calc-result.visible { display: block; }
+
+    /* ─── Diagram boxes (ASCII-art style protocol diagrams) ─── */
+    .diagram {
+      background: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: rgba(247,244,238,0.75);
+      padding: 1.2rem 1.5rem;
+      border-radius: var(--radius);
+      white-space: pre;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+      line-height: 1.8;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .diagram .d-accent { color: var(--accent); }
+    .diagram .d-blue   { color: #7fb3d3; }
+    .diagram .d-green  { color: #82e0aa; }
+
+    /* ─── Tbl scroll wrapper ─── */
+    .tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* ─── Mono tag inline ─── */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--accent-pale);
+      color: #6b4a1a;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    /* ─── Footer override for study pages ─── */
+    footer { background: var(--ink-soft); }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Custom cursor (identical to home) ─── -->
+  <div class="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+
+  <!-- ══════════════════════════════════════════
+       PAGE HERO
+       Reuses .site-header + .hero-canvas classes
+       from styles.css — same animation system
+  ══════════════════════════════════════════ -->
+  <header class="site-header page-hero" id="top">
+    <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"
+      style="position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;display:block;pointer-events:none;"></canvas>
+
+    <a href="index.html" class="hero-back">Home</a>
+    <div class="hero-lecture-badge">EEE-5305 · Lec 8</div>
+
+    <div class="hero-eyebrow" style="margin-top:auto">Network &amp; Information Security · University of Dhaka</div>
+    <h1 class="hero-name">Message<br><em>Authentication</em></h1>
+    <p class="hero-sub">Codes, attacks, HMAC, and the math behind integrity guarantees.</p>
+    <div class="hero-tags">
+      <span class="tag">MAC Functions</span>
+      <span class="tag">HMAC</span>
+      <span class="tag">CMAC</span>
+      <span class="tag">Security Analysis</span>
+      <span class="tag">Block Ciphers</span>
+      <span class="tag">Cryptography</span>
+    </div>
+    <div class="hero-scroll">Scroll to study</div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       SITE NAV (same class as home)
+  ══════════════════════════════════════════ -->
+  <nav class="site-nav" id="main-nav">
+    <ul>
+      <li><a href="index.html">← Home</a></li>
+      <li><a href="study.html">Study Hub</a></li>
+
+      <li><a href="#cont">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       STUDY SUB-NAV (tab switcher)
+  ══════════════════════════════════════════ -->
+  <div class="study-nav" id="study-nav">
+    <button class="study-tab active" onclick="showTab('plan',this)">📅 Study Plan</button>
+    <button class="study-tab" onclick="showTab('auth',this)">🔐 Authentication</button>
+    <button class="study-tab" onclick="showTab('mac',this)">📝 MAC Concepts</button>
+    <button class="study-tab" onclick="showTab('sec',this)">🛡️ MAC Security</button>
+    <button class="study-tab" onclick="showTab('algo',this)">⚙️ Algorithms</button>
+    <button class="study-tab" onclick="showTab('calc',this)">🧮 Calculator</button>
+    <div class="progress-strip">
+      <div class="progress-strip-bar"><div class="progress-strip-fill" id="prog-fill"></div></div>
+      <span class="progress-strip-pct" id="prog-pct">0%</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       POMODORO — floating widget
+  ══════════════════════════════════════════ -->
+  <div class="pomo-float" id="pomo-float">
+    <button class="pomo-toggle-btn" onclick="togglePomo()" title="Collapse">✕</button>
+    <div class="pomo-label">Pomodoro</div>
+    <div class="pomo-body">
+      <div class="pomo-ring"><div class="pomo-ring-fill" id="pomo-ring-fill"></div></div>
+      <div class="pomo-display" id="pomo-display">25:00</div>
+      <div class="pomo-modes">
+        <button onclick="setPomoMode(25,'btn-w')" id="btn-w" class="active">25m</button>
+        <button onclick="setPomoMode(5,'btn-s')" id="btn-s">5m</button>
+        <button onclick="setPomoMode(15,'btn-l')" id="btn-l">15m</button>
+      </div>
+      <div class="pomo-ctrl">
+        <button id="pomo-start" onclick="togglePomoTimer()">Start</button>
+        <button onclick="resetPomoTimer()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 1 — STUDY PLAN
+  ══════════════════════════════════════════ -->
+  <div class="study-panel active" id="panel-plan">
+    <div class="sg-section">
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Overview</div>
+        <h2 style="font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2rem);margin-bottom:1rem">What This Lecture Is Really About</h2>
+        <p style="margin-bottom:0.9rem">Encryption alone does not protect against an adversary who modifies messages in transit — you can decrypt a tampered ciphertext and get a wrong but plausible-looking message. This lecture builds the separate concept of <strong>message authentication</strong>: proving that a message came from who you think, and that it has not been changed. The fundamental tool is the <em>Message Authentication Code</em> (MAC), a keyed function that produces a short tag which is computationally impossible to forge without knowledge of the secret key.</p>
+        <p>The lecture maps cleanly onto two themes: <em>why</em> we need MACs (the limits of symmetric encryption) and <em>how</em> we build them (block-cipher MACs like CMAC, and hash-based MACs like HMAC). Both themes have direct exam relevance, especially the security bound <code>min(2^k, 2^n)</code> and the HMAC construction formula.</p>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Topic Checklist</div>
+        <h3>Track Your Progress</h3>
+        <ul class="sg-checklist" id="checklist">
+          <h4>Network Attacks &amp; Authentication Goals</h4>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Know the 8 types of attacks and which tool addresses each (encryption vs. auth vs. digital signatures)</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Understand data authentication vs. source authentication</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Know the four authentication approaches: symmetric enc, MAC, hash, public-key</label></li>
+
+          <h4>Symmetric Encryption for Authentication</h4>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Explain the M → E(K,M) → D(K,·) → M flow and what it proves</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Explain the critical assumption: "decryptor must recognise correct plaintext"</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Work through all three Recognising-Correct-Plaintext examples</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Understand when symmetric enc cannot authenticate (binary / compressed data)</label></li>
+
+          <h4>MAC Fundamentals</h4>
+          <li><label><input type="checkbox" onchange="updateProgress()"> State the MAC definition: T = MAC(K, M) — M input, K key (k bits), T tag (n bits)</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Explain why MAC does not need to be reversible (unlike encryption)</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Describe all three Example Uses of MAC from Figure 12.4 (auth only; auth+conf via plaintext MAC; auth+conf via ciphertext MAC)</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> State the Computation Resistance requirement</label></li>
+
+          <h4>MAC Security</h4>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Derive brute-force effort on key: ≈ 2^k (using multiple message–tag pairs)</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Derive brute-force effort on MAC tag: ≈ 2^n</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> State and reason about total effort: min(2^k, 2^n)</label></li>
+
+          <h4>MAC Algorithms</h4>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Know that DAA (DES-based) is considered insecure</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Know CMAC uses Triple-DES or AES and is the current standard</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Derive the HMAC formula: HMAC(K,M) = H((K⊕opad) ∥ H((K⊕ipad) ∥ M))</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Know ipad = 00110110 repeated, opad = 01011100 repeated</label></li>
+          <li><label><input type="checkbox" onchange="updateProgress()"> Understand that HMAC security depends entirely on the underlying hash security</label></li>
+        </ul>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Resources</div>
+        <h3>Recommended Reading &amp; Tools</h3>
+        <div class="resource-grid">
+          <a class="resource-link" href="https://cacr.uwaterloo.ca/hac/" target="_blank">
+            Handbook of Applied Cryptography
+            <span>Free — Chapter 9 covers MACs in depth</span>
+          </a>
+          <a class="resource-link" href="https://en.wikipedia.org/wiki/HMAC" target="_blank">
+            HMAC — Wikipedia
+            <span>Full derivation + security proofs</span>
+          </a>
+          <a class="resource-link" href="https://www.youtube.com/watch?v=wlSG3pEiQdc" target="_blank">
+            HMAC Explained — YouTube
+            <span>Visual walkthrough</span>
+          </a>
+          <a class="resource-link" href="https://en.wikipedia.org/wiki/CMAC" target="_blank">
+            CMAC — Wikipedia
+            <span>Block-cipher-based MAC standard</span>
+          </a>
+          <a class="resource-link" href="https://csrc.nist.gov/publications/detail/fips/198/1/final" target="_blank">
+            NIST FIPS 198-1 — HMAC Standard
+            <span>Official US government specification</span>
+          </a>
+          <a class="resource-link" href="https://tools.ietf.org/html/rfc2104" target="_blank">
+            RFC 2104 — HMAC Specification
+            <span>Original HMAC Internet standard</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 2 — AUTHENTICATION FUNDAMENTALS
+  ══════════════════════════════════════════ -->
+  <div class="study-panel" id="panel-auth">
+
+    <!-- Attacks section — dark background like home #about -->
+    <div style="background:var(--ink);padding:3.5rem 8vw 3rem">
+      <div style="max-width:1100px;margin:0 auto">
+        <div class="sg-label" style="color:var(--accent)">Context</div>
+        <h2 class="section-title" style="color:var(--surface);margin-bottom:2rem">Attacks on Communications</h2>
+        <div class="three-col">
+          <div>
+            <p style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:0.8rem">Solved by Encryption</p>
+            <div class="step-item" style="background:rgba(255,255,255,0.04);margin-bottom:0.5rem">
+              <div class="step-dot" style="background:var(--ink-soft)">1</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Disclosure — content exposed to unauthorised party</p></div>
+            </div>
+            <div class="step-item" style="background:rgba(255,255,255,0.04)">
+              <div class="step-dot" style="background:var(--ink-soft)">2</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Traffic Analysis — patterns reveal info even with encrypted content</p></div>
+            </div>
+          </div>
+          <div>
+            <p style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:#7fb3d3;margin-bottom:0.8rem">Solved by Message Auth</p>
+            <div class="step-item" style="background:rgba(255,255,255,0.04);margin-bottom:0.5rem">
+              <div class="step-dot" style="background:var(--ink-soft);border-color:#7fb3d3;color:#7fb3d3">3</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Masquerade — impersonating a legitimate sender</p></div>
+            </div>
+            <div class="step-item" style="background:rgba(255,255,255,0.04);margin-bottom:0.5rem">
+              <div class="step-dot" style="background:var(--ink-soft);border-color:#7fb3d3;color:#7fb3d3">4</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Content Modification — altering message in transit</p></div>
+            </div>
+            <div class="step-item" style="background:rgba(255,255,255,0.04);margin-bottom:0.5rem">
+              <div class="step-dot" style="background:var(--ink-soft);border-color:#7fb3d3;color:#7fb3d3">5</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Sequence Modification — reordering, replaying messages</p></div>
+            </div>
+            <div class="step-item" style="background:rgba(255,255,255,0.04)">
+              <div class="step-dot" style="background:var(--ink-soft);border-color:#7fb3d3;color:#7fb3d3">6</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Timing Modification — delaying or replaying at different time</p></div>
+            </div>
+          </div>
+          <div>
+            <p style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:#82e0aa;margin-bottom:0.8rem">Solved by Digital Signatures</p>
+            <div class="step-item" style="background:rgba(255,255,255,0.04);margin-bottom:0.5rem">
+              <div class="step-dot" style="background:var(--ink-soft);border-color:#82e0aa;color:#82e0aa">7</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Source Repudiation — sender denies sending</p></div>
+            </div>
+            <div class="step-item" style="background:rgba(255,255,255,0.04)">
+              <div class="step-dot" style="background:var(--ink-soft);border-color:#82e0aa;color:#82e0aa">8</div>
+              <div class="step-body"><p style="color:rgba(247,244,238,0.8)">Destination Repudiation — receiver denies receiving</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-section">
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Authentication Goals</div>
+        <h3>What the Receiver Wants to Verify <span class="kbadge exam">Exam</span></h3>
+        <div class="two-col" style="margin-top:1rem">
+          <div>
+            <p style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem">1 · Data Authentication</p>
+            <p>Contents of the message have <strong>not been modified</strong> between sender and receiver. Any bit-level change must be detectable.</p>
+          </div>
+          <div>
+            <p style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent-2);margin-bottom:0.5rem">2 · Source Authentication</p>
+            <p>The source of the message is <strong>who they claim to be</strong>. The message must have originated from the claimed sender.</p>
+          </div>
+        </div>
+        <div class="alert alert-gold" style="margin-top:1.2rem">
+          <strong>Four Approaches:</strong> Symmetric Key Encryption · Message Authentication Codes (MACs) · Hash Functions · Public Key Encryption (Digital Signatures). This lecture focuses on MACs.
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Symmetric Encryption for Authentication</div>
+        <h3>How it Works &amp; Why it Falls Short <span class="kbadge">Key</span></h3>
+        <p style="margin-bottom:0.9rem">A shares a secret key K with B. A sends E(K,M). B decrypts with same key K.</p>
+
+        <div class="diagram">  ┌───┐         ┌────────────────┐         ┌───┐
+  │ M │ ──► <span class="d-accent">(E)</span> ──► │   E(K, M)      │ ──► <span class="d-blue">(D)</span> ──► │ M │
+  └───┘   ↑      └────────────────┘      ↑     └───┘
+          <span class="d-accent">K</span>                                     <span class="d-blue">K</span>
+
+Sender A                  Channel                    Receiver B</div>
+
+        <div class="step-list">
+          <div class="step-item reveal">
+            <div class="step-dot">✓</div>
+            <div class="step-body">
+              <p><strong>Confidentiality:</strong> Only B (sharing key K with A) can recover the plaintext M.</p>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-dot">✓</div>
+            <div class="step-body">
+              <p><strong>Source Authentication:</strong> A is the only other user with key K. So the ciphertext must have come from A.</p>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-dot">✓</div>
+            <div class="step-body">
+              <p><strong>Data Authentication:</strong> If decryption succeeds and produces meaningful plaintext, the data has not been modified (a random modification would decrypt to garbage).</p>
+            </div>
+          </div>
+          <div class="step-item reveal" style="border-left:2px solid #c0392b">
+            <div class="step-dot" style="border-color:#c0392b;color:#c0392b">!</div>
+            <div class="step-body">
+              <p><strong>Critical Assumption:</strong> The decryptor must be able to <em>recognise</em> correct plaintext. This is not always possible — see the three examples below.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Recognising Correct Plaintext</div>
+        <h3>Three Examples from the Slides <span class="kbadge exam">Exam</span></h3>
+        <div class="tbl-scroll">
+        <table class="sg-table">
+          <thead>
+            <tr>
+              <th>Example</th>
+              <th>Ciphertext Received</th>
+              <th>Plaintext After Decryption</th>
+              <th>Can B Detect Tampering?</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1 — English Text</strong></td>
+              <td class="sg-mono" style="font-family:var(--font-mono);font-size:0.8rem">DPNFCTEJLYONCJAEZRCLASJTDQFY</td>
+              <td style="font-family:var(--font-mono);font-size:0.8rem;color:#2e7d32">SECURITYANDCRYPTOGRAPHYISFUN</td>
+              <td class="hl-cell">✓ YES</td>
+              <td>English plaintext has recognisable structure (dictionary words). B assumes message is correct.</td>
+            </tr>
+            <tr>
+              <td><strong>2 — Garbled English</strong></td>
+              <td style="font-family:var(--font-mono);font-size:0.8rem">QEFPFPQEBTOLKDJBPPXDBPLOOVX</td>
+              <td style="font-family:var(--font-mono);font-size:0.8rem;color:#c0392b">FTUEUEFTQIDAZSYQEEMSQEADDKM</td>
+              <td style="color:#c0392b;font-weight:600">✗ UNCERTAIN</td>
+              <td>Plaintext has no recognisable English structure. Either tampered or not from A. Message is suspect.</td>
+            </tr>
+            <tr>
+              <td><strong>3 — Binary Data</strong></td>
+              <td style="font-family:var(--font-mono);font-size:0.75rem">01101001101011010101101110000 10</td>
+              <td style="font-family:var(--font-mono);font-size:0.75rem">01011101000011010010101001011 10</td>
+              <td style="color:#c0392b;font-weight:600">✗ IMPOSSIBLE</td>
+              <td>Binary data (image, compressed file) has no visible structure. B cannot distinguish correct from tampered.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="alert alert-red" style="margin-top:0.9rem">
+          <strong>Key Takeaway:</strong> For binary or compressed data, symmetric encryption alone <em>cannot</em> provide reliable authentication. This is why MACs were invented — they provide a separate integrity guarantee that does not depend on recognising plaintext structure.
+        </div>
+        <div class="sg-card dark" style="margin-top:1rem;box-shadow:none">
+          <p style="color:rgba(247,244,238,0.7)">General principle: Valid plaintexts are only a <strong>small subset</strong> of all possible bit strings of length n. For messages of length n using a 26-character alphabet, there are 26ⁿ possible bit strings, but only a tiny fraction form valid English phrases. Adding structure (error-detecting codes, packet headers, frame check sequences) makes detection easier.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 3 — MAC CONCEPTS
+  ══════════════════════════════════════════ -->
+  <div class="study-panel" id="panel-mac">
+    <div class="sg-section">
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Definition</div>
+        <h3>Message Authentication Code <span class="kbadge">Key</span></h3>
+        <p style="margin-bottom:0.9rem">A MAC appends a small, fixed-size block of data (a <em>tag</em>) to the message. This tag is computed by a function that takes both the message and a secret key:</p>
+        <div class="formula">T = MAC(K, M)
+
+  M   = input message (arbitrary length)
+  MAC = the MAC function (also called a keyed hash function)
+  K   = shared secret key of k bits
+  T   = message authentication code (tag) of n bits</div>
+        <div class="two-col" style="margin-top:1rem">
+          <div class="alert alert-gold">
+            <strong>Unlike Encryption:</strong> MAC does not need to be reversible. A many-to-one function is fine — this makes it easier to design stronger MAC functions than encryption functions.
+          </div>
+          <div class="alert alert-blue">
+            <strong>Alternate name:</strong> "keyed hash function." The key K controls which of many possible hash functions is used for that session.
+          </div>
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Example Uses</div>
+        <h3>Three MAC Configurations (Stallings Fig. 12.4) <span class="kbadge exam">Exam</span></h3>
+
+        <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:1rem 0 0.4rem">(a) Message Authentication Only</p>
+        <div class="diagram">  ┌───┐                          ┌───┐
+  │ M │──►(||)──────────────────► │ M │──►(C)──────►Compare
+  └───┘    ↑                      │tag│    ↑
+           │    ┌─────────┐       └───┘    <span class="d-blue">K</span>
+           └───►│MAC(K,M) │═══════════════╝
+             <span class="d-accent">K</span> └─────────┘
+
+<span class="d-green">Sender:</span> Send M concatenated with MAC(K,M)
+<span class="d-blue">Receiver:</span> Recompute MAC with shared K, compare tags</div>
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1rem">Use case: Integrity + source auth, but no confidentiality. M is sent in the clear.</p>
+
+        <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:0.5rem 0 0.4rem">(b) Auth + Confidentiality (MAC tied to Plaintext)</p>
+        <div class="diagram">  ┌───┐                                      ┌───┐
+  │ M │──►(||)──►(E) ──► E(K₂,[M||C(K₁,M)])──►(D)──► M ──►(C)──►Compare
+  └───┘    ↑      ↑                              ↑         ↑
+           │   <span class="d-accent">K₂</span>   ↑ MAC(K₁,M) computed      <span class="d-accent">K₂</span>       <span class="d-blue">K₁</span>
+           └────(C)◄─<span class="d-blue">K₁</span>  on plaintext first
+
+<span class="d-green">Key insight:</span> MAC is computed on plaintext, then the whole thing is encrypted.
+<span class="d-blue">Two keys:</span> K₁ for MAC, K₂ for encryption.</div>
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1rem">Use case: Confidentiality + integrity. Receiver decrypts first, then verifies MAC.</p>
+
+        <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:0.5rem 0 0.4rem">(c) Auth + Confidentiality (MAC tied to Ciphertext)</p>
+        <div class="diagram">  ┌───┐                                           ┌───┐
+  │ M │──►(E)──►(||)──► E(K₂,M)||MAC(K₁,E(K₂,M))──►(C)──►Compare──►(D)──► M
+  └───┘    ↑     ↑                                    ↑             ↑ <span class="d-accent">K₂</span>
+          <span class="d-accent">K₂</span>   │ MAC(K₁,E(K₂,M)) computed on ciphertext   <span class="d-blue">K₁</span>
+                └─────(C)◄─<span class="d-blue">K₁</span>
+
+<span class="d-green">Key insight:</span> Encrypt first, then compute MAC on ciphertext.
+<span class="d-blue">Benefit:</span> Receiver can verify MAC before decrypting — avoids decrypting tampered data.</div>
+        <div class="alert alert-blue" style="margin-top:0.9rem">
+          Configuration (c) is generally preferred in practice: verify integrity first, then decrypt. This is the principle behind <strong>Authenticated Encryption with Associated Data (AEAD)</strong>, used in TLS 1.3.
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Requirement</div>
+        <h3>Computation Resistance <span class="kbadge exam">Exam</span></h3>
+        <p style="margin-bottom:0.9rem">An attacker knows the MAC function (Kerckhoffs' principle) but not the key K. The MAC function must satisfy:</p>
+        <div class="formula">Computation Resistance:
+
+  Given one or more text-MAC pairs  [xᵢ, MAC(K, xᵢ)]
+  it must be computationally infeasible to compute
+  any new text-MAC pair  [x, MAC(K, x)]
+  for any new input  x ≠ xᵢ</div>
+        <p style="margin-top:0.75rem">This is a stronger requirement than just "one-wayness." The attacker should not be able to produce valid tags for <em>any</em> new message, even with many example pairs.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 4 — MAC SECURITY
+  ══════════════════════════════════════════ -->
+  <div class="study-panel" id="panel-sec">
+    <div class="sg-section">
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Attack Analysis</div>
+        <h3>Two Brute-Force Attack Vectors <span class="kbadge exam">Exam</span></h3>
+        <div class="two-col">
+          <div>
+            <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem">Attack 1 · Brute Force on Key K</p>
+            <div class="step-list">
+              <div class="step-item">
+                <div class="step-dot">1</div>
+                <div class="step-body"><p>Attacker knows one message–tag pair [x₁, T₁] where T₁ = MAC(K, x₁)</p></div>
+              </div>
+              <div class="step-item">
+                <div class="step-dot">2</div>
+                <div class="step-body"><p>Key size is k bits → try all 2<sup>k</sup> possible keys</p></div>
+              </div>
+              <div class="step-item">
+                <div class="step-dot">3</div>
+                <div class="step-body"><p>Problem: many keys may produce tag T₁ for this particular x₁ (many-to-one function)</p></div>
+              </div>
+              <div class="step-item">
+                <div class="step-dot">4</div>
+                <div class="step-body"><p>For keys that produce T₁, try again with [x₂, T₂] to filter further</p></div>
+              </div>
+              <div class="step-item" style="border-left:2px solid var(--accent)">
+                <div class="step-dot">∴</div>
+                <div class="step-body"><p>Effort to identify correct K ≈ <strong>2<sup>k</sup></strong></p></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent-2);margin-bottom:0.75rem">Attack 2 · Brute Force on MAC Tag</p>
+            <div class="step-list">
+              <div class="step-item">
+                <div class="step-dot">1</div>
+                <div class="step-body"><p>Attacker wants to forge tag T_m for a new message x_m without knowing K</p></div>
+              </div>
+              <div class="step-item">
+                <div class="step-dot">2</div>
+                <div class="step-body"><p>Tag T has n bits → 2<sup>n</sup> possible tag values</p></div>
+              </div>
+              <div class="step-item">
+                <div class="step-dot">3</div>
+                <div class="step-body"><p>This is analogous to a one-way / weak collision resistance attack on hash functions</p></div>
+              </div>
+              <div class="step-item" style="border-left:2px solid var(--accent-2)">
+                <div class="step-dot">∴</div>
+                <div class="step-body"><p>Effort to forge a valid tag ≈ <strong>2<sup>n</sup></strong></p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Security Bound</div>
+        <h3>Total Effort to Break a MAC <span class="kbadge">Key</span></h3>
+        <p style="margin-bottom:0.9rem">An attacker will always choose the <em>easier</em> of the two attacks:</p>
+        <div class="formula">Effort to break MAC = min(2^k, 2^n)
+
+  k = key size in bits
+  n = MAC tag size in bits
+
+  To achieve security level of 2^s:
+    → need both k ≥ s  AND  n ≥ s
+
+  Common values used in practice:
+    HMAC-SHA256: k = 256 bits (key), n = 256 bits (tag) → min(2^256, 2^256) = 2^256
+    HMAC-SHA1:   k = 160 bits, n = 160 bits              → min(2^160, 2^160) = 2^160
+    Weak case:   k = 128 bits, n = 32 bits               → min(2^128, 2^32)  = 2^32 ← bottleneck is tag!</div>
+        <div class="alert alert-red">
+          A short MAC tag is the bottleneck even if you have a very long key. A 32-bit tag gives only 2<sup>32</sup> ≈ 4 billion guesses — trivially brute-forceable on modern hardware. NIST recommends at minimum 64-bit tags (preferably 128+ bits).
+        </div>
+        <div class="tbl-scroll" style="margin-top:1rem">
+        <table class="sg-table">
+          <thead><tr><th>MAC Scheme</th><th>k (key bits)</th><th>n (tag bits)</th><th>Security = min(2^k, 2^n)</th><th>Practical Status</th></tr></thead>
+          <tbody>
+            <tr><td>HMAC-MD5</td><td>128</td><td>128</td><td>2<sup>128</sup></td><td style="color:#e67e22">Deprecated (MD5 weaknesses)</td></tr>
+            <tr><td>HMAC-SHA1</td><td>160</td><td>160</td><td>2<sup>160</sup></td><td style="color:#e67e22">Transitioning out</td></tr>
+            <tr><td>HMAC-SHA256</td><td>256</td><td>256</td><td>2<sup>256</sup></td><td style="color:#27ae60">✓ Current standard</td></tr>
+            <tr><td>HMAC-SHA3-256</td><td>256</td><td>256</td><td>2<sup>256</sup></td><td style="color:#27ae60">✓ Future-proof</td></tr>
+            <tr><td>CMAC-AES128</td><td>128</td><td>128</td><td>2<sup>128</sup></td><td style="color:#27ae60">✓ Widely used</td></tr>
+            <tr><td>Truncated MAC (32-bit)</td><td>≥128</td><td>32</td><td class="hl-cell">2<sup>32</sup> ← bottleneck</td><td style="color:#c0392b">✗ Insecure</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Cryptanalysis</div>
+        <h3>Algorithm-Specific Attacks</h3>
+        <p>Beyond brute force, cryptanalysis exploits structural weaknesses in specific MAC algorithms. Key points from the slides:</p>
+        <div class="step-list" style="margin-top:0.9rem">
+          <div class="step-item">
+            <div class="step-dot">→</div>
+            <div class="step-body"><p>Different MAC algorithms are vulnerable to different algorithm-specific attacks. There is no single universal cryptanalytic attack against MACs.</p></div>
+          </div>
+          <div class="step-item">
+            <div class="step-dot">→</div>
+            <div class="step-body"><p>MAC algorithms that have survived peer review and standardisation are generally considered secure (security is a property of the algorithm, not just the key).</p></div>
+          </div>
+          <div class="step-item" style="border-left:2px solid #27ae60">
+            <div class="step-dot" style="border-color:#27ae60;color:#27ae60">✓</div>
+            <div class="step-body"><p>HMAC has a formal security proof: its security reduces to properties of the underlying hash function (collision resistance, pseudorandomness). This is a significant advantage over ad-hoc constructions.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 5 — ALGORITHMS
+  ══════════════════════════════════════════ -->
+  <div class="study-panel" id="panel-algo">
+    <div class="sg-section">
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Block Cipher MACs</div>
+        <h3>MACs Based on Block Ciphers</h3>
+        <div class="tbl-scroll">
+        <table class="sg-table">
+          <thead><tr><th>Algorithm</th><th>Basis</th><th>Status</th><th>Details</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>DAA</strong><br><span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--muted)">Data Auth Alg.</span></td>
+              <td>DES CBC mode</td>
+              <td style="color:#c0392b">✗ Insecure</td>
+              <td>56-bit DES key is exhaustively searchable. Only produces 16 or 32-bit MACs. Considered broken.</td>
+            </tr>
+            <tr class="hl-cell" style="background:rgba(192,135,63,0.05)">
+              <td><strong>CMAC</strong><br><span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--muted)">Cipher-based MAC</span></td>
+              <td>Triple-DES or AES CBC</td>
+              <td style="color:#27ae60">✓ Standard</td>
+              <td>NIST SP 800-38B. Uses a block cipher in a special CBC mode. Two subkeys derived from block cipher. Handles variable-length messages cleanly.</td>
+            </tr>
+            <tr>
+              <td><strong>OMAC / PMAC</strong></td>
+              <td>AES</td>
+              <td style="color:#27ae60">✓ Secure</td>
+              <td>One-key MAC. PMAC is parallelisable, making it faster on multi-core hardware.</td>
+            </tr>
+            <tr>
+              <td><strong>UMAC / VMAC</strong></td>
+              <td>Universal Hashing + AES</td>
+              <td style="color:#27ae60">✓ Secure &amp; Fast</td>
+              <td>Extremely fast on 64-bit platforms. Based on universal hash families. Used in high-throughput applications.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="alert alert-gold" style="margin-top:0.9rem">
+          CMAC with AES-128 is the current workhorse block-cipher MAC. It produces a 128-bit tag and provides 2<sup>128</sup> security — completely adequate for all current applications.
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">HMAC</div>
+        <h3>Hash-Based MAC <span class="kbadge exam">Exam</span></h3>
+        <p style="margin-bottom:1rem">HMAC constructs a MAC from a cryptographic hash function (MD5, SHA-1, SHA-256, etc.). Hash functions are fast in software and widely implemented in libraries — making HMAC very practical.</p>
+
+        <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem">The HMAC Formula <span class="kbadge exam">Must Memorise</span></p>
+        <div class="formula">HMAC(K, M) = H( (K ⊕ opad) || H( (K ⊕ ipad) || M ) )
+
+Where:
+  H    = cryptographic hash function (MD5, SHA-1, SHA-256, …)
+  K    = secret key (padded/truncated to block size b)
+  M    = message input
+  ipad = 00110110 repeated (inner padding, 0x36 per byte)
+  opad = 01011100 repeated (outer padding, 0x5C per byte)
+  ||   = concatenation
+  ⊕    = XOR</div>
+
+        <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:1.2rem 0 0.5rem">Step-by-Step Construction</p>
+        <div class="step-list">
+          <div class="step-item reveal">
+            <div class="step-dot">1</div>
+            <div class="step-body">
+              <p><strong>Prepare the key K:</strong> If |K| > b, hash it: K = H(K). If |K| &lt; b, zero-pad on right to length b.</p>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-dot">2</div>
+            <div class="step-body">
+              <p><strong>Inner key:</strong> Compute K ⊕ ipad (XOR every byte of padded K with 0x36 = 00110110₂)</p>
+              <div class="formula">K_inner = K XOR ipad    (= K XOR 0x3636...36)</div>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-dot">3</div>
+            <div class="step-body">
+              <p><strong>Inner hash:</strong> Prepend inner key to message, hash it:</p>
+              <div class="formula">inner = H(K_inner || M)</div>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-dot">4</div>
+            <div class="step-body">
+              <p><strong>Outer key:</strong> Compute K ⊕ opad (XOR every byte of padded K with 0x5C = 01011100₂)</p>
+              <div class="formula">K_outer = K XOR opad    (= K XOR 0x5C5C...5C)</div>
+            </div>
+          </div>
+          <div class="step-item reveal" style="border-left:2px solid var(--accent)">
+            <div class="step-dot">5</div>
+            <div class="step-body">
+              <p><strong>Final HMAC:</strong> Prepend outer key to inner hash, hash again:</p>
+              <div class="formula">HMAC(K, M) = H(K_outer || inner)
+             = H( (K ⊕ opad) || H( (K ⊕ ipad) || M ) )</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-blue" style="margin-top:1rem">
+          <strong>Why two hash rounds?</strong> A naive "H(K||M)" is vulnerable to length-extension attacks. The nested structure prevents this. ipad and opad are different constants to ensure K_inner ≠ K_outer, creating two independent hash instances.
+        </div>
+
+        <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:1.2rem 0 0.5rem">ipad vs opad — Why These Constants?</p>
+        <div class="tbl-scroll">
+        <table class="sg-table">
+          <thead><tr><th>Constant</th><th>Hex Value (per byte)</th><th>Binary</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ipad</strong></td><td class="hl-cell" style="font-family:var(--font-mono)">0x36</td><td style="font-family:var(--font-mono)">00110110</td><td>Inner padding — mixed with key for first hash pass</td></tr>
+            <tr><td><strong>opad</strong></td><td style="font-family:var(--font-mono)">0x5C</td><td style="font-family:var(--font-mono)">01011100</td><td>Outer padding — mixed with key for second hash pass</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p style="font-size:0.88rem;color:var(--muted);margin-top:0.5rem">Note: ipad XOR opad = 0x36 XOR 0x5C = 0x6A = 01101010₂. They differ in 4 of 8 bits, providing adequate separation between the two key variants.</p>
+
+        <div class="alert alert-gold" style="margin-top:1rem">
+          <strong>Security of HMAC:</strong> HMAC's security is entirely dependent on the security of the underlying hash function H. If H is collision-resistant and pseudorandom, HMAC is a secure PRF. This means: use HMAC-SHA256, not HMAC-MD5 (MD5 has known collision vulnerabilities).
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Comparison</div>
+        <h3>HMAC vs. Block-Cipher MACs</h3>
+        <div class="tbl-scroll">
+        <table class="sg-table">
+          <thead><tr><th>Property</th><th>HMAC (e.g. HMAC-SHA256)</th><th>CMAC (AES)</th></tr></thead>
+          <tbody>
+            <tr><td>Basis</td><td>Cryptographic hash function</td><td>Block cipher in CBC mode</td></tr>
+            <tr><td>Speed (software)</td><td>Fast (hash functions optimised for SW)</td><td>Moderate (AES has HW acceleration)</td></tr>
+            <tr><td>Speed (hardware)</td><td>Slower (hash HW less common)</td><td>Very fast (AES-NI instruction)</td></tr>
+            <tr><td>Key size</td><td>Any (up to block size of H)</td><td>Fixed (128/192/256 bits for AES)</td></tr>
+            <tr><td>Tag size</td><td>Output size of H (e.g. 256 bits)</td><td>Up to block size (128 bits for AES)</td></tr>
+            <tr><td>Security proof</td><td>Reduces to H's security</td><td>Reduces to AES security (PRF assumption)</td></tr>
+            <tr><td>Common use</td><td>TLS, IPsec, JWT signatures</td><td>WiFi (802.11i), storage security</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 6 — INTERACTIVE CALCULATOR
+  ══════════════════════════════════════════ -->
+  <div class="study-panel" id="panel-calc">
+    <div class="sg-section">
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Tool</div>
+        <h3>MAC Security Level Calculator</h3>
+        <p style="margin-bottom:1.2rem">Computes brute-force effort against a MAC scheme given key size k and tag size n. Security = min(2<sup>k</sup>, 2<sup>n</sup>). Identifies the bottleneck.</p>
+
+        <div class="two-col">
+          <div>
+            <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Key size k (bits)</label>
+            <input class="calc-input" id="inp-k" type="number" value="256" min="1" max="1024" placeholder="e.g. 256">
+          </div>
+          <div>
+            <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Tag size n (bits)</label>
+            <input class="calc-input" id="inp-n" type="number" value="256" min="1" max="1024" placeholder="e.g. 256">
+          </div>
+        </div>
+        <button class="calc-btn" onclick="runCalc()">▶ Compute Security Level</button>
+
+        <div class="calc-result" id="calc-result">
+          <div class="formula" id="calc-output"></div>
+          <div id="calc-verdict"></div>
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">HMAC Builder</div>
+        <h3>Visualise the HMAC Process</h3>
+        <p style="margin-bottom:1rem">Enter a key (hex) and ipad/opad to see the XOR step. This traces Step 2 and Step 4 of the HMAC construction.</p>
+        <div>
+          <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Key K (hex bytes, space-separated, max 16 bytes)</label>
+          <input class="calc-input" id="hmac-key" value="2B 7E 15 16 28 AE D2 A6 AB F7 15 88 09 CF 4F 3C" placeholder="e.g. 2B 7E 15 16 ...">
+        </div>
+        <button class="calc-btn" onclick="runHmacViz()">▶ Show ipad &amp; opad XOR</button>
+
+        <div class="calc-result" id="hmac-result">
+          <div class="formula" id="hmac-output"></div>
+        </div>
+      </div>
+
+      <div class="sg-card reveal">
+        <div class="sg-label">Plaintext Recognition Test</div>
+        <h3>Can B Detect Tampering?</h3>
+        <p style="margin-bottom:1rem">Simulates the Recognising Correct Plaintext examples from the slides. Checks whether a decrypted string looks like valid English.</p>
+        <div>
+          <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Decrypted Plaintext</label>
+          <input class="calc-input" id="pt-input" value="SECURITYANDCRYPTOGRAPHYISFUN" placeholder="Enter decrypted text...">
+        </div>
+        <button class="calc-btn" onclick="runPtCheck()">▶ Assess Authenticity</button>
+        <div class="calc-result" id="pt-result">
+          <div id="pt-output"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── CONTACT (reuses home #cont structure) ─── -->
+  <section id="cont" style="background:var(--ink);padding:4rem 8vw">
+    <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:2.5rem">
+      <div>
+        <div class="section-label" style="color:var(--accent)">Contact</div>
+        <h2 style="font-family:var(--font-display);color:var(--surface);font-size:1.9rem;margin-bottom:0.4rem">Collaborate on research.</h2>
+        <p style="color:rgba(247,244,238,0.45);font-size:0.92rem">Open to discussions on cryptography, network security, IoT, 6G, and more.</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.7rem">
+        <a href="mailto:arkomustafi20@gmail.com" class="contact-link">Email</a>
+        <a href="https://www.linkedin.com/in/arkomustafi/" class="contact-link" target="_blank">LinkedIn</a>
+        <a href="index.html" class="contact-link">← Back to Home</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© Arko Mustafi · University of Dhaka · EEE · Study Guide — Message Authentication Codes</p>
+  </footer>
+
+  <!-- ══════════════════════════════════════════
+       JAVASCRIPT
+       • Tab switching
+       • Progress bar
+       • Pomodoro (full implementation)
+       • Scroll reveal (same IntersectionObserver as home)
+       • Nav active state (same as home)
+       • Custom cursor (identical to home)
+       • Magnetic pull (identical to home)
+       • Hero canvas particle network (identical to home)
+       • Calculator functions
+  ══════════════════════════════════════════ -->
+  <script>
+    /* ─────────────────────────────────────────
+       TAB SWITCHING
+    ───────────────────────────────────────── */
+    function showTab(id, btn) {
+      document.querySelectorAll('.study-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.study-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + id).classList.add('active');
+      if (btn) btn.classList.add('active');
+      window.scrollTo({ top: document.querySelector('.study-nav').offsetTop - 62, behavior: 'smooth' });
+    }
+
+    /* ─────────────────────────────────────────
+       PROGRESS BAR
+    ───────────────────────────────────────── */
+    function updateProgress() {
+      const all  = document.querySelectorAll('#checklist input[type=checkbox]');
+      const done = document.querySelectorAll('#checklist input[type=checkbox]:checked');
+      const pct  = all.length ? Math.round((done.length / all.length) * 100) : 0;
+      document.getElementById('prog-fill').style.width = pct + '%';
+      document.getElementById('prog-pct').textContent  = pct + '%';
+    }
+
+    /* ─────────────────────────────────────────
+       SCROLL REVEAL (same as home)
+    ───────────────────────────────────────── */
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          revealObs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+    /* ─────────────────────────────────────────
+       NAV ACTIVE STATE (same as home)
+    ───────────────────────────────────────── */
+    const sections  = document.querySelectorAll('section[id], header[id]');
+    const navLinks  = document.querySelectorAll('.site-nav a');
+    const navObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(l => l.style.borderBottomColor = 'transparent');
+          const active = document.querySelector(`.site-nav a[href="#${e.target.id}"]`);
+          if (active) active.style.borderBottomColor = 'var(--accent)';
+        }
+      });
+    }, { threshold: 0.3 });
+    sections.forEach(s => navObs.observe(s));
+
+    /* ─────────────────────────────────────────
+       SHARED VARS
+    ───────────────────────────────────────── */
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const magneticTargets = document.querySelectorAll('.tag, .cv-btn, .contact-link, .site-nav ul li a, .calc-btn, .study-tab');
+
+    /* ─────────────────────────────────────────
+       CUSTOM CURSOR (identical to home)
+    ───────────────────────────────────────── */
+    const cursorDot  = document.querySelector('.cursor-dot');
+    const cursorRing = document.querySelector('.cursor-ring');
+    if (cursorDot && cursorRing && isFinePointer) {
+      let mouseX = -100, mouseY = -100, ringX = -100, ringY = -100, cursorActive = false;
+      const ease = prefersReducedMotion ? 1 : 0.18;
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX; mouseY = e.clientY;
+        cursorDot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%,-50%)`;
+        if (!cursorActive) {
+          ringX = mouseX; ringY = mouseY; cursorActive = true;
+          document.documentElement.classList.add('cursor-enabled');
+        }
+      });
+      (function trackRing() {
+        if (cursorActive) {
+          ringX += (mouseX - ringX) * ease;
+          ringY += (mouseY - ringY) * ease;
+          cursorRing.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%,-50%)`;
+        }
+        requestAnimationFrame(trackRing);
+      })();
+      magneticTargets.forEach(el => {
+        el.addEventListener('mouseenter', () => { cursorRing.classList.add('is-active'); cursorDot.classList.add('is-active'); });
+        el.addEventListener('mouseleave', () => { cursorRing.classList.remove('is-active'); cursorDot.classList.remove('is-active'); });
+      });
+    }
+
+    /* ─────────────────────────────────────────
+       MAGNETIC PULL (identical to home)
+    ───────────────────────────────────────── */
+    if (!prefersReducedMotion) {
+      const PULL = 0.3;
+      magneticTargets.forEach(el => {
+        el.addEventListener('mousemove', (e) => {
+          const rect = el.getBoundingClientRect();
+          const relX = e.clientX - (rect.left + rect.width / 2);
+          const relY = e.clientY - (rect.top + rect.height / 2);
+          el.style.transform = `translate(${relX * PULL}px, ${relY * PULL}px)`;
+        });
+        el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+      });
+    }
+
+    /* ─────────────────────────────────────────
+       HERO CANVAS (identical to home signal-mesh)
+    ───────────────────────────────────────── */
+    if (!prefersReducedMotion) {
+      const canvas  = document.getElementById('hero-canvas');
+      const heroEl  = document.getElementById('top');
+      if (canvas && heroEl) {
+        const ctx = canvas.getContext('2d');
+        const LINK_DIST = 130, MOUSE_DIST = 170, REPEL_DIST = 90;
+        let w, h, dpr, particles = [], rafId;
+        const pointer = { x: -9999, y: -9999, active: false };
+
+        function resize() {
+          const rect = heroEl.getBoundingClientRect();
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = rect.width; h = rect.height;
+          canvas.width  = Math.floor(w * dpr);
+          canvas.height = Math.floor(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        function seed() {
+          const count = Math.min(110, Math.max(36, Math.floor((w * h) / 9000)));
+          particles = Array.from({ length: count }, () => ({
+            x: Math.random() * w, y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
+            r: Math.random() * 1.4 + 0.8
+          }));
+        }
+        function setPointer(cx, cy) {
+          const rect = canvas.getBoundingClientRect();
+          pointer.x = cx - rect.left; pointer.y = cy - rect.top;
+          pointer.active = pointer.x >= 0 && pointer.x <= w && pointer.y >= 0 && pointer.y <= h;
+        }
+        function tick() {
+          ctx.clearRect(0, 0, w, h);
+          for (const p of particles) {
+            p.x += p.vx; p.y += p.vy;
+            if (pointer.active) {
+              const dx = p.x - pointer.x, dy = p.y - pointer.y;
+              const dist = Math.sqrt(dx*dx + dy*dy);
+              if (dist < REPEL_DIST && dist > 0.01) {
+                const force = (REPEL_DIST - dist) / REPEL_DIST;
+                p.x += (dx/dist)*force*1.6; p.y += (dy/dist)*force*1.6;
+              }
+            }
+            if (p.x < -20) p.x = w+20; if (p.x > w+20) p.x = -20;
+            if (p.y < -20) p.y = h+20; if (p.y > h+20) p.y = -20;
+          }
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i+1; j < particles.length; j++) {
+              const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+              const dist = Math.sqrt(dx*dx + dy*dy);
+              if (dist < LINK_DIST) {
+                ctx.strokeStyle = `rgba(247,244,238,${(1 - dist/LINK_DIST)*0.14})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+              }
+            }
+            if (pointer.active) {
+              const dx = particles[i].x - pointer.x, dy = particles[i].y - pointer.y;
+              const dist = Math.sqrt(dx*dx + dy*dy);
+              if (dist < MOUSE_DIST) {
+                ctx.strokeStyle = `rgba(192,135,63,${(1 - dist/MOUSE_DIST)*0.55})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
+              }
+            }
+          }
+          for (const p of particles) {
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.fillStyle = 'rgba(247,244,238,0.5)'; ctx.fill();
+          }
+          if (pointer.active) {
+            ctx.beginPath(); ctx.arc(pointer.x, pointer.y, 8, 0, Math.PI*2);
+            ctx.strokeStyle = 'rgba(192,135,63,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.beginPath(); ctx.arc(pointer.x, pointer.y, 3, 0, Math.PI*2);
+            ctx.fillStyle = 'rgba(192,135,63,0.9)'; ctx.fill();
+          }
+          rafId = requestAnimationFrame(tick);
+        }
+        window.addEventListener('mousemove', e => setPointer(e.clientX, e.clientY));
+        window.addEventListener('mouseleave', () => { pointer.active = false; });
+        window.addEventListener('touchmove', e => { if (e.touches.length) setPointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+        window.addEventListener('touchend', () => { pointer.active = false; });
+        let resizeTimer;
+        window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { resize(); seed(); }, 200); });
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) cancelAnimationFrame(rafId);
+          else rafId = requestAnimationFrame(tick);
+        });
+        resize(); seed(); rafId = requestAnimationFrame(tick);
+      }
+    }
+
+    /* ─────────────────────────────────────────
+       POMODORO TIMER
+    ───────────────────────────────────────── */
+    let pomoLeft = 25*60, pomoMax = 25*60, pomoRunning = false, pomoInterval = null;
+
+    function togglePomoTimer() {
+      if (pomoRunning) {
+        clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
+        document.getElementById('pomo-start').textContent = 'Start';
+        document.getElementById('pomo-start').classList.remove('running');
+      } else {
+        pomoRunning = true;
+        document.getElementById('pomo-start').textContent = 'Pause';
+        document.getElementById('pomo-start').classList.add('running');
+        pomoInterval = setInterval(pomoTick, 1000);
+      }
+    }
+    function resetPomoTimer() {
+      clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
+      document.getElementById('pomo-start').textContent = 'Start';
+      document.getElementById('pomo-start').classList.remove('running');
+      pomoLeft = pomoMax;
+      renderPomoDisplay();
+    }
+    function setPomoMode(mins, btnId) {
+      clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
+      document.getElementById('pomo-start').textContent = 'Start';
+      document.getElementById('pomo-start').classList.remove('running');
+      pomoMax = mins * 60; pomoLeft = pomoMax;
+      ['btn-w','btn-s','btn-l'].forEach(id => document.getElementById(id).classList.remove('active'));
+      document.getElementById(btnId).classList.add('active');
+      renderPomoDisplay();
+    }
+    function pomoTick() {
+      if (pomoLeft <= 0) {
+        clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
+        document.getElementById('pomo-start').textContent = 'Start';
+        document.getElementById('pomo-start').classList.remove('running');
+        pomoFlashBeep(); return;
+      }
+      pomoLeft--;
+      renderPomoDisplay();
+    }
+    function renderPomoDisplay() {
+      const m = Math.floor(pomoLeft/60), s = pomoLeft%60;
+      document.getElementById('pomo-display').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+      document.getElementById('pomo-ring-fill').style.width = (pomoLeft / pomoMax * 100) + '%';
+    }
+    function pomoFlashBeep() {
+      const d = document.getElementById('pomo-display');
+      d.classList.add('flash');
+      setTimeout(() => d.classList.remove('flash'), 2000);
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [0, 350, 700].forEach(delay => {
+          const osc = ctx.createOscillator(), gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.frequency.value = 880;
+          gain.gain.setValueAtTime(0.35, ctx.currentTime + delay/1000);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay/1000 + 0.3);
+          osc.start(ctx.currentTime + delay/1000);
+          osc.stop(ctx.currentTime + delay/1000 + 0.3);
+        });
+      } catch(e) {}
+    }
+    function togglePomo() {
+      const f = document.getElementById('pomo-float');
+      const btn = f.querySelector('.pomo-toggle-btn');
+      f.classList.toggle('collapsed');
+      btn.textContent = f.classList.contains('collapsed') ? '+' : '✕';
+    }
+
+    /* ─────────────────────────────────────────
+       CALCULATOR: MAC SECURITY LEVEL
+    ───────────────────────────────────────── */
+    function runCalc() {
+      const k = parseInt(document.getElementById('inp-k').value);
+      const n = parseInt(document.getElementById('inp-n').value);
+      if (isNaN(k) || isNaN(n) || k < 1 || n < 1) return;
+
+      const secLevel = Math.min(k, n);
+      const bottleneck = k <= n ? 'key (k)' : 'tag (n)';
+      const larger = k <= n ? 'n' : 'k';
+
+      let verdictClass = 'alert-red';
+      let verdictText  = '✗ Insecure — effort is trivially achievable on modern hardware.';
+      if (secLevel >= 128) { verdictClass = 'alert-gold'; verdictText = '✓ Adequate — meets current NIST minimum recommendations.'; }
+      if (secLevel >= 200) { verdictClass = 'alert-green'; verdictText = '✓✓ Strong — exceeds all current and foreseeable attack capabilities.'; }
+
+      document.getElementById('calc-output').textContent =
+`Security Analysis for k = ${k} bits, n = ${n} bits
+────────────────────────────────────────────────────
+  Brute force on key:  2^${k}   operations
+  Brute force on tag:  2^${n}   operations
+  Effective security:  min(2^${k}, 2^${n}) = 2^${secLevel}
+
+  Bottleneck: ${bottleneck.toUpperCase()} (the smaller value)
+  Recommendation: increase ${bottleneck === 'key (k)' ? 'k' : 'n'} to match ${larger} = ${Math.max(k,n)} bits
+  → New security: 2^${Math.max(k,n)}`;
+
+      document.getElementById('calc-verdict').innerHTML = `<div class="alert ${verdictClass}" style="margin-top:0.75rem">${verdictText} Security level: 2<sup>${secLevel}</sup></div>`;
+      document.getElementById('calc-result').classList.add('visible');
+    }
+
+    /* ─────────────────────────────────────────
+       CALCULATOR: HMAC VISUALISER
+    ───────────────────────────────────────── */
+    function runHmacViz() {
+      const keyStr = document.getElementById('hmac-key').value.trim();
+      const keyBytes = keyStr.split(/\s+/).map(h => parseInt(h, 16)).filter(b => !isNaN(b));
+      if (!keyBytes.length) return;
+
+      const ipad = 0x36, opad = 0x5C;
+      const kInner = keyBytes.map(b => b ^ ipad);
+      const kOuter = keyBytes.map(b => b ^ opad);
+
+      const toHex = arr => arr.map(b => b.toString(16).toUpperCase().padStart(2,'0')).join(' ');
+
+      document.getElementById('hmac-output').textContent =
+`Key K (${keyBytes.length} bytes):
+  K      = ${toHex(keyBytes)}
+
+Inner key (K ⊕ ipad, ipad=0x36):
+  K_inner = ${toHex(kInner)}
+
+Outer key (K ⊕ opad, opad=0x5C):
+  K_outer = ${toHex(kOuter)}
+
+HMAC construction:
+  Step 3: inner = H(K_inner || M)         ← first hash pass
+  Step 5: HMAC  = H(K_outer || inner)     ← second hash pass
+
+  Note: K_inner ≠ K_outer ensures two independent hash instances.`;
+
+      document.getElementById('hmac-result').classList.add('visible');
+    }
+
+    /* ─────────────────────────────────────────
+       CALCULATOR: PLAINTEXT RECOGNITION
+    ───────────────────────────────────────── */
+    const COMMON_WORDS = ['THE','AND','IS','IN','OF','TO','A','IT','THAT','WAS','HE',
+      'SHE','FOR','ON','ARE','BUT','NOT','WITH','HIS','THEY','OR','AN','WE',
+      'SECURITY','CRYPTO','NETWORK','MESSAGE','KEY','DATA','CODE','FUN','CAN'];
+
+    function runPtCheck() {
+      const pt = document.getElementById('pt-input').value.toUpperCase().replace(/[^A-Z]/g,'');
+      if (!pt) return;
+
+      // Check for binary-like content
+      const isBinary = /^[01\s]+$/.test(document.getElementById('pt-input').value.trim());
+      if (isBinary) {
+        document.getElementById('pt-output').innerHTML = `
+          <div class="alert alert-red"><strong>Binary Data:</strong> Cannot distinguish correct from tampered. B has no way to verify authenticity from symmetric encryption alone. → Use a MAC.</div>`;
+        document.getElementById('pt-result').classList.add('visible');
+        return;
+      }
+
+      // Count word matches
+      let matchCount = 0;
+      COMMON_WORDS.forEach(w => { if (pt.includes(w)) matchCount++; });
+      const letterFreqScore = calcLetterFreq(pt);
+      const isEnglish = matchCount >= 2 || letterFreqScore > 0.6;
+
+      let html = '';
+      if (isEnglish) {
+        html = `<div class="alert alert-green"><strong>Looks like valid English:</strong> B can likely detect tampering. ${matchCount} common word pattern(s) found. Letter frequency score: ${(letterFreqScore*100).toFixed(0)}%. B would accept this as authentic (Example 1 scenario).</div>`;
+      } else {
+        html = `<div class="alert alert-red"><strong>Does NOT look like valid English:</strong> ${matchCount} common word pattern(s) found. Letter frequency score: ${(letterFreqScore*100).toFixed(0)}%. B would suspect tampering or wrong sender (Example 2 scenario). → Symmetric encryption alone cannot authenticate this message reliably.</div>`;
+      }
+      document.getElementById('pt-output').innerHTML = html;
+      document.getElementById('pt-result').classList.add('visible');
+    }
+
+    function calcLetterFreq(s) {
+      // English letter frequency benchmark (E, T, A, O, I, N, S, H, R are most common)
+      const englishFreq = {E:12.7,T:9.1,A:8.2,O:7.5,I:7.0,N:6.7,S:6.3,H:6.1,R:6.0};
+      if (!s.length) return 0;
+      const counts = {};
+      for (const c of s) counts[c] = (counts[c]||0)+1;
+      let score = 0;
+      for (const [ch, exp] of Object.entries(englishFreq)) {
+        const actual = ((counts[ch]||0)/s.length)*100;
+        const diff = Math.abs(actual - exp);
+        score += Math.max(0, 1 - diff/exp);
+      }
+      return score / Object.keys(englishFreq).length;
+    }
+
+    /* ─────────────────────────────────────────
+       INIT
+    ───────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      updateProgress();
+      renderPomoDisplay();
+    });
+  </script>
+</body>
+</html>
