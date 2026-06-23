@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cryptographic Hash Functions — Study Guide | Arko Mustafi</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .page-hero { min-height: 58vh; padding: 8rem 8vw 5rem; justify-content: flex-end; }
+    .hero-back { position:absolute;top:2rem;left:8vw;font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(247,244,238,0.5);display:flex;align-items:center;gap:0.5rem;transition:color var(--transition);z-index:10;text-decoration:none; }
+    .hero-back::before{content:'←';}
+    .hero-back:hover{color:var(--accent);}
+    .hero-lecture-badge{position:absolute;top:2rem;right:8vw;font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.12em;color:rgba(247,244,238,0.3);text-transform:uppercase;}
+    /* Pomodoro float */
+    .pomo-float{position:fixed;bottom:2rem;right:2rem;z-index:200;background:var(--ink);border:1px solid rgba(192,135,63,0.3);border-radius:var(--radius);padding:1rem 1.2rem;min-width:175px;box-shadow:var(--shadow-lg);transition:transform var(--transition);}
+    .pomo-float:hover{transform:translateY(-2px);}
+    .pomo-float.collapsed .pomo-body{display:none;}
+    .pomo-float.collapsed{min-width:0;padding:0.6rem 0.9rem;}
+    .pomo-toggle{position:absolute;top:-9px;right:-9px;width:20px;height:20px;background:var(--accent);border:none;border-radius:50%;cursor:pointer;color:white;font-size:0.6rem;display:flex;align-items:center;justify-content:center;}
+    .pomo-lbl{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem;}
+    .pomo-ring{width:100%;height:3px;background:rgba(192,135,63,0.2);border-radius:99px;margin-bottom:0.6rem;overflow:hidden;}
+    .pomo-ring-fill{height:100%;background:var(--accent);border-radius:99px;width:100%;transition:width 1s linear;}
+    .pomo-time{font-family:var(--font-mono);font-size:1.8rem;font-weight:500;color:var(--surface);letter-spacing:0.1em;text-align:center;margin-bottom:0.6rem;}
+    .pomo-time.flash{animation:pF 0.5s 4;}
+    @keyframes pF{0%,100%{color:var(--surface)}50%{color:#ef5350}}
+    .pomo-modes{display:flex;gap:4px;margin-bottom:0.6rem;}
+    .pomo-modes button{flex:1;background:none;border:1px solid rgba(192,135,63,0.25);color:rgba(247,244,238,0.45);font-family:var(--font-mono);font-size:0.58rem;padding:4px 0;border-radius:3px;cursor:pointer;transition:all var(--transition);}
+    .pomo-modes button.active,.pomo-modes button:hover{border-color:var(--accent);color:var(--accent);background:rgba(192,135,63,0.08);}
+    .pomo-ctrl{display:flex;gap:6px;}
+    .pomo-ctrl button{flex:1;background:none;border:1px solid rgba(192,135,63,0.3);color:rgba(247,244,238,0.6);font-family:var(--font-mono);font-size:0.65rem;padding:5px 0;border-radius:3px;cursor:pointer;transition:all var(--transition);}
+    .pomo-ctrl button:hover,#ps.running{color:var(--accent);border-color:var(--accent);}
+    /* Study sub-nav */
+    .study-nav{position:sticky;top:60px;z-index:90;background:var(--surface-2);border-bottom:1px solid var(--border);padding:0 8vw;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;}
+    .study-nav::-webkit-scrollbar{display:none;}
+    .study-tab{font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:0 1.1rem;height:48px;display:flex;align-items:center;cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all var(--transition);flex-shrink:0;}
+    .study-tab:hover{color:var(--ink);}
+    .study-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .prog-strip{margin-left:auto;display:flex;align-items:center;gap:0.7rem;padding-left:1.5rem;flex-shrink:0;}
+    .prog-bar{width:80px;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+    .prog-fill{height:100%;background:var(--accent);border-radius:99px;width:0%;transition:width 0.4s;}
+    .prog-pct{font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);}
+    /* Panels */
+    .study-panel{display:none;}
+    .study-panel.active{display:block;}
+    /* Layouts */
+    .sg-section{padding:4rem 8vw;max-width:1100px;margin:0 auto;}
+    .sg-dark{background:var(--ink);padding:3.5rem 8vw 3rem;}
+    .sg-dark-in{max-width:1100px;margin:0 auto;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;}
+    .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+    @media(max-width:700px){.two-col,.three-col{grid-template-columns:1fr;}}
+    /* Labels */
+    .sg-label{font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;}
+    .sg-label::after{content:'';flex:1;max-width:60px;height:1px;background:var(--accent);opacity:.4;}
+    /* Cards */
+    .sg-card{background:white;border-radius:var(--radius);padding:2rem;border:1px solid var(--border);box-shadow:var(--shadow-sm);margin-bottom:1.4rem;position:relative;overflow:hidden;transition:box-shadow var(--transition),transform var(--transition);}
+    .sg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transform:scaleX(0);transform-origin:left;transition:transform var(--transition);}
+    .sg-card:hover::before{transform:scaleX(1);}
+    .sg-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+    .sg-card h3{font-family:var(--font-display);font-size:1.1rem;color:var(--ink);margin-bottom:0.75rem;}
+    .sg-card p{font-size:0.92rem;}
+    /* Formula / diagram */
+    .formula{background:var(--ink);border-left:3px solid var(--accent);color:var(--accent);font-family:var(--font-mono);font-size:0.87rem;padding:1rem 1.2rem;border-radius:var(--radius);white-space:pre;overflow-x:auto;margin:0.75rem 0;line-height:1.75;}
+    .diagram{background:var(--ink);font-family:var(--font-mono);font-size:0.8rem;color:rgba(247,244,238,0.75);padding:1.2rem 1.5rem;border-radius:var(--radius);white-space:pre;overflow-x:auto;margin:0.75rem 0;line-height:1.8;border:1px solid rgba(255,255,255,0.06);}
+    /* Steps */
+    .step-item{display:flex;gap:1rem;align-items:flex-start;margin-bottom:0.75rem;padding:0.9rem 1rem;background:var(--surface-2);border-radius:var(--radius);}
+    .step-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);background:var(--surface);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.7rem;font-weight:500;color:var(--accent);}
+    .step-body{flex:1;}
+    .step-body p{font-size:0.9rem;margin-bottom:0.4rem;}
+    /* Alerts */
+    .alert{border-left:3px solid;padding:0.8rem 1rem;border-radius:var(--radius);margin:0.9rem 0;font-size:0.9rem;}
+    .alert-gold{border-color:var(--accent);background:var(--accent-pale);color:#6b4a1a;}
+    .alert-blue{border-color:var(--accent-2);background:rgba(61,107,140,0.08);color:#1e3d52;}
+    .alert-red{border-color:#c0392b;background:rgba(192,57,43,0.07);color:#7b1f1f;}
+    .alert-green{border-color:#27ae60;background:rgba(39,174,96,0.07);color:#1a5c34;}
+    /* Badges */
+    .kbadge{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.08em;padding:2px 8px;border:1px solid rgba(192,135,63,0.4);color:var(--accent);border-radius:2px;text-transform:uppercase;margin-left:0.5rem;}
+    .kbadge.exam{border-color:#c0392b;color:#c0392b;}
+    .kbadge.warn{border-color:#e67e22;color:#e67e22;}
+    /* Tables */
+    .sg-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.88rem;}
+    .sg-table th{background:var(--surface-2);color:var(--accent);font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:2px solid var(--accent);}
+    .sg-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:#3a3d4a;vertical-align:top;}
+    .sg-table tr:hover td{background:var(--accent-pale);}
+    .hl{background:rgba(192,135,63,0.1);font-weight:600;color:var(--accent);}
+    .hl-red{background:rgba(192,57,43,0.08);color:#c0392b;font-weight:600;}
+    .hl-green{background:rgba(39,174,96,0.08);color:#1a5c34;font-weight:600;}
+    .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    code{font-family:var(--font-mono);font-size:0.85em;background:var(--accent-pale);color:#6b4a1a;padding:2px 6px;border-radius:3px;}
+    /* Checklist */
+    .sg-checklist{list-style:none;padding:0;}
+    .sg-checklist li label{display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0.75rem;border-radius:var(--radius);cursor:pointer;transition:background var(--transition);font-size:0.9rem;color:#3a3d4a;}
+    .sg-checklist li label:hover{background:var(--accent-pale);}
+    .sg-checklist li input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;flex-shrink:0;}
+    .sg-checklist h4{font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin:1rem 0.75rem 0.25rem;font-weight:500;}
+    /* Resources */
+    .resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0.75rem;margin-top:1rem;}
+    .resource-link{font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;padding:0.7rem 1.1rem;border:1px solid var(--border);color:var(--ink-soft);border-radius:2px;transition:all var(--transition);text-decoration:none;display:block;}
+    .resource-link span{display:block;color:var(--muted);font-size:0.62rem;margin-top:3px;text-transform:none;letter-spacing:0;}
+    .resource-link:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-pale);}
+    /* Calculator */
+    .calc-input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:0.7rem 1rem;font-family:var(--font-mono);font-size:0.9rem;color:var(--ink);margin:0.4rem 0;transition:border-color var(--transition);}
+    .calc-input:focus{outline:none;border-color:var(--accent);}
+    .calc-btn{display:inline-flex;align-items:center;gap:0.5rem;font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.8rem 1.8rem;background:var(--accent);color:white;border:none;border-radius:2px;margin-top:0.75rem;cursor:pointer;transition:background var(--transition),transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+    .calc-btn:hover{background:#a67435;transform:translateY(-1px);}
+    .calc-result{display:none;margin-top:1.5rem;}
+    .calc-result.visible{display:block;}
+    /* Table cell helpers */
+    .req-yes{color:#27ae60;font-weight:700;text-align:center;}
+    .req-star{color:#e67e22;font-weight:700;text-align:center;}
+    .req-no{color:var(--border);text-align:center;}
+    footer{background:var(--ink-soft);}
+  </style>
+</head>
+<body>
+
+<div class="cursor-dot" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<!-- HERO -->
+<header class="site-header page-hero" id="top">
+  <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;"></canvas>
+  <a href="index.html" class="hero-back">Home</a>
+  <div class="hero-lecture-badge">EEE-5305 · Lec 9</div>
+  <div class="hero-eyebrow" style="margin-top:auto">Network &amp; Information Security · University of Dhaka</div>
+  <h1 class="hero-name">Cryptographic<br><em>Hash Functions</em></h1>
+  <p class="hero-sub">Pre-images, collisions, digital signatures, MD5, and the entire SHA family.</p>
+  <div class="hero-tags">
+    <span class="tag">Message Digest</span>
+    <span class="tag">Collision Resistance</span>
+    <span class="tag">Birthday Paradox</span>
+    <span class="tag">Digital Signatures</span>
+    <span class="tag">SHA-256</span>
+    <span class="tag">Pre-image Attack</span>
+  </div>
+  <div class="hero-scroll">Scroll to study</div>
+</header>
+
+<!-- SITE NAV -->
+<nav class="site-nav" id="main-nav">
+  <ul>
+    <li><a href="index.html">← Home</a></li>
+    <li><a href="study.html">Study Hub</a></li>
+    <li><a href="study-hash-functions.html" style="border-bottom-color:var(--accent);color:var(--surface)">Hash Guide</a></li>
+    <li><a href="study-mac-authentication.html">MAC Guide</a></li>
+    <li><a href="study-guide-number-theory-finite-fields.html">Number Theory</a></li>
+    <li><a href="#cont">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- STUDY SUB-NAV -->
+<div class="study-nav">
+  <button class="study-tab active" onclick="showTab('plan',this)">📅 Study Plan</button>
+  <button class="study-tab" onclick="showTab('hash',this)">🔍 Hash Fundamentals</button>
+  <button class="study-tab" onclick="showTab('auth',this)">🔐 Auth &amp; Signatures</button>
+  <button class="study-tab" onclick="showTab('sec',this)">⚔️ Security Analysis</button>
+  <button class="study-tab" onclick="showTab('algo',this)">📚 MD5 &amp; SHA</button>
+  <button class="study-tab" onclick="showTab('calc',this)">🧮 Calculator</button>
+  <div class="prog-strip">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+    <span class="prog-pct" id="prog-pct">0%</span>
+  </div>
+</div>
+
+<!-- POMODORO -->
+<div class="pomo-float" id="pf">
+  <button class="pomo-toggle" onclick="togglePomo()">✕</button>
+  <div class="pomo-lbl">Pomodoro</div>
+  <div class="pomo-body">
+    <div class="pomo-ring"><div class="pomo-ring-fill" id="prf"></div></div>
+    <div class="pomo-time" id="ptd">25:00</div>
+    <div class="pomo-modes">
+      <button onclick="setMode(25,'bw')" id="bw" class="active">25m</button>
+      <button onclick="setMode(5,'bs')" id="bs">5m</button>
+      <button onclick="setMode(15,'bl')" id="bl">15m</button>
+    </div>
+    <div class="pomo-ctrl">
+      <button id="ps" onclick="toggleTimer()">Start</button>
+      <button onclick="resetTimer()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 1: STUDY PLAN -->
+<div class="study-panel active" id="panel-plan">
+  <div class="sg-section">
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Overview</div>
+      <h2 style="font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2rem);margin-bottom:1rem">What This Lecture Is Really About</h2>
+      <p style="margin-bottom:0.9rem">A cryptographic hash function maps an arbitrarily long input to a fixed-size digest — and does so in a way that is computationally impossible to reverse or collide. This lecture builds that idea from first principles: why hash functions are useful for authentication, what mathematical properties they must satisfy, how those properties are attacked (especially the distinction between 2<sup>m</sup> pre-image effort and 2<sup>m/2</sup> collision effort due to the birthday paradox), and why that gap drives real algorithm choices like abandoning MD5 in favour of SHA-256.</p>
+      <p>The lecture also covers how hash functions combine with symmetric encryption and public-key cryptography to produce message authentication protocols and digital signatures. The four configurations (a–d) from Stallings Fig. 11.2 and the digital signature formula S = E(PR<sub>A</sub>, H(M)) are high-frequency exam topics.</p>
+      <div class="alert alert-gold"><strong>Key exam points:</strong> (1) 6 requirements of a cryptographic hash function, (2) why collision effort = 2<sup>m/2</sup> not 2<sup>m</sup> (birthday paradox), (3) four message authentication protocol diagrams, (4) digital signature formula S = E(PR<sub>A</sub>, H(M)), (5) which hash properties each application requires (Table 11.2).</div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Topic Checklist</div>
+      <h3>Track Your Progress</h3>
+      <ul class="sg-checklist" id="checklist">
+        <h4>Hash Function Fundamentals</h4>
+        <li><label><input type="checkbox" onchange="updateProgress()"> State the basic definition: H takes variable-length M, produces fixed-size h = H(M)</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Explain all 6 requirements: variable input, fixed output, efficiency, pre-image resistant, second pre-image resistant, collision resistant</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Distinguish weak hash function (first 5 requirements only) from strong hash function (all 6)</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Define pre-image: if h = H(x), then x is a pre-image of h</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Define collision: x ≠ y but H(x) = H(y)</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Compute average pre-images per hash value: 2^(b-n) where b = input bits, n = hash bits</label></li>
+        <h4>Message Authentication with Hashes</h4>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Know the term "message digest" for a hash used in authentication</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Draw and explain Example (a): E(K, [M || H(M)]) — encrypt message + hash</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Draw and explain Example (b): E(K, H(M)) — encrypt only hash code</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Draw and explain Example (c): H(M || S) — hash with shared secret, no encryption</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Draw and explain Example (d): E(K, [M || H(M || S)]) — shared secret + confidentiality</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Know why authentication without encryption is preferred sometimes (speed, cost, patents)</label></li>
+        <h4>Digital Signatures</h4>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Explain why symmetric key cannot provide non-repudiation to third party C</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> State conceptual digital signature: S = E(PR_A, M), verify M' = D(PU_A, S)</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> State practical digital signature using hash: S = E(PR_A, H(M)), verify h = D(PU_A, S)</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Know the 5 signature algorithms: RSA, DSA (FIPS-186), ECDSA, ElGamal, BLS</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Know which hash properties each application requires (Table 11.2)</label></li>
+        <h4>Security Analysis</h4>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Pre-image and 2nd pre-image attack effort: proportional to 2^m (m = hash bits)</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Collision attack effort: proportional to 2^(m/2) — due to birthday paradox</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Explain birthday paradox intuitively (23 people, 50% chance of shared birthday)</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> MD5: 128-bit hash, collision at 2^64 expected but demonstrated at 2^60 — deprecated</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> SHA-1 insecure; SHA-256 current standard; SHA-3 future-proof (different construction)</label></li>
+        <h4>MD5 and SHA Algorithms</h4>
+        <li><label><input type="checkbox" onchange="updateProgress()"> MD5: Ron Rivest 1991, RFC 1321, 128-bit hash, no longer recommended</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> SHA: NIST FIPS 180 (1993), SHA-0 to SHA-1 to SHA-2 to SHA-3</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> Reproduce SHA comparison table: digest size, message size, block size, word size, steps</label></li>
+      </ul>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Resources</div>
+      <h3>Recommended Reading</h3>
+      <div class="resource-grid">
+        <a class="resource-link" href="https://csrc.nist.gov/publications/detail/fips/180/4/final" target="_blank">NIST FIPS 180-4<span>Official SHA-2 specification</span></a>
+        <a class="resource-link" href="https://www.ietf.org/rfc/rfc1321.txt" target="_blank">RFC 1321 — MD5<span>Original MD5 internet standard</span></a>
+        <a class="resource-link" href="https://en.wikipedia.org/wiki/SHA-2" target="_blank">SHA-2 — Wikipedia<span>Full derivation + comparison</span></a>
+        <a class="resource-link" href="https://en.wikipedia.org/wiki/Birthday_problem" target="_blank">Birthday Problem<span>Math behind the paradox</span></a>
+        <a class="resource-link" href="https://www.youtube.com/watch?v=b4b8ktEV4Bg" target="_blank">SHA-256 Explained<span>Visual step-by-step — YouTube</span></a>
+        <a class="resource-link" href="https://cacr.uwaterloo.ca/hac/" target="_blank">Handbook of Applied Crypto<span>Chapter 9 — Hash Functions (free)</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: HASH FUNDAMENTALS -->
+<div class="study-panel" id="panel-hash">
+  <div class="sg-dark">
+    <div class="sg-dark-in">
+      <div class="sg-label" style="color:var(--accent)">Definition</div>
+      <h2 class="section-title" style="color:var(--surface);margin-bottom:2rem">What is a Hash Function?</h2>
+      <div class="two-col">
+        <div>
+          <p style="color:rgba(247,244,238,0.75);margin-bottom:0.9rem">A <strong style="color:var(--accent)">hash function H</strong> takes a variable-length block of data M and produces a fixed-size hash value h:</p>
+          <div class="formula">h = H(M)
+
+  M  = input message (any length)
+  h  = hash value / digest (fixed n bits)
+  H  = the hash function</div>
+          <p style="color:rgba(247,244,238,0.65);margin-top:0.75rem">Applying H to a large set of inputs should produce evenly distributed and random-looking outputs. Used to determine whether data has changed.</p>
+          <div class="alert alert-gold" style="margin-top:1rem"><strong>Applications:</strong> message authentication · digital signatures · one-way password files · intrusion/virus detection · PRNG</div>
+        </div>
+        <div>
+          <div class="diagram" style="text-align:center;line-height:2.2">  ┌───────────────────────────────┐
+  │  Message M  (variable length) │
+  └───────────────┬───────────────┘
+                  │ L bits
+                  ▼
+              ╔═══════╗
+              ║   H   ║  Hash function
+              ╚═══════╝
+                  │
+                  ▼
+            ┌──────────┐
+            │  h = H(M) │  Fixed n bits
+            └──────────┘
+
+  b >> n : many-to-one mapping
+  Avg pre-images per hash = 2^(b-n)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sg-section">
+    <div class="sg-card reveal">
+      <div class="sg-label">Six Requirements</div>
+      <h3>Requirements of a Cryptographic Hash Function <span class="kbadge exam">Must Know</span></h3>
+      <div class="tbl-scroll">
+      <table class="sg-table">
+        <thead><tr><th>#</th><th>Requirement</th><th>Definition</th><th>Also Called</th><th>Brute Force Effort</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">1</td><td><strong>Variable Input Size</strong></td><td>H can be applied to input block of any size</td><td>—</td><td>—</td></tr>
+          <tr><td class="hl">2</td><td><strong>Fixed Output Size</strong></td><td>H always produces fixed n-bit output</td><td>—</td><td>—</td></tr>
+          <tr><td class="hl">3</td><td><strong>Efficiency</strong></td><td>H(x) is easy to compute for any input x — practical implementations exist</td><td>—</td><td>—</td></tr>
+          <tr style="background:rgba(192,135,63,0.04)"><td class="hl">4</td><td><strong>Pre-image Resistant</strong></td><td>For any given h, infeasible to find y such that H(y) = h</td><td><em>One-way property</em></td><td>2<sup>m</sup></td></tr>
+          <tr style="background:rgba(192,135,63,0.04)"><td class="hl">5</td><td><strong>Second Pre-image Resistant</strong></td><td>For any given x, infeasible to find y ≠ x with H(y) = H(x)</td><td><em>Weak collision resistant</em></td><td>2<sup>m</sup></td></tr>
+          <tr style="background:rgba(61,107,140,0.05)"><td style="color:var(--accent-2);font-weight:700">6</td><td><strong>Collision Resistant</strong></td><td>Infeasible to find any pair (x, y) such that H(x) = H(y)</td><td><em>Strong collision resistant</em></td><td>2<sup>m/2</sup> birthday!</td></tr>
+          <tr><td>+</td><td><strong>Pseudo-randomness</strong></td><td>Output of H meets standard tests for pseudo-randomness</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="two-col" style="margin-top:1rem">
+        <div class="alert alert-gold"><strong>Weak hash function:</strong> Satisfies requirements 1–5 only (not collision resistant). Sufficient for some applications like hash + symmetric encryption.</div>
+        <div class="alert alert-blue"><strong>Strong hash function:</strong> Satisfies all 6 requirements including collision resistance. Required for digital signatures and MACs.</div>
+      </div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Pre-images and Collisions</div>
+      <h3>Pre-image Mathematics <span class="kbadge exam">Exam</span></h3>
+      <div class="step-item">
+        <div class="step-dot">1</div>
+        <div class="step-body"><p><strong>Pre-image:</strong> For hash value h = H(x), x is a <strong>pre-image</strong> of h. Because H is many-to-one, every hash value has multiple pre-images.</p></div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">2</div>
+        <div class="step-body"><p><strong>Collision:</strong> Occurs when x ≠ y but H(x) = H(y). Collisions are undesirable — an attacker who finds one can substitute a malicious message for a legitimate one with the same hash.</p></div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">3</div>
+        <div class="step-body">
+          <p><strong>Counting pre-images:</strong> If H takes b-bit input blocks and produces n-bit hash codes (where b &gt; n):</p>
+          <div class="formula">  Input space:  2^b  possible messages
+  Hash space:   2^n  possible hash codes
+
+  Average pre-images per hash value:
+    2^b / 2^n = 2^(b-n)
+
+  Example: SHA-256 (b=512-bit blocks, n=256-bit hash)
+    Each hash has avg 2^(512-256) = 2^256 pre-images
+    Finding one specific pre-image: still 2^256 operations</div>
+        </div>
+      </div>
+      <div class="alert alert-red">Having many pre-images per hash does NOT make them easy to find. Pre-image resistance guarantees it remains infeasible regardless of how many pre-images exist.</div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Application Requirements</div>
+      <h3>Which Properties Does Each Application Need? <span class="kbadge exam">Table 11.2</span></h3>
+      <div class="tbl-scroll">
+      <table class="sg-table">
+        <thead><tr><th>Application</th><th style="text-align:center">Pre-image Resistant</th><th style="text-align:center">2nd Pre-image Resistant</th><th style="text-align:center">Collision Resistant</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Hash + Digital Signature</strong></td><td class="req-yes">Yes</td><td class="req-yes">Yes</td><td class="req-star">Yes *</td></tr>
+          <tr><td><strong>Intrusion &amp; Virus Detection</strong></td><td class="req-no">—</td><td class="req-yes">Yes</td><td class="req-no">—</td></tr>
+          <tr><td><strong>Hash + Symmetric Encryption</strong></td><td class="req-no">—</td><td class="req-no">—</td><td class="req-no">—</td></tr>
+          <tr><td><strong>One-way Password File</strong></td><td class="req-yes">Yes</td><td class="req-no">—</td><td class="req-no">—</td></tr>
+          <tr><td><strong>MAC</strong></td><td class="req-yes">Yes</td><td class="req-yes">Yes</td><td class="req-star">Yes *</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:0.5rem">* Resistance required if attacker can mount a chosen message attack. (Stallings Table 11.2)</p>
+      <div class="alert alert-blue" style="margin-top:0.9rem">Hash + Symmetric Encryption needs none of the three — the encryption provides security. The hash is only used to detect accidental corruption.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: AUTH & SIGNATURES -->
+<div class="study-panel" id="panel-auth">
+  <div class="sg-section">
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Message Authentication</div>
+      <h3>Four Hash-Based Authentication Protocols <span class="kbadge exam">Exam</span></h3>
+      <p style="margin-bottom:1rem">A hash function used to provide message authentication is called a <strong>message digest</strong>. It verifies data integrity and sender identity. Four configurations from Stallings Fig. 11.2:</p>
+
+      <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:1rem 0 0.4rem">(a) Encrypt Message and Hash — Full Confidentiality + Auth</p>
+      <div class="diagram">Source A:  M ──► H(M) ──► [M || H(M)] ──► E(K, [M || H(M)]) ──► Channel
+
+Receiver B: Decrypt with K → get M and H(M) → recompute H(M) → Compare ✓
+
+Transmitted: E(K, [M || H(M)])
+Provides: Confidentiality + Source Auth + Data Auth
+Note: both message AND hash are encrypted together.</div>
+
+      <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:0.75rem 0 0.4rem">(b) Encrypt Only Hash — Auth Without Full Confidentiality</p>
+      <div class="diagram">Source A:  M sent in clear
+           M ──► H(M) ──► E(K, H(M))  ────────────────────────► Channel
+
+Receiver B: Receives M (clear) + E(K,H(M)), decrypt tag → H(M), recompute H(M) → Compare ✓
+
+Transmitted: M || E(K, H(M))
+Provides: Source Auth + Data Auth (NO confidentiality)
+Benefit: Reduces computation when confidentiality is not required.</div>
+
+      <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:0.75rem 0 0.4rem">(c) Hash With Shared Secret — No Encryption Needed</p>
+      <div class="diagram">Source A:  [M || S] ──► H(M || S)
+           Send M and H(M || S) — no encryption ──────────────► Channel
+
+Receiver B: Appends shared secret S to received M, recomputes H(M||S) → Compare ✓
+
+Transmitted: M || H(M || S)
+Provides: Source Auth + Data Auth (NO confidentiality)
+Key insight: S is never sent. Only someone who knows S can produce valid H(M||S).</div>
+
+      <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:0.75rem 0 0.4rem">(d) Shared Secret Combined With Confidentiality</p>
+      <div class="diagram">Source A:  [M || S] ──► H(M||S) ──► [M || H(M||S)] ──► E(K, [M || H(M||S)])
+
+Receiver B: Decrypt → M and H(M||S) → recompute H(M||S) with S → Compare ✓
+
+Transmitted: E(K, [M || H(M || S)])
+Provides: Confidentiality + Source Auth + Data Auth (strongest configuration)</div>
+
+      <div class="alert alert-gold" style="margin-top:1rem"><strong>Why avoid encryption for authentication?</strong> Software encryption is slow · Hardware encryption has financial costs and may be inefficient for small data · Encryption algorithms may be patented · For auth-only needs, configurations (b) and (c) are preferred.</div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Digital Signatures</div>
+      <h3>Why Public Key is Needed <span class="kbadge exam">Exam</span></h3>
+      <div class="two-col">
+        <div>
+          <p style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:#c0392b;margin-bottom:0.6rem">Symmetric Key — No Non-repudiation</p>
+          <div class="step-item" style="background:rgba(192,57,43,0.05)">
+            <div class="step-dot" style="border-color:#c0392b;color:#c0392b">✗</div>
+            <div class="step-body"><p>A and B share secret key K. A can verify message came from B. But third-party C <em>cannot</em> prove it came from B specifically — it may also have come from A. No third-party verifiability.</p></div>
+          </div>
+        </div>
+        <div>
+          <p style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:#27ae60;margin-bottom:0.6rem">Public Key — Full Non-repudiation</p>
+          <div class="step-item" style="background:rgba(39,174,96,0.05)">
+            <div class="step-dot" style="border-color:#27ae60;color:#27ae60">✓</div>
+            <div class="step-body"><p>Only A holds private key PR<sub>A</sub>. Anyone with A's public key PU<sub>A</sub> can verify the signature. Even user C can independently verify the message came from A — provides non-repudiation.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Digital Signature Operations</div>
+      <h3>Concept vs. Practice <span class="kbadge exam">Must Memorise</span></h3>
+      <div class="two-col">
+        <div>
+          <p style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">Conceptual (sign entire message)</p>
+          <div class="formula" style="font-size:0.82rem">Signing:
+  S = E(PR_A, M)
+  (encrypt whole M with private key)
+
+Verification:
+  M' = D(PU_A, S)
+  If M' = M → verified ✓
+
+Problem: expensive — must encrypt
+the entire (possibly large) message.</div>
+        </div>
+        <div>
+          <p style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem">Practical (sign hash of message)</p>
+          <div class="formula" style="font-size:0.82rem">Signing:
+  S = E(PR_A, H(M))
+  (encrypt hash of M with private key)
+
+Verification:
+  h = D(PU_A, S)
+  Compute H(M) from received M.
+  If H(M) = h → verified ✓
+
+Advantage: hash is fixed small size
+(e.g. 256 bits) regardless of M.</div>
+        </div>
+      </div>
+      <div class="alert alert-blue" style="margin-top:0.9rem"><strong>Why hash before signing?</strong> Public-key operations (RSA, ECDSA) are expensive. Hashing first reduces M to a fixed small digest which is then signed. The hash guarantees that any change to M is detectable.</div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Signature Algorithms</div>
+      <h3>Standard Digital Signature Algorithms</h3>
+      <div class="tbl-scroll">
+      <table class="sg-table">
+        <thead><tr><th>Algorithm</th><th>Basis</th><th>Standard</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>RSA</strong></td><td>Integer factorization</td><td>PKCS#1, RFC 8017</td><td class="hl-green">✓ Widely used</td></tr>
+          <tr><td><strong>DSA</strong></td><td>Discrete logarithm</td><td>FIPS 186 (NIST)</td><td class="hl-green">✓ US standard</td></tr>
+          <tr><td><strong>ECDSA</strong></td><td>DSA with elliptic curve crypto</td><td>FIPS 186-4</td><td class="hl-green">✓ Preferred (small keys)</td></tr>
+          <tr><td><strong>ElGamal</strong></td><td>Discrete log (DSA is enhancement)</td><td>—</td><td style="color:var(--muted)">Academic basis</td></tr>
+          <tr><td><strong>BLS</strong></td><td>Bilinear pairing on elliptic curves</td><td>—</td><td style="color:#e67e22">Emerging (blockchain)</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="alert alert-gold" style="margin-top:0.9rem">Hash algorithms used with signatures: SHA-2 family (primarily SHA-256). Required properties: pre-image resistant + second pre-image resistant + collision resistant (if chosen message attack possible).</div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: SECURITY ANALYSIS -->
+<div class="study-panel" id="panel-sec">
+  <div class="sg-section">
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Brute Force Attacks</div>
+      <h3>Two Fundamentally Different Attack Types <span class="kbadge exam">Exam</span></h3>
+      <div class="two-col">
+        <div>
+          <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem">Pre-image and 2nd Pre-image Attack</p>
+          <div class="step-item"><div class="step-dot">Goal</div><div class="step-body"><p>Find y that produces a specific target hash h. Either H(y) = h (pre-image) or given x, find y ≠ x with H(y) = H(x) (2nd pre-image).</p></div></div>
+          <div class="step-item"><div class="step-dot">How</div><div class="step-body"><p>Try all possible values of y. Must try approximately 2<sup>m</sup> inputs before finding a match in an m-bit hash space.</p></div></div>
+          <div class="step-item" style="border-left:2px solid var(--accent)"><div class="step-dot">∴</div><div class="step-body"><div class="formula" style="margin:0">Effort ∝ 2^m</div></div></div>
+        </div>
+        <div>
+          <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent-2);margin-bottom:0.75rem">Collision Resistant Brute Attack</p>
+          <div class="step-item"><div class="step-dot">Goal</div><div class="step-body"><p>Find <em>any</em> two messages with the same hash — no specific target. Just find any x ≠ y with H(x) = H(y).</p></div></div>
+          <div class="step-item"><div class="step-dot">Why Easier</div><div class="step-body"><p>Due to the birthday paradox, finding any two matching values only requires approximately 2<sup>m/2</sup> trials — far fewer than 2<sup>m</sup>.</p></div></div>
+          <div class="step-item" style="border-left:2px solid var(--accent-2)"><div class="step-dot">∴</div><div class="step-body"><div class="formula" style="margin:0">Effort ∝ 2^(m/2)</div></div></div>
+        </div>
+      </div>
+      <div class="alert alert-red" style="margin-top:1rem"><strong>Critical implication:</strong> MD5 (128-bit hash) provides only 2<sup>64</sup> collision resistance. Practical collision attacks have been demonstrated at 2<sup>60</sup> operations — trivially achievable today. MD5 is broken for security use.</div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Birthday Paradox</div>
+      <h3>Why Collisions Are Found So Much Faster <span class="kbadge exam">Exam</span></h3>
+      <div class="step-item"><div class="step-dot">🎂</div><div class="step-body"><p><strong>Real-world birthday paradox:</strong> In a room of 23 people, the probability two share a birthday exceeds 50%. Seems surprising since 23 is much smaller than 365. The key: each new person can potentially match any of the previous people — there are C(23,2) = 253 potential pairs.</p></div></div>
+      <div class="step-item"><div class="step-dot">H</div><div class="step-body"><p><strong>Applied to hash collisions:</strong> In an m-bit hash space (2<sup>m</sup> values), after generating approximately 2<sup>m/2</sup> random messages, the probability that two share the same hash exceeds 50%. Each new message can match any previously computed hash.</p></div></div>
+      <div class="formula">Birthday Bound Analysis:
+  Hash size:  m bits → 2^m possible hash values
+
+  Probability of at least 1 collision after k messages:
+    P(collision) ≈ 1 − e^(−k² / 2^(m+1))
+
+  P > 0.5 when k ≈ 2^(m/2)
+
+  MD5  (m=128):  collision threshold ≈ 2^64   → BROKEN (practical at 2^60)
+  SHA-1 (m=160): collision threshold ≈ 2^80   → BROKEN (SHAttered, 2017)
+  SHA-256 (m=256): collision threshold ≈ 2^128 → Currently infeasible
+  SHA-512 (m=512): collision threshold ≈ 2^256 → Infeasible, high-security use</div>
+
+      <div class="tbl-scroll" style="margin-top:1rem">
+      <table class="sg-table">
+        <thead><tr><th>Hash Function</th><th>Hash Size</th><th>Pre-image Effort</th><th>Collision Effort (Birthday)</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>MD5</strong></td><td class="hl">128 bits</td><td>2<sup>128</sup></td><td class="hl-red">2<sup>64</sup> (broken at 2<sup>60</sup>)</td><td class="hl-red">✗ Deprecated</td></tr>
+          <tr><td><strong>SHA-1</strong></td><td>160 bits</td><td>2<sup>160</sup></td><td class="hl-red">2<sup>80</sup> (SHAttered 2017)</td><td class="hl-red">✗ Deprecated</td></tr>
+          <tr><td><strong>SHA-256</strong></td><td>256 bits</td><td>2<sup>256</sup></td><td class="hl-green">2<sup>128</sup></td><td class="hl-green">✓ Current standard</td></tr>
+          <tr><td><strong>SHA-512</strong></td><td>512 bits</td><td>2<sup>512</sup></td><td>2<sup>256</sup></td><td class="hl-green">✓ High-security</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Practical Notes</div>
+      <h3>Cryptanalysis vs. Brute Force</h3>
+      <div class="step-item"><div class="step-dot">→</div><div class="step-body"><p>Cryptanalysis attacks exploit structural weaknesses in specific algorithms. They can dramatically reduce effort below the birthday bound — as happened with MD5 (birthday = 2<sup>64</sup>, practical attacks at 2<sup>60</sup>).</p></div></div>
+      <div class="step-item"><div class="step-dot">→</div><div class="step-body"><p>Collision resistance is the most desirable property for general hash algorithms. It implies second pre-image resistance and is harder to achieve.</p></div></div>
+      <div class="step-item" style="border-left:2px solid #27ae60"><div class="step-dot" style="border-color:#27ae60;color:#27ae60">✓</div><div class="step-body"><p><strong>SHA-256 and SHA-3:</strong> No known practical collision attacks. Collision attacks on either are computationally infeasible with all currently foreseeable hardware advances.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: MD5 & SHA -->
+<div class="study-panel" id="panel-algo">
+  <div class="sg-section">
+
+    <div class="sg-card reveal">
+      <div class="sg-label">MD5</div>
+      <h3>Message Digest 5 <span class="kbadge warn">Deprecated</span></h3>
+      <div class="two-col">
+        <div>
+          <div class="step-item"><div class="step-dot">📅</div><div class="step-body"><p>Developed by <strong>Ron Rivest</strong> at MIT in <strong>1991</strong></p></div></div>
+          <div class="step-item"><div class="step-dot">📄</div><div class="step-body"><p>Standardised by IETF in <strong>RFC 1321</strong></p></div></div>
+          <div class="step-item"><div class="step-dot">n</div><div class="step-body"><p>Generates a <strong>128-bit (16-byte)</strong> hash digest</p></div></div>
+        </div>
+        <div>
+          <div class="step-item" style="border-left:2px solid #c0392b"><div class="step-dot" style="border-color:#c0392b;color:#c0392b">!</div><div class="step-body"><p>Was widely used for passwords, file integrity, and certificates. <strong>No longer recommended.</strong> Collision and other attacks are possible. Public tools exist.</p></div></div>
+          <div class="step-item" style="border-left:2px solid #c0392b"><div class="step-dot" style="border-color:#c0392b;color:#c0392b">!</div><div class="step-body"><p>128-bit → birthday collision at 2<sup>64</sup>, but practical attacks demonstrated at ≈2<sup>60</sup>. Do not use for digital signatures, certificates, or password storage.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">SHA Family</div>
+      <h3>Secure Hash Algorithm <span class="kbadge">NIST Standard</span></h3>
+      <div class="step-item"><div class="step-dot">📋</div><div class="step-body"><p>Developed by NIST. Standardised in <strong>FIPS 180</strong> in 1993. Improved over time: SHA-0 → SHA-1 → SHA-2 → SHA-3.</p></div></div>
+      <div class="step-item" style="border-left:2px solid #c0392b"><div class="step-dot" style="border-color:#c0392b;color:#c0392b">!</div><div class="step-body"><p><strong>SHA-1 and SHA-0 are insecure</strong> — no longer recommended. Google demonstrated a SHA-1 collision in 2017 (SHAttered attack, costing ~110 GPU-years).</p></div></div>
+      <div class="step-item" style="border-left:2px solid #27ae60"><div class="step-dot" style="border-color:#27ae60;color:#27ae60">✓</div><div class="step-body"><p><strong>SHA-3</strong> was selected via open NIST competition (Keccak algorithm won). Uses sponge construction — fundamentally different architecture from SHA-2. Both SHA-2 and SHA-3 are currently secure.</p></div></div>
+
+      <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin:1.2rem 0 0.5rem">SHA Parameter Comparison — Stallings Table 11.3</p>
+      <div class="tbl-scroll">
+      <table class="sg-table">
+        <thead><tr><th>Parameter</th><th style="color:#c0392b">SHA-1</th><th>SHA-224</th><th class="hl">SHA-256</th><th>SHA-384</th><th>SHA-512</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Message Digest Size (bits)</strong></td><td class="hl-red">160</td><td>224</td><td class="hl">256</td><td>384</td><td>512</td></tr>
+          <tr><td><strong>Max Message Size (bits)</strong></td><td>&lt; 2<sup>64</sup></td><td>&lt; 2<sup>64</sup></td><td class="hl">&lt; 2<sup>64</sup></td><td>&lt; 2<sup>128</sup></td><td>&lt; 2<sup>128</sup></td></tr>
+          <tr><td><strong>Block Size (bits)</strong></td><td>512</td><td>512</td><td class="hl">512</td><td>1024</td><td>1024</td></tr>
+          <tr><td><strong>Word Size (bits)</strong></td><td>32</td><td>32</td><td class="hl">32</td><td>64</td><td>64</td></tr>
+          <tr><td><strong>Number of Steps</strong></td><td>80</td><td>64</td><td class="hl">64</td><td>80</td><td>80</td></tr>
+          <tr><td><strong>Collision Effort</strong></td><td class="hl-red">2<sup>80</sup> (broken)</td><td>2<sup>112</sup></td><td class="hl-green">2<sup>128</sup></td><td>2<sup>192</sup></td><td>2<sup>256</sup></td></tr>
+          <tr><td><strong>Status</strong></td><td class="hl-red">Deprecated</td><td style="color:#e67e22">Legacy</td><td class="hl-green">✓ Current</td><td class="hl-green">✓ High-sec</td><td class="hl-green">✓ High-sec</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="alert alert-gold" style="margin-top:0.9rem">SHA-224 and SHA-256 share block size (512 bits) and word size (32 bits), differing only in output length. SHA-384 and SHA-512 use 64-bit words and 1024-bit blocks — same algorithm with different initialisation vectors and truncated output.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 6: CALCULATOR -->
+<div class="study-panel" id="panel-calc">
+  <div class="sg-section">
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Tool 1</div>
+      <h3>Brute-Force Attack Effort Calculator</h3>
+      <p style="margin-bottom:1rem">Given m (hash size in bits), compute pre-image effort (2<sup>m</sup>) vs. collision effort (2<sup>m/2</sup>) and show the birthday gap.</p>
+      <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Hash size m (bits)</label>
+      <input class="calc-input" id="inp-m" type="number" value="128" min="1" max="1024">
+      <button class="calc-btn" onclick="runAttack()">▶ Compute Attack Effort</button>
+      <div class="calc-result" id="atk-result">
+        <div class="formula" id="atk-output"></div>
+        <div id="atk-verdict"></div>
+      </div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Tool 2</div>
+      <h3>Pre-image Count Calculator</h3>
+      <p style="margin-bottom:1rem">Given input block size b and hash output size n (b &gt; n), compute average pre-images per hash value: 2<sup>b−n</sup>.</p>
+      <div class="two-col">
+        <div>
+          <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Input block size b (bits)</label>
+          <input class="calc-input" id="inp-b" type="number" value="512" min="2">
+        </div>
+        <div>
+          <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Hash output size n (bits)</label>
+          <input class="calc-input" id="inp-n" type="number" value="256" min="1">
+        </div>
+      </div>
+      <button class="calc-btn" onclick="runPreimage()">▶ Compute Pre-image Count</button>
+      <div class="calc-result" id="pi-result">
+        <div class="formula" id="pi-output"></div>
+        <div id="pi-verdict"></div>
+      </div>
+    </div>
+
+    <div class="sg-card reveal">
+      <div class="sg-label">Tool 3</div>
+      <h3>Hash Property Requirement Checker</h3>
+      <p style="margin-bottom:1rem">Select an application and see which hash properties it requires (from Table 11.2).</p>
+      <label style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem">Select Application</label>
+      <select class="calc-input" id="app-select" style="cursor:pointer">
+        <option value="sig">Hash + Digital Signature</option>
+        <option value="ids">Intrusion Detection / Virus Detection</option>
+        <option value="sym">Hash + Symmetric Encryption</option>
+        <option value="pwd">One-way Password File</option>
+        <option value="mac">MAC (Message Authentication Code)</option>
+      </select>
+      <button class="calc-btn" onclick="runReqCheck()">▶ Show Required Properties</button>
+      <div class="calc-result" id="req-result"><div id="req-output"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<section id="cont" style="background:var(--ink);padding:4rem 8vw">
+  <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:2.5rem">
+    <div>
+      <div class="section-label" style="color:var(--accent)">Contact</div>
+      <h2 style="font-family:var(--font-display);color:var(--surface);font-size:1.9rem;margin-bottom:0.4rem">Collaborate on research.</h2>
+      <p style="color:rgba(247,244,238,0.45);font-size:0.92rem">Open to discussions on cryptography, network security, IoT and 6G.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.7rem">
+      <a href="mailto:arkomustafi20@gmail.com" class="contact-link">Email</a>
+      <a href="https://www.linkedin.com/in/arkomustafi/" class="contact-link" target="_blank">LinkedIn</a>
+      <a href="index.html" class="contact-link">← Back to Home</a>
+    </div>
+  </div>
+</section>
+
+<footer><p>© Arko Mustafi · University of Dhaka · EEE · Study Guide — Cryptographic Hash Functions</p></footer>
+
+<script>
+/* Tab switching */
+function showTab(id,btn){
+  document.querySelectorAll('.study-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.study-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  window.scrollTo({top:document.querySelector('.study-nav').offsetTop-62,behavior:'smooth'});
+}
+/* Progress */
+function updateProgress(){
+  const all=document.querySelectorAll('#checklist input[type=checkbox]');
+  const done=document.querySelectorAll('#checklist input[type=checkbox]:checked');
+  const pct=all.length?Math.round((done.length/all.length)*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+}
+/* Scroll reveal */
+const revObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revObs.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+/* Nav active state */
+const secs=document.querySelectorAll('section[id],header[id]');
+const navLs=document.querySelectorAll('.site-nav a');
+const navObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){navLs.forEach(l=>l.style.borderBottomColor='transparent');const a=document.querySelector(`.site-nav a[href="#${e.target.id}"]`);if(a)a.style.borderBottomColor='var(--accent)';}});},{threshold:0.3});
+secs.forEach(s=>navObs.observe(s));
+/* Shared */
+const PRM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const IFP=window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+const MAG=document.querySelectorAll('.tag,.cv-btn,.contact-link,.site-nav ul li a,.calc-btn,.study-tab');
+/* Cursor */
+const CD=document.querySelector('.cursor-dot'),CR=document.querySelector('.cursor-ring');
+if(CD&&CR&&IFP){
+  let mx=-100,my=-100,rx=-100,ry=-100,act=false;
+  const ease=PRM?1:0.18;
+  window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;CD.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`;if(!act){rx=mx;ry=my;act=true;document.documentElement.classList.add('cursor-enabled');}});
+  (function ring(){if(act){rx+=(mx-rx)*ease;ry+=(my-ry)*ease;CR.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`;}requestAnimationFrame(ring);})();
+  MAG.forEach(el=>{el.addEventListener('mouseenter',()=>{CR.classList.add('is-active');CD.classList.add('is-active');});el.addEventListener('mouseleave',()=>{CR.classList.remove('is-active');CD.classList.remove('is-active');});});
+}
+/* Magnetic pull */
+if(!PRM){MAG.forEach(el=>{el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();el.style.transform=`translate(${(e.clientX-(r.left+r.width/2))*0.3}px,${(e.clientY-(r.top+r.height/2))*0.3}px)`;});el.addEventListener('mouseleave',()=>{el.style.transform='';});});}
+/* Hero canvas — identical to home signal-mesh */
+if(!PRM){
+  const canvas=document.getElementById('hero-canvas'),heroEl=document.getElementById('top');
+  if(canvas&&heroEl){
+    const ctx=canvas.getContext('2d');
+    const LINK=130,MOUSE=170,REPEL=90;
+    let w,h,dpr,particles=[],rafId;
+    const ptr={x:-9999,y:-9999,active:false};
+    function resize(){const r=heroEl.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);w=r.width;h=r.height;canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+    function seed(){const cnt=Math.min(110,Math.max(36,Math.floor((w*h)/9000)));particles=Array.from({length:cnt},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.4+.8}));}
+    function setPtr(cx,cy){const r=canvas.getBoundingClientRect();ptr.x=cx-r.left;ptr.y=cy-r.top;ptr.active=ptr.x>=0&&ptr.x<=w&&ptr.y>=0&&ptr.y<=h;}
+    function tick(){
+      ctx.clearRect(0,0,w,h);
+      for(const p of particles){
+        p.x+=p.vx;p.y+=p.vy;
+        if(ptr.active){const dx=p.x-ptr.x,dy=p.y-ptr.y,d=Math.sqrt(dx*dx+dy*dy);if(d<REPEL&&d>.01){const f=(REPEL-d)/REPEL;p.x+=(dx/d)*f*1.6;p.y+=(dy/d)*f*1.6;}}
+        if(p.x<-20)p.x=w+20;if(p.x>w+20)p.x=-20;if(p.y<-20)p.y=h+20;if(p.y>h+20)p.y=-20;
+      }
+      for(let i=0;i<particles.length;i++){
+        for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<LINK){ctx.strokeStyle=`rgba(247,244,238,${(1-d/LINK)*.14})`;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();}}
+        if(ptr.active){const dx=particles[i].x-ptr.x,dy=particles[i].y-ptr.y,d=Math.sqrt(dx*dx+dy*dy);if(d<MOUSE){ctx.strokeStyle=`rgba(192,135,63,${(1-d/MOUSE)*.55})`;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(ptr.x,ptr.y);ctx.stroke();}}
+      }
+      for(const p of particles){ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(247,244,238,0.5)';ctx.fill();}
+      if(ptr.active){ctx.beginPath();ctx.arc(ptr.x,ptr.y,8,0,Math.PI*2);ctx.strokeStyle='rgba(192,135,63,0.35)';ctx.lineWidth=1;ctx.stroke();ctx.beginPath();ctx.arc(ptr.x,ptr.y,3,0,Math.PI*2);ctx.fillStyle='rgba(192,135,63,0.9)';ctx.fill();}
+      rafId=requestAnimationFrame(tick);
+    }
+    window.addEventListener('mousemove',e=>setPtr(e.clientX,e.clientY));
+    window.addEventListener('mouseleave',()=>{ptr.active=false;});
+    window.addEventListener('touchmove',e=>{if(e.touches.length)setPtr(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+    window.addEventListener('touchend',()=>{ptr.active=false;});
+    let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{resize();seed();},200);});
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAnimationFrame(rafId);else rafId=requestAnimationFrame(tick);});
+    resize();seed();rafId=requestAnimationFrame(tick);
+  }
+}
+/* Pomodoro */
+let pL=25*60,pM=25*60,pR=false,pI=null;
+function renderP(){const m=Math.floor(pL/60),s=pL%60;document.getElementById('ptd').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');document.getElementById('prf').style.width=(pL/pM*100)+'%';}
+function toggleTimer(){if(pR){clearInterval(pI);pI=null;pR=false;document.getElementById('ps').textContent='Start';document.getElementById('ps').classList.remove('running');}else{pR=true;document.getElementById('ps').textContent='Pause';document.getElementById('ps').classList.add('running');pI=setInterval(pTick,1000);}}
+function pTick(){if(pL<=0){clearInterval(pI);pI=null;pR=false;document.getElementById('ps').textContent='Start';document.getElementById('ps').classList.remove('running');pFlash();return;}pL--;renderP();}
+function resetTimer(){clearInterval(pI);pI=null;pR=false;document.getElementById('ps').textContent='Start';document.getElementById('ps').classList.remove('running');pL=pM;renderP();}
+function setMode(m,bid){clearInterval(pI);pI=null;pR=false;document.getElementById('ps').textContent='Start';document.getElementById('ps').classList.remove('running');pM=m*60;pL=pM;['bw','bs','bl'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById(bid).classList.add('active');renderP();}
+function pFlash(){const d=document.getElementById('ptd');d.classList.add('flash');setTimeout(()=>d.classList.remove('flash'),2000);try{const c=new(window.AudioContext||window.webkitAudioContext)();[0,350,700].forEach(dl=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(0.35,c.currentTime+dl/1000);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dl/1000+0.3);o.start(c.currentTime+dl/1000);o.stop(c.currentTime+dl/1000+0.3);});}catch(e){}}
+function togglePomo(){const f=document.getElementById('pf');const b=f.querySelector('.pomo-toggle');f.classList.toggle('collapsed');b.textContent=f.classList.contains('collapsed')?'+':'✕';}
+/* Calculators */
+function runAttack(){
+  const m=parseInt(document.getElementById('inp-m').value);
+  if(isNaN(m)||m<1)return;
+  let vc='alert-red',vt='Below minimum security threshold — achievable on modern hardware.';
+  if(m>=128){vc='alert-gold';vt='Adequate — meets NIST minimum recommendations.';}
+  if(m>=256){vc='alert-green';vt='Strong — collision resistant against all currently foreseeable attacks.';}
+  document.getElementById('atk-output').textContent=
+'Hash size: m = '+m+' bits\n'+
+'─────────────────────────────────────────\n'+
+'  Pre-image attack effort:     2^'+m+'\n'+
+'  2nd pre-image attack effort: 2^'+m+'\n'+
+'  Collision attack effort:     2^'+Math.floor(m/2)+'   ← birthday paradox\n'+
+'─────────────────────────────────────────\n'+
+'  Effective collision security: 2^'+Math.floor(m/2)+'\n'+
+'  Birthday gap: 2^'+m+' / 2^'+Math.floor(m/2)+' = 2^'+Math.floor(m/2)+'\n\n'+
+'  MD5  (m=128): collision demonstrated at 2^60 — BROKEN\n'+
+'  SHA-1 (m=160): SHAttered (2017) — BROKEN\n'+
+'  SHA-256 (m=256): collision at 2^128 — currently infeasible';
+  document.getElementById('atk-verdict').innerHTML='<div class="alert '+vc+'" style="margin-top:0.75rem">'+vt+' Pre-image: 2<sup>'+m+'</sup> &nbsp;·&nbsp; Collision: 2<sup>'+Math.floor(m/2)+'</sup></div>';
+  document.getElementById('atk-result').classList.add('visible');
+}
+function runPreimage(){
+  const b=parseInt(document.getElementById('inp-b').value);
+  const n=parseInt(document.getElementById('inp-n').value);
+  if(isNaN(b)||isNaN(n)||b<1||n<1)return;
+  const diff=b-n;
+  let verdict='';
+  if(diff<=0){verdict='<div class="alert alert-red" style="margin-top:0.75rem">Error: b must be greater than n for a many-to-one hash function.</div>';}
+  else{verdict='<div class="alert alert-gold" style="margin-top:0.75rem">Each hash value has on average <strong>2<sup>'+diff+'</sup></strong> pre-images. Finding any specific one still requires ≈2<sup>'+n+'</sup> operations (pre-image resistance).</div>';}
+  document.getElementById('pi-output').textContent=
+'Input block size:  b = '+b+' bits → 2^'+b+' possible messages\n'+
+'Hash output size:  n = '+n+' bits → 2^'+n+' possible hash codes\n'+
+'─────────────────────────────────────────\n'+
+'  Compression ratio:       2^'+b+' / 2^'+n+' = 2^'+diff+'\n'+
+'  Avg pre-images per hash: 2^(b-n) = 2^'+diff+'\n\n'+
+'  Pre-image attack effort: 2^'+n+'  (find input for a specific hash)';
+  document.getElementById('pi-verdict').innerHTML=verdict;
+  document.getElementById('pi-result').classList.add('visible');
+}
+const appData={
+  sig:{name:'Hash + Digital Signature',pi:true,spi:true,cr:true,note:'All three properties required. Collision resistance needed if attacker can mount a chosen message attack.'},
+  ids:{name:'Intrusion/Virus Detection',pi:false,spi:true,cr:false,note:'Only second pre-image resistance is needed: attacker must not substitute malware with same hash as a legitimate file.'},
+  sym:{name:'Hash + Symmetric Encryption',pi:false,spi:false,cr:false,note:'None of the three resistance properties are strictly required — the symmetric encryption provides security.'},
+  pwd:{name:'One-way Password File',pi:true,spi:false,cr:false,note:'Pre-image resistance is essential: an attacker with the hash file must not be able to recover the password.'},
+  mac:{name:'MAC (Message Authentication Code)',pi:true,spi:true,cr:true,note:'All three required (collision resistance needed if chosen message attack is possible). HMAC-SHA256 satisfies all three.'}
+};
+function runReqCheck(){
+  const d=appData[document.getElementById('app-select').value];
+  const yn=v=>v?'<span style="color:#27ae60;font-weight:700">Required</span>':'<span style="color:var(--muted)">Not required</span>';
+  document.getElementById('req-output').innerHTML=
+'<div class="formula" style="margin-top:1rem">Application: '+d.name+'\n'
++'─────────────────────────────────────────\n'
++'  Pre-image Resistant:        '+(d.pi?'REQUIRED':'Not required')+'\n'
++'  Second Pre-image Resistant: '+(d.spi?'REQUIRED':'Not required')+'\n'
++'  Collision Resistant:        '+(d.cr?'REQUIRED (if chosen message attack possible)':'Not required')+'\n'
++'</div>'
++'<div class="alert alert-blue" style="margin-top:0.75rem">'+d.note+'</div>';
+  document.getElementById('req-result').classList.add('visible');
+}
+/* Init */
+document.addEventListener('DOMContentLoaded',()=>{updateProgress();renderP();});
+</script>
+</body>
+</html>
