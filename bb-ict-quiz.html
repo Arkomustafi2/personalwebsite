@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BB AD ICT Question Bank</title>
+<style>
+:root {
+  --bg: #0f1117; --card: #1a1d27; --card2: #22263a; --border: #2e3354;
+  --text: #e2e6f0; --muted: #8892b0; --accent: #00b4d8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+.header {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 14px 24px; position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.header-title { font-size: 1.05rem; font-weight: 700; }
+.header-sub { font-size: 0.75rem; color: var(--muted); }
+.header-badges { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.badge {
+  background: var(--card2); border: 1px solid var(--border); border-radius: 20px;
+  padding: 3px 11px; font-size: 0.76rem; color: var(--muted);
+}
+.badge span { color: var(--accent); font-weight: 700; }
+.mobile-btn {
+  display: none; align-items: center; justify-content: center;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; cursor: pointer; color: var(--text); font-size: 1.1rem;
+}
+
+.main { display: flex; min-height: calc(100vh - 60px); }
+
+.sidebar {
+  width: 270px; min-width: 220px; background: var(--card);
+  border-right: 1px solid var(--border); padding: 12px 0;
+  position: sticky; top: 60px; height: calc(100vh - 60px);
+  overflow-y: auto; flex-shrink: 0;
+}
+.sb-section { padding: 8px 16px; font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted); margin-top: 6px; }
+.mode-row { display: flex; gap: 6px; padding: 8px 14px; }
+.mode-btn {
+  flex: 1; padding: 7px 4px; border: 1px solid var(--border); background: var(--card2);
+  color: var(--muted); border-radius: 8px; cursor: pointer; font-size: 0.78rem; transition: all 0.15s;
+}
+.mode-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+.mode-btn:hover:not(.active) { color: var(--text); }
+.search-wrap { padding: 6px 14px 10px; }
+.search-inp {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); padding: 7px 11px; font-size: 0.83rem;
+}
+.search-inp:focus { outline: none; border-color: var(--accent); }
+.cat-btn {
+  display: block; width: 100%; text-align: left; background: none; border: none;
+  padding: 9px 18px; cursor: pointer; font-size: 0.83rem; color: var(--muted);
+  position: relative; transition: background 0.12s; border-right: 3px solid transparent;
+}
+.cat-btn:hover { background: var(--card2); color: var(--text); }
+.cat-btn.active { background: var(--card2); color: var(--text); }
+.cat-btn .cnt { position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 0.68rem; background: var(--bg); border-radius: 10px; padding: 1px 6px; }
+
+.content { flex: 1; padding: 22px; max-width: 900px; }
+
+.cat-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  padding-bottom: 14px; border-bottom: 2px solid var(--border); }
+.cat-hdr-icon { font-size: 1.8rem; }
+.cat-hdr-title { font-size: 1.2rem; font-weight: 700; }
+.cat-hdr-meta { font-size: 0.8rem; color: var(--muted); }
+
+.pills { display: flex; gap: 7px; margin-bottom: 16px; flex-wrap: wrap; }
+.pill {
+  padding: 4px 13px; border-radius: 20px; border: 1px solid var(--border);
+  font-size: 0.76rem; cursor: pointer; background: var(--card2); color: var(--muted); transition: all 0.12s;
+}
+.pill.active { color: #000; font-weight: 700; }
+.pill:hover:not(.active) { color: var(--text); border-color: var(--text); }
+
+.q-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 12px; overflow: hidden; transition: border-color 0.15s;
+}
+.q-card:hover { border-color: rgba(0,180,216,0.4); }
+.q-hdr {
+  padding: 14px 18px; cursor: pointer; display: flex;
+  justify-content: space-between; align-items: flex-start; gap: 10px;
+}
+.q-num { font-size: 0.7rem; color: var(--muted); font-weight: 600; white-space: nowrap; margin-top: 2px; }
+.q-text { font-size: 0.9rem; line-height: 1.55; flex: 1; white-space: pre-wrap; font-family: inherit; }
+.q-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+.q-tag { font-size: 0.66rem; padding: 1px 7px; border-radius: 10px; border: 1px solid; font-weight: 600; text-transform: uppercase; }
+.tag-mcq { border-color: #4895ef; color: #4895ef; }
+.tag-wr  { border-color: #f7c948; color: #f7c948; }
+.tag-src { border-color: var(--muted); color: var(--muted); }
+.q-chev { color: var(--muted); font-size: 0.85rem; transition: transform 0.18s; flex-shrink: 0; margin-top: 3px; }
+.q-card.open .q-chev { transform: rotate(90deg); }
+.q-body { display: none; padding: 0 18px 16px; border-top: 1px solid var(--border); }
+.q-card.open .q-body { display: block; }
+
+.opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 12px 0; }
+.opt-btn {
+  padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px;
+  background: var(--card2); cursor: pointer; text-align: left; font-size: 0.86rem;
+  color: var(--text); transition: all 0.12s; display: flex; gap: 9px; align-items: flex-start;
+}
+.opt-btn:hover:not([disabled]) { border-color: var(--accent); }
+.opt-let { font-weight: 700; color: var(--muted); font-size: 0.8rem; flex-shrink: 0; }
+.opt-btn.correct { background: rgba(6,214,160,0.12); border-color: #06d6a0; }
+.opt-btn.correct .opt-let { color: #06d6a0; }
+.opt-btn.wrong { background: rgba(239,35,60,0.12); border-color: #ef233c; }
+.opt-btn.wrong .opt-let { color: #ef233c; }
+
+.ans-box {
+  margin-top: 10px; padding: 10px 14px; border-left: 3px solid var(--accent);
+  background: rgba(0,180,216,0.07); border-radius: 0 7px 7px 0; display: none;
+}
+.ans-box.show { display: block; }
+.ans-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent); font-weight: 700; margin-bottom: 5px; }
+.ans-text { font-size: 0.87rem; line-height: 1.6; white-space: pre-wrap; }
+
+.note-box {
+  margin-top: 9px; padding: 10px 14px; border-left: 3px solid #f7c948;
+  background: rgba(247,201,72,0.06); border-radius: 0 7px 7px 0;
+}
+.note-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #f7c948; font-weight: 700; margin-bottom: 5px; }
+.note-text { font-size: 0.82rem; line-height: 1.6; white-space: pre-wrap; font-family: 'Consolas', monospace; }
+
+.reveal-btn {
+  margin-top: 10px; padding: 7px 16px; background: var(--card2);
+  border: 1px solid var(--border); border-radius: 7px; color: var(--accent);
+  cursor: pointer; font-size: 0.83rem; font-weight: 600; transition: all 0.12s;
+}
+.reveal-btn:hover { background: var(--accent); color: #000; }
+
+/* Quiz */
+.quiz-wrap { padding: 4px 0; }
+.quiz-prog { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; }
+.prog-bar { width: 100%; background: var(--border); border-radius: 4px; height: 4px; margin-bottom: 18px; }
+.prog-fill { height: 4px; border-radius: 4px; transition: width 0.3s; }
+.quiz-q { font-size: 0.97rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 16px; font-weight: 500; }
+.quiz-nav { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+.qnav-btn {
+  padding: 7px 16px; border-radius: 7px; cursor: pointer; font-size: 0.86rem; font-weight: 600;
+  border: 1px solid var(--border); background: var(--card2); color: var(--text); transition: all 0.12s;
+}
+.qnav-btn:hover:not([disabled]) { border-color: var(--accent); }
+.qnav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.qnav-btn.primary { background: var(--accent); border-color: var(--accent); color: #000; }
+.qnav-btn.primary:hover { opacity: 0.85; }
+
+.quiz-score {
+  background: var(--card2); border-radius: 12px; padding: 28px 24px;
+  text-align: center; border: 1px solid var(--border);
+}
+.quiz-score h2 { font-size: 3rem; font-weight: 800; }
+.quiz-score p { color: var(--muted); margin: 8px 0 18px; }
+.score-row { display: flex; justify-content: center; gap: 28px; margin: 14px 0; flex-wrap: wrap; }
+.score-item { text-align: center; }
+.score-val { font-size: 1.5rem; font-weight: 700; }
+.score-val.c { color: #06d6a0; }
+.score-val.w { color: #ef233c; }
+.score-val.s { color: var(--muted); }
+.score-lbl { font-size: 0.74rem; color: var(--muted); }
+.retry-btn {
+  margin-top: 18px; padding: 10px 28px; background: var(--accent); color: #000;
+  border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+}
+.retry-btn:hover { opacity: 0.85; }
+
+.empty { text-align: center; color: var(--muted); padding: 40px; }
+
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+.overlay.show { display: block; }
+
+.footer { text-align: center; padding: 22px 0 14px; color: var(--muted);
+  font-size: 0.76rem; border-top: 1px solid var(--border); margin-top: 36px; }
+
+@media(max-width: 768px) {
+  .mobile-btn { display: flex; }
+  .sidebar {
+    position: fixed; left: -280px; top: 0; height: 100vh; z-index: 200;
+    transition: left 0.22s; width: 260px; top: 0;
+  }
+  .sidebar.open { left: 0; }
+  .opts-grid { grid-template-columns: 1fr; }
+  .content { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="header">
+  <button class="mobile-btn" onclick="toggleSidebar()">☰</button>
+  <div>
+    <div class="header-title">BB AD ICT Question Bank</div>
+    <div class="header-sub">Bangladesh Bank IT Recruitment · Compact IT Job Solution</div>
+  </div>
+  <div class="header-badges">
+    <div class="badge">MCQ <span>142</span></div>
+    <div class="badge">Written <span>73</span></div>
+    <div class="badge">Score <span id="hdr-score">—</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <nav class="sidebar" id="sidebar">
+    <div class="sb-section">Mode</div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="btn-browse" onclick="setMode('browse')">📖 Browse</button>
+      <button class="mode-btn" id="btn-quiz" onclick="setMode('quiz')">🎮 Quiz</button>
+    </div>
+    <div class="sb-section">Search</div>
+    <div class="search-wrap">
+      <input class="search-inp" id="search-inp" placeholder="Search questions…" oninput="onSearch()">
+    </div>
+    <div class="sb-section">Categories</div>
+    <div id="cat-list"></div>
+  </nav>
+
+  <div class="content" id="content">
+    <div id="browse-view"></div>
+    <div id="quiz-view" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+const DATA = {"1. Programming & Object-Oriented Programming (OOP)": [{"type": "MCQ", "q": "Find Output:\nint fun(int *p) {\n  *p = *p + 10;\n  return *p;\n}\nint main() {\n  int x = 5;\n  cout << fun(&x);\n  return 0;\n}", "opts": ["15", "10", "25", "5"], "ans": "a"}, {"type": "MCQ", "q": "Find Output:\nint main() {\n  int x=3, y=2;\n  if (x==3)\n    y=2;\n  else\n    y=3;\n  cout<<x<<\" \"<<y<<endl;\n  return 0;\n}", "opts": ["3 3", "3 2", "2 3", "3 1"], "ans": "b"}, {"type": "MCQ", "q": "Which of the following does NOT achieve encapsulation?", "opts": ["Using private access specifier", "Using classes in object-oriented programming", "Using getter and setter methods", "Using global variables"], "ans": "d"}, {"type": "MCQ", "q": "Which of the following operators should be preferred to overload as a global function rather than a member method?", "opts": ["Postfix ++", "Comparison Operator", "Insertion Operator <<", "Prefix++"], "ans": "c"}, {"type": "MCQ", "q": "Determine Output:\nvoid main() {\n  int i, j, k;\n  i = i++, j = j++, k = k++;\n  printf(\"%d %d %d\", i, j, k);\n}", "opts": ["1 1 1", "0 0 0", "garbage values", "Error"], "ans": "c", "note": "i, j and k are uninitialized automatic variables, so they contain garbage values; i=i++ style expressions are undefined behavior in C but compile."}, {"type": "MCQ", "q": "Determine Output:\nvoid main() {\n  struct xx {\n    int x;\n    char name[] = \"hello\";\n  };\n  struct xx *s = (struct xx*)malloc(sizeof(struct xx));\n  printf(\"%d\", s->x);\n  printf(\"%s\", s->name);\n}", "opts": ["3 hello", "Compiler Error", "Linking error", "None of these"], "ans": "b", "note": "Initialization should not be done for structure members inside the structure declaration (in-class initializers of this form are invalid in standard C)."}, {"type": "MCQ", "q": "What is the result of compiling and running the following code?\npublic class Test {\n  public static void main(String[] args) {\n    int[] a = new int[0];\n    System.out.print(a.length);\n  }\n}", "opts": ["0", "Compilation error, arrays cannot be initialized to zero size", "None of the above", "Compilation error, it is length() not length"], "ans": "a"}, {"type": "MCQ", "q": "Which of the following correctly accesses the seventh element stored in arr, an array with 100 elements?", "opts": ["arr[6]", "arr[7]", "arr{6}", "arr{7}"], "ans": "a", "note": "Array index always starts at 0."}, {"type": "MCQ", "q": "Assume that the size of an integer is 4 bytes, predict the output of the following program:\n#include<stdio.h>\nint main() {\n  int i = 12;\n  int j = sizeof(i++);\n  printf(\"%d %d\", i, j);\n  return 0;\n}", "opts": ["12 4", "13 4", "Compiler Error", "0 4"], "ans": "a", "note": "The expression inside sizeof is not evaluated, so i++ does not execute; i remains 12."}, {"type": "MCQ", "q": "Which of the following operators cannot be overloaded in C/C++?", "opts": ["Bitwise right shift assignment", "Address of", "Indirection", "Structure reference (.)"], "ans": "d"}, {"type": "MCQ", "q": "What is the output of the following code?\nprint(9//2)", "opts": ["4.5", "4.0", "4", "Error"], "ans": "c", "note": "The '//' operator in Python performs integer (floor) division."}, {"type": "MCQ", "q": "int number[] = {10, 20, 30}; What does number[2] print?", "opts": ["10", "20", "30", "Error"], "ans": "c", "note": "Array elements are accessed by integer index; index starts at 0."}, {"type": "MCQ", "q": "Which is correct for stack?", "opts": ["FIFO", "LIFO", "Both A, B", "None"], "ans": "b"}, {"type": "MCQ", "q": "Which is the correct variable declaration in JavaScript?", "opts": ["var a = {'a', 'b', 'c'};", "var a = {'a' 'b' 'c'}", "var a = {\"a\" \"c\"}", "None of the above"], "ans": "d"}, {"type": "MCQ", "q": "What is the correct JavaScript syntax to view \"Hello World\"?", "opts": ["response.write(\"Hello World\");", "document.write(\"Hello World\")", "\"Hello World\"", "echo(\"Hello World\")"], "ans": "b"}, {"type": "MCQ", "q": "Which of the following function returns the number of characters in a string variable (PHP)?", "opts": ["count($variable)", "len($variable)", "strlen($variable)", "strcount($variable)"], "ans": "c"}, {"type": "MCQ", "q": "Which is correct for concatenation in PHP?", "opts": ["$add = $add+1", "$add = $add +1", "$add = $add + $add", "$add .= 1;"], "ans": "d", "note": "PHP has two string operators: '.' (concatenation) and '.=' (concatenating assignment, appends right side to left)."}, {"type": "MCQ", "q": "Which is used for adding two or more strings in PHP?", "opts": ["+", "*", ". (dot)", "|"], "ans": "c"}, {"type": "MCQ", "q": "Find out the error in the following block of code: if (x=100) cout<<\"x is 100\";", "opts": ["100 should be enclosed in quotations", "There is no semicolon at the end of the first line", "Equals-to operator mistake (should be ==)", "Variable x should not be inside quotation"], "ans": "c"}, {"type": "MCQ", "q": "Which header file should be included to use functions like malloc() and calloc()?", "opts": ["memory.h", "stdlib.h", "string.h", "dos.h"], "ans": "b"}, {"type": "MCQ", "q": "If you pass an array as an argument to a function in C, what actually gets passed?", "opts": ["Value of elements in the array", "First element of the array", "Base address of the array", "Address of the last element of the array"], "ans": "c"}, {"type": "MCQ", "q": "Which of the following is not a logical operator (C)?", "opts": ["&", "&&", "||", "!"], "ans": "a"}, {"type": "MCQ", "q": "Overloaded functions are:", "opts": ["Very long functions that can hardly run", "One function containing another one or more functions inside it", "Two or more functions with the same name but different number/type of parameters", "None of the above"], "ans": "c"}, {"type": "MCQ", "q": "What will be the output if you compile & execute the following C code?\nvoid main() {\n  const int i = 5;\n  i++;\n  printf(\"%d\", i);\n}", "opts": ["5", "6", "0", "Compiler Error"], "ans": "d", "note": "You cannot modify a const-qualified variable."}, {"type": "MCQ", "q": "Which of the following is not a derived data type in C?", "opts": ["Function", "Pointer", "Enumeration", "Array"], "ans": "c", "note": "Enumeration is generally treated as a user-defined type rather than a derived type in C."}, {"type": "MCQ", "q": "Which one of these lists contains only Java programming language keywords?", "opts": ["class, if, void, long, int, continue", "goto, instanceof, native, finally, default, throws", "try, virtual, throw, final, volatile, transient", "strictfp, constant, super, implements, do"], "ans": "c", "note": "'virtual' is not a Java keyword (it is C++), but the source lists (c) as the intended answer — treat with caution; verify against the official answer key."}, {"type": "MCQ", "q": "Which method must be defined by a class implementing the java.lang.Runnable interface?", "opts": ["void run()", "public void run()", "public void start()", "void run(int priority)"], "ans": "b"}, {"type": "MCQ", "q": "A variable declared inside a method is called:", "opts": ["Static variable", "Local variable", "Private variable", "Serial variable"], "ans": "b"}, {"type": "MCQ", "q": "Find any errors in the following BankAccount constructor in C#.NET:\npublic int BankAccount() { balance = 0; }", "opts": ["Name", "Formal parameters", "Return type (constructors cannot have a return type)", "None"], "ans": "c"}, {"type": "MCQ", "q": "A script is:", "opts": ["A program or sequence of instructions that is interpreted or carried out by processes directly", "A program or sequence of instructions that is interpreted or carried out by another program", "A program or sequence of instructions that is interpreted or carried out by web services only", "None of these"], "ans": "b"}, {"type": "MCQ", "q": "How do you write a conditional statement for executing some statements only if \"i\" is not equal to 5?", "opts": ["if (i>5)", "if (i != 5)", "if (i=5)", "if i=5"], "ans": "b"}, {"type": "MCQ", "q": "Consider the following code:\nPublic class ClassA {\n  Public void m1(){}\n  Public void m2(int i){}\n  Public void m3(int i){}\n  Public static void m4(int i){}\n}\nPublic class ClassB extends ClassA {\n  Public static void m1(int i){}\n  Public void m2(int i){}\n  Public void m3(String s){}\n  Public static void m4(int i){}\n}\nMention which of the methods overload, override, and hide superclass methods. What about the remaining method?", "type2": "Written", "note": "m1: method hiding is not applicable here since signatures differ (m1() vs static m1(int) — this is overloading by signature, not valid overriding since static context differs). m2(int): overrides ClassA's m2(int) (same signature, instance method). m3(String): overloads ClassA's m3(int) (same name, different parameter type). m4(int): both static with the same signature — this is method hiding, not overriding, since static methods cannot be overridden."}, {"type": "MCQ", "q": "Given two integers A and B as input, write a program to compute the least common multiple (LCM) of A and B.", "type2": "Written", "note": "#include <stdio.h>\nint main() {\n  int n1, n2, max;\n  printf(\"Enter two positive integers: \");\n  scanf(\"%d %d\", &n1, &n2);\n  max = (n1 > n2) ? n1 : n2;\n  while (1) {\n    if (max % n1 == 0 && max % n2 == 0) {\n      printf(\"The LCM of %d and %d is %d.\", n1, n2, max);\n      break;\n    }\n    ++max;\n  }\n  return 0;\n}\nSample Output: Enter two positive integers: 72 120 → The LCM of 72 and 120 is 360."}, {"type": "MCQ", "q": "Write a C program to find the maximum price from 20 items.", "type2": "Written", "note": "#include <stdio.h>\nint main() {\n  int a[1000], i, n, min, max;\n  printf(\"Enter the number of items: \");\n  scanf(\"%d\", &n);\n  printf(\"Enter item price: \");\n  for (i=0; i<n; i++) scanf(\"%d\", &a[i]);\n  min = max = a[0];\n  for (i=1; i<n; i++) if (max < a[i]) max = a[i];\n  printf(\"\\nMaximum Price: %d\", max);\n  return 0;\n}"}, {"type": "MCQ", "q": "Write a structured program to display the Fibonacci series up to 100 numbers.", "type2": "Written", "note": "#include<stdio.h>\n#include<conio.h>\nvoid main() {\n  int a=1, b=1, c=0, i;\n  clrscr();\n  printf(\"%d\\t%d\\t\", a, b);\n  for (i=0; i<=10; i++) {\n    c = a+b;\n    if (c<100) printf(\"%d\\t\", c);\n    a = b;\n    b = c;\n  }\n  getch();\n}"}, {"type": "MCQ", "q": "Write a C program or pseudocode to find the common elements of two arrays and print the common elements and their count.", "type2": "Written", "note": "Given arr1 = {1,2,3,4,5,6} and arr2 = {4,5,6,7,8,9}, expected output: \"Similar Elements: 4 5 6\" and \"Number of Similar Elements: 3\". Approach: for each element in arr1, check if it exists in arr2 and hasn't already been recorded; if so, add it to a results array and increment a counter."}, {"type": "MCQ", "q": "Suppose you are implementing an \"Overdraft Account (OD)\" class in Java for a banking app. An OD account is opened with an approved loan limit (e.g. 100,000). The account holder can deposit any amount at any time, and can withdraw funds until the balance would go beyond the approved loan limit (i.e., balance can go negative up to -limit). Sketch the class, expected to run in a multi-threaded environment.", "type2": "Written", "note": "public class ODAccount extends BankAccount {\n  double limit;\n  public ODAccount(double setLimit) {\n    this.balance = 0;\n    this.limit = setLimit;\n  }\n  public void depositMoney(double depositAmount) {\n    balance = balance + depositAmount;\n  }\n  public void drawMoney(double drawAmount) throws ODLimitExceededException {\n    if (balance - drawAmount >= -1 * limit)\n      balance = balance - drawAmount;\n    else\n      throw new ODLimitExceededException();\n  }\n}\nNote: in a multi-threaded context, balance updates should be synchronized to avoid race conditions between concurrent deposit/withdraw calls."}], "2. Data Structures & Algorithms": [{"type": "MCQ", "q": "What is the worst-case time complexity of inserting n elements into an empty linked list, if the linked list needs to be maintained in sorted order?", "opts": ["Θ(n)", "Θ(n log n)", "Θ(n²)", "Θ(1)"], "ans": "c"}, {"type": "MCQ", "q": "Which one of the following is an application of the Stack Data Structure?", "opts": ["Managing function calls", "The stock span problem", "Arithmetic expression evaluation", "All of the above"], "ans": "d"}, {"type": "MCQ", "q": "What is the best way to implement a priority queue?", "opts": ["Array", "Linked List", "Heap", "Stack"], "ans": "c", "note": "A binary heap allows O(log n) insertion, O(log n) deletion (extract min/max), and O(1) peek (get min/max)."}, {"type": "MCQ", "q": "Which data structure is preferred for a Priority Queue?", "opts": ["Heap Tree", "Graph", "Stack", "Table"], "ans": "a"}, {"type": "MCQ", "q": "Priority Scheduling (Non-Preemptive) with no arrival time. Given processes with burst times and priorities:\nP1: BT=10, Priority=3\nP2: BT=1, Priority=1\nP3: BT=2, Priority=4\nP4: BT=1, Priority=5\nP5: BT=5, Priority=2\nUsing Non-Preemptive Priority Scheduling (lower number = higher priority), what is the Average Turnaround Time (TAT)?", "opts": ["10", "8.6", "12", "9.2"], "ans": "c"}, {"type": "MCQ", "q": "There are 8 balls, and one of them is heavier than the other 7, which are of the same weight. How many weighings are required to guarantee finding the heavier ball?", "opts": ["1", "2", "3", "4"], "ans": "c"}, {"type": "MCQ", "q": "What are the advantages of Linear Search over Binary Search?", "opts": ["The array is ordered", "Fewer comparisons", "Less time and space complexity", "Linear search can be used irrespective of whether the array is sorted or not"], "ans": "d"}, {"type": "MCQ", "q": "The time taken by the fastest known (NP-related framing) sorting algorithm class is:", "opts": ["O(1)", "O(log n)", "O(n²)", "O(n log n)"], "ans": "d", "note": "As phrased in the source (\"NP-class sorting algorithm\") this is imprecise terminology; the intended answer refers to comparison-based sorting's best achievable complexity, O(n log n)."}, {"type": "MCQ", "q": "What is the complexity of Merge Sort?", "opts": ["O(n² log n)", "O(n log n)", "O(n²)", "O(n)"], "ans": "b", "note": "Merge sort has O(n log n) time complexity in best, average, and worst cases, and O(n) space complexity."}, {"type": "MCQ", "q": "Which of the following is not a required condition for a binary search algorithm?", "opts": ["The list must be sorted", "There should be direct access to the middle element in any sublist", "There must be a mechanism to delete and/or insert elements in the list", "Only numeric values should be present"], "ans": "c"}, {"type": "MCQ", "q": "Which of the following belongs to the Divide and Conquer algorithm paradigm?", "opts": ["Minimum & Maximum problem", "Knapsack problem", "Selection problem", "Merge sort"], "ans": "d", "note": "OCR of the answer key was ambiguous here — verify against the original; merge sort is the canonical divide-and-conquer example among the options."}, {"type": "MCQ", "q": "Which of the following is a non-linear data structure?", "opts": ["Array", "Graph", "Queue", "Linked list"], "ans": "b", "note": "Arrays, queues, and linked lists are linear; graphs are non-linear, representing relationships via vertices and edges."}, {"type": "MCQ", "q": "Which data structure allows insertion and deletion of elements from both ends?", "opts": ["Deque", "Queue", "Stack", "Linked list"], "ans": "a"}, {"type": "MCQ", "q": "In a complete k-ary tree, every internal node has exactly k children. The number of leaves in such a tree with n internal nodes is:", "opts": ["(n-1)k+1", "nk", "n(k-1)", "n(k-1)+1"], "ans": "d"}, {"type": "MCQ", "q": "Which one of the following algorithm design techniques is used in finding all-pairs shortest distances in a graph?", "opts": ["Dynamic programming", "Backtracking", "Greedy", "Divide and Conquer"], "ans": "a", "note": "The Floyd-Warshall algorithm solves the All-Pairs Shortest Path problem using Dynamic Programming."}, {"type": "MCQ", "q": "Which is not linear?", "opts": ["Linked list", "Array", "Graph", "None"], "ans": "c", "note": "Linked list, array, stack, and queue are all linear structures."}, {"type": "MCQ", "q": "9³ × 9³ × 9³ = ?", "opts": ["3^9", "9^9", "9^3", "3^6"], "ans": "b", "note": "OCR of this question was degraded; verify the exact exponents against the source. As transcribed: 9³·9³·9³ = 9⁹."}, {"type": "MCQ", "q": "Find the correct arranged data after the stack operation sequence: push(1), push(2), pop, push(1), push(2), pop, pop, pop, push(2), pop.", "opts": ["2 2 1 1 2", "2 2 1 2 1", "2 2 2 2 1", "2 2 2 1 2"], "ans": "a", "note": "Trace: push1→[1]; push2→[1,2]; pop→pops 2; push1→[1,1]; push2→[1,1,2]; pop→pops 2; pop→pops 1; pop→pops 1 (stack empty); push2→[2]; pop→pops 2. Popped sequence: 2,2,1,1,2."}, {"type": "MCQ", "q": "Stack operations are:", "opts": ["delete, insertion", "insertion, delete", "push, pop", "pop, push"], "ans": "c"}, {"type": "MCQ", "q": "Which SQL keyword is used to sort the result set?", "opts": ["ORDER", "SORT", "ORDER BY", "SORT BY"], "ans": "c"}, {"type": "Written", "q": "Construction of a Min-Heap: Given values 12, 29, 33, 56, 66, 99, 100, and 344, construct the Min-Heap step by step.", "note": "Since the values were inserted in already-increasing order, each new element naturally satisfies the min-heap property (parent ≤ children) without requiring any heapify-up operations. Final heap (array form): [12, 29, 33, 56, 66, 99, 100, 344], forming the tree: 12 → (29, 33); 29 → (56, 66); 33 → (99, 100); 56 → (344)."}, {"type": "Written", "q": "Given an adjacency list representation for a complete binary tree on 7 vertices (numbered 1 to 7 as in a binary heap), give the equivalent adjacency matrix representation.", "note": "For a complete binary tree with vertices numbered 1–7 where vertex i's children are 2i and 2i+1: edges are (1,2),(1,3),(2,4),(2,5),(3,6),(3,7). The adjacency matrix is a symmetric 7×7 (or directed, parent→child) 0/1 matrix reflecting these edges; the OCR of the exact matrix in the source was degraded, so reconstruct directly from the edge list above rather than relying on the scanned table."}, {"type": "Written", "q": "Find the time and space complexity of the following pseudocode:\nfor(i=0; i<n; i++)\n  for(j=0; j<n; j++)\n    for(k=0; k<n; k++)\n      count++;", "note": "Time Complexity: O(n³) (three nested loops each running n times). Space Complexity: O(1) (only a single counter variable used, no additional data structures scale with n)."}, {"type": "Written", "q": "Write prefix and postfix notations for the expression ((A+B)*C-(D-E)*F).", "note": "As transcribed from the source (OCR quality is degraded for this item — verify manually): Prefix: -*+ABC*-DEF; Postfix: AB+C*DE-F*-. Recommend re-deriving from the original expression tree rather than relying solely on this OCR output."}, {"type": "Written", "q": "Explain the concept of a snooping cache.", "note": "In a snooping (or snoopy) cache-coherence system, all caches connected to a shared bus monitor (\"snoop\") bus traffic to determine whether they hold a copy of a memory block being requested or modified elsewhere. Each cache maintains the sharing status of its cached blocks (e.g., Modified/Shared/Invalid), allowing it to invalidate or update its copy when another cache writes to the same block, keeping data consistent across multiple caches without central coordination."}], "3. Database Management Systems (DBMS)": [{"type": "MCQ", "q": "A transfers balance to B but the transfer is not completed and B never receives the funds. Which ACID property is responsible for ensuring the transaction is rolled back?", "opts": ["Atomicity", "Consistency", "Isolation", "Durability"], "ans": "a", "note": "Atomicity ensures a transaction is all-or-nothing — if crediting B fails after debiting A, the whole transaction is rolled back to maintain integrity."}, {"type": "MCQ", "q": "Which clause is executed first in an SQL query (logical query processing order)?", "opts": ["WHERE", "SELECT", "FROM", "ORDER BY"], "ans": "c"}, {"type": "MCQ", "q": "Which one makes data access from a database faster?", "opts": ["Indexing", "Normalization", "Denormalization", "All of the above"], "ans": "a", "note": "Indexing creates a structure enabling faster search/retrieval, reducing the need for full table scans."}, {"type": "MCQ", "q": "Which of the following is a DML (Data Manipulation Language) command?", "opts": ["CREATE", "DELETE", "DROP", "ALTER"], "ans": "b", "note": "DML modifies data (INSERT, UPDATE, DELETE, SELECT); DDL modifies structure (CREATE, ALTER, DROP)."}, {"type": "MCQ", "q": "Which of the following provides the ability to query information from the database and insert, delete, and modify tuples in the database?", "opts": ["DML (Data Manipulation Language)", "DDL (Data Definition Language)", "Query", "Relational Schema"], "ans": "a"}, {"type": "MCQ", "q": "Repeated data (redundancy) exists at which normalization stage?", "opts": ["Unnormalized", "1NF", "2NF", "3NF"], "ans": "a"}, {"type": "MCQ", "q": "The primary key is selected from the:", "opts": ["Candidate keys", "Composite keys", "Determinants", "Foreign keys"], "ans": "a", "note": "Every table must have at least one candidate key; the primary key is chosen from among them. (Source answer key states 'b' — likely a transcription/typo error; the standard correct answer is candidate keys.)"}, {"type": "MCQ", "q": "A transaction for which all committed changes are permanent is called:", "opts": ["Atomic", "Consistent", "Isolated", "Durable"], "ans": "d"}, {"type": "MCQ", "q": "Which of the following locks the item from access of any type?", "opts": ["Implicit lock", "Explicit lock", "Exclusive lock", "Shared lock"], "ans": "c"}, {"type": "MCQ", "q": "In your program you want to use the JDBC-ODBC bridge driver. What code do you use?", "opts": ["Class.callName(\"sun.jdbc.odbc.JdbcOdbcDriver\")", "Class.forName(\"sun.jdbc.odbc.JdbcOdbcDriver\")", "Class.callFunc(\"JdbcOdbcDriver\")", "Class.Name.init(\"sun.jdbc.odbc.JdbcOdbcDriver\")"], "ans": "b"}, {"type": "MCQ", "q": "You run a SELECT statement and multiple duplicate values are retrieved. What keyword can you use to retrieve only non-duplicate data?", "opts": ["DUPLICATE", "SEPARATE", "DISTINCT", "INDEX"], "ans": "c"}, {"type": "MCQ", "q": "Microsoft Access is a:", "opts": ["RDBMS", "OODBMS", "ORDBMS", "All of these"], "ans": "a"}, {"type": "MCQ", "q": "With SQL, how can you insert \"Olsen\" as the \"LastName\" in the \"Persons\" table?", "opts": ["INSERT INTO Persons(LastName) VALUES('Olsen')", "INSERT INTO Persons (Olsen) VALUES('LastName')", "INSERT INTO Person ('Olsen') INTO LastName", "INSERT INTO Persons (LastName = 'Olsen')"], "ans": "a"}, {"type": "MCQ", "q": "What is a tuple?", "opts": ["Another name for a table in an RDBMS", "A row or record in a database table", "An attribute attached to a record", "Another name for the key linking different tables in a database"], "ans": "b"}, {"type": "MCQ", "q": "Table `employee` has 10 records. It has a non-NULL SALARY column which is also UNIQUE. What does the following statement print?\nSELECT COUNT(*) FROM employee\nWHERE SALARY > ALL(SELECT SALARY FROM EMPLOYEE);", "opts": ["10", "9", "5", "0"], "ans": "d", "note": "No salary can be greater than the maximum salary (itself included in the ALL comparison), so the count is 0."}, {"type": "Written", "q": "A Bank schema is given: Bank(Br_Name, Br_City, Assets, Acc_Name, Acc_Num). (a) Normalize the schema and identify primary and foreign keys. (b) State why the original schema was or wasn't in good form.", "note": "Functional dependencies assumed: Br_Name → Br_City, Assets; Acc_Num → Acc_Name, Br_Name, Balance.\n1NF: satisfied — all attributes atomic, no repeating groups.\n2NF: satisfied — no partial dependencies (single-attribute-style keys, or all non-key attributes fully depend on the whole key).\n3NF: NOT satisfied — Br_City and Assets depend on Br_Name, which is not the primary key of the combined schema; this creates a transitive dependency (Acc_Num → Br_Name → Br_City, Assets).\nDecomposition to achieve 3NF:\n  Branch(Br_Name [PK], Br_City, Assets)\n  Account(Acc_Num [PK], Acc_Name, Br_Name [FK → Branch], Balance)\nNow each non-key attribute depends only on its table's primary key, eliminating the transitive dependency."}, {"type": "Written", "q": "Suppose we have a relational database:\nMovies(mid, title, year)\nPeople(pid, name)\nGenres(gid, genre)\nRole(pid, mid, role)\nHasGenre(gid, mid)\nWrite a SQL query to return the number of movies that are romantic comedies.", "note": "SELECT COUNT(*) FROM Movies, Genres, HasGenre\nWHERE Movies.mid = HasGenre.mid\n  AND HasGenre.gid = Genres.gid\n  AND Genres.genre = 'romantic comedy';"}, {"type": "Written", "q": "Consider a hash table of size 13 storing entries with integer keys. The hash function is h(k) = k mod 13. Insert entries with keys 10, 3, 6, 16, 17, 19 (in that order) using linear probing to resolve collisions. Show all work.", "note": "h(10)=10 → slot 10 (empty)\nh(3)=3 → slot 3 (empty)\nh(6)=6 → slot 6 (empty)\nh(16)=3 → slot 3 occupied → probe to slot 4 (empty)\nh(17)=4 → slot 4 now occupied (by 16) → probe to slot 5 (empty)\nh(19)=6 → slot 6 occupied → probe to slot 7 (empty)\nFinal positions: 10→10, 3→3, 6→6, 16→4, 17→5, 19→7."}, {"type": "Written", "q": "Define 'integrity rules' of database systems. Write a SQL query to get the second-highest salary from an Employee table.", "note": "Integrity rules (entity integrity, referential integrity, domain integrity, etc.) ensure that data in the database remains accurate and consistent — e.g., a primary key cannot be NULL (entity integrity), and a foreign key must reference an existing primary key value or be NULL (referential integrity).\nSQL for second-highest salary:\nSELECT MAX(Salary) FROM Employee\nWHERE Salary NOT IN (SELECT MAX(Salary) FROM Employee);\n(Example: with salaries 100, 200, 300, this returns 200.)"}, {"type": "Written", "q": "Explain the concept of a distributed DBMS. What are the features of DBMS?", "note": "A Distributed Database Management System (DDBMS) manages a set of interconnected databases distributed across a computer network, presenting them to users as a single logical database while data is physically spread across multiple nodes to optimize resource use.\nFeatures of a DBMS:\n• Low repetition/redundancy (a single shared repository reduces duplication)\n• Easy maintenance of large databases (via validation/integrity constraints)\n• Enhanced security (access control restricted to admins/authorized users)\n• Improved file/data consistency across the organization\n• Multi-user environment support with concurrent access and views."}, {"type": "Written", "q": "A company needs a key person for DBMS administration. What is his/her duty as key person?", "note": "The Database Administrator (DBA)'s responsibilities include: installing/upgrading the database server and tools; allocating system storage and planning storage requirements; enrolling users and maintaining system security; ensuring compliance with vendor license agreements; controlling and monitoring user access; monitoring and optimizing database performance; planning backup and recovery; maintaining archived data; managing data replication; and acting as liaison with users."}, {"type": "Written", "q": "What is cardinality and modality (in ER/database modeling)?", "note": "Cardinality refers to the maximum number of times an instance in one entity can be associated with instances in a related entity (e.g., one-to-one, one-to-many, many-to-many). Modality refers to the minimum number of times an instance in one entity can be associated with an instance in the related entity (i.e., whether the relationship is optional or mandatory)."}], "4. Computer Networks & Cybersecurity": [{"type": "MCQ", "q": "Which algorithm is used in email security?", "opts": ["AES", "RSA", "SHA", "All of the above"], "ans": "d", "note": "AES encrypts email content; RSA is used for public-key encryption in protocols like PGP and S/MIME; SHA ensures integrity of emails via digital signatures."}, {"type": "MCQ", "q": "What kind of encryption is used for securing emails in transit?", "opts": ["Symmetric Encryption", "Asymmetric Encryption", "TLS (Transport Layer Security)", "Hashing"], "ans": "c", "note": "TLS is the primary method used to secure emails while in transit between mail servers and clients."}, {"type": "MCQ", "q": "Digital Signature uses which algorithm?", "opts": ["AES", "RSA", "DES", "Diffie-Hellman"], "ans": "b", "note": "RSA is commonly used to generate the public-private key pair for digital signatures: the private key signs, the public key verifies."}, {"type": "MCQ", "q": "What does HTTP Status Code 500 indicate?", "opts": ["Bad Request", "Unauthorized Access", "Internal Server Error", "Not Found"], "ans": "c"}, {"type": "MCQ", "q": "Which of the following is not a web server?", "opts": ["Apache Tomcat", "PHP", "Jetty", "Tornado"], "ans": "b", "note": "PHP is a scripting language, not a web server."}, {"type": "MCQ", "q": "A process needs I/O operations; it switches to:", "opts": ["Ready", "Running", "Waiting (Blocked)", "Terminated"], "ans": "c"}, {"type": "MCQ", "q": "Which pair is an example of intra-domain routing protocols?", "opts": ["ALOHA, RIP", "OSPF, RIP", "RIP, FTP", "BGP, SMTP"], "ans": "b"}, {"type": "MCQ", "q": "Which of the following cannot be used as a public IP address?", "opts": ["17.0.0.1", "168.172.19.34", "172.15.29.63", "192.168.13.18"], "ans": "d", "note": "Private IP ranges: 10.0.0.0–10.255.255.255, 172.16.0.0–172.31.255.255, 192.168.0.0–192.168.255.255. 192.168.13.18 falls in a private range."}, {"type": "MCQ", "q": "Which command loads a new version of Cisco IOS into a router?", "opts": ["copy flash ftp", "copy ftp flash", "copy flash tftp", "copy tftp flash"], "ans": "d"}, {"type": "MCQ", "q": "When a host on network A sends a message to a host on network B, which address does the router look at?", "opts": ["Port", "IP", "Physical", "Subnet mask"], "ans": "b", "note": "Routing decisions are based on IP addresses; the MAC (physical) address is used within a LAN segment, and port numbers identify the destination process/application."}, {"type": "MCQ", "q": "Page fault occurs when:", "opts": ["A requested page is in memory", "A requested page is not in memory", "A page is corrupted", "An exception is thrown"], "ans": "b"}, {"type": "MCQ", "q": "How many addresses are there in 200.10.10.10/20?", "opts": ["4096", "1024", "2048", "1022"], "ans": "a", "note": "/20 leaves 12 host bits → 2¹² = 4096 total addresses."}, {"type": "MCQ", "q": "Which is a suitable subnet mask for 200 hosts?", "opts": ["255.255.0.200", "255.255.255.0", "255.0.0.0", "255.255.200.0"], "ans": "b", "note": "255.255.255.0 (/24) supports up to 254 usable hosts, enough for 200."}, {"type": "MCQ", "q": "Which is not the work of the Data Link Layer?", "opts": ["Error control", "Adding MAC address", "Cabling", "None"], "ans": "c", "note": "Cabling is a Physical Layer concern; the Data Link Layer handles error control and MAC addressing via its LLC and MAC sublayers."}, {"type": "MCQ", "q": "The end-to-end delivery of the entire message is the responsibility of the ___ layer.", "opts": ["Network", "Transport", "Session", "Presentation"], "ans": "b"}, {"type": "MCQ", "q": "The IPv4-in-IPv6 (or IPv6-in-IPv4) encapsulation technique is known as:", "opts": ["Tunneling", "Hashing", "NAT", "Traversing"], "ans": "a"}, {"type": "MCQ", "q": "Whole network will break if a node is defective, in which network topology?", "opts": ["Star", "Bus", "Mesh", "Hybrid"], "ans": "b"}, {"type": "MCQ", "q": "What is SMTP?", "opts": ["Simple Transport protocol", "Simple Mailer Transport protocol", "Single Mail Transfer Protocol", "None of these"], "ans": "d", "note": "SMTP stands for Simple Mail Transfer Protocol — none of the given distractor expansions is correct."}, {"type": "MCQ", "q": "The direct connection made between sender & receiver so data can be transmitted describes:", "opts": ["Packet switching", "Circuit switching", "Message switching", "Data switching"], "ans": "b"}, {"type": "MCQ", "q": "Rules used to establish & maintain communication are called:", "opts": ["Dialogue", "Protocol", "Agenda", "Constraint"], "ans": "b"}, {"type": "MCQ", "q": "VOIP stands for:", "opts": ["Voice Over Internet Protocol", "Voice Over Instant Protocol", "Variable Optical Internet Protocol", "None of these"], "ans": "a"}, {"type": "MCQ", "q": "Which of the following does not require a computer for transmission?", "opts": ["E-mail", "Fax", "Webinar", "Video conferencing"], "ans": "b"}, {"type": "MCQ", "q": "What medium is used to communicate by mobile phones?", "opts": ["Optical device", "Laser device", "LED source", "Radio waves"], "ans": "d"}, {"type": "MCQ", "q": "Which two OSI layers are known for \"Flow Control\"? Write them and explain.", "type2": "Written", "note": "Data Link Layer (Layer 2): establishes/terminates connections between two physically-connected nodes, breaking data into frames; its Logical Link Control (LLC) sublayer performs error checking and flow control.\nTransport Layer (Layer 4): breaks session-layer data into segments, carries out flow control (matching data transmission rate to the receiver's capacity) and error control (detecting and requesting retransmission of corrupted data)."}, {"type": "Written", "q": "Describe a man-in-the-middle attack on the Diffie-Hellman key exchange protocol, in which the adversary generates two public key pairs for the attack.", "note": "The attacker intercepts communication between Alice and Bob during key exchange and impersonates each party to the other, establishing a separate shared secret key with each.\nSteps: (1) Alice and Bob each generate a public-private key pair. (2) Alice sends her public key to Bob; the attacker intercepts it and substitutes their own public key. (3) Bob sends his public key to Alice; the attacker intercepts and substitutes their own public key. (4) Alice unknowingly computes a shared key with the attacker (believing it's Bob's). (5) Bob unknowingly computes a shared key with the attacker (believing it's Alice's). (6) The attacker now holds two separate shared keys and can decrypt, read, and even modify all subsequent traffic between Alice and Bob while relaying it, remaining undetected.\nMitigation: use digital signatures or public-key certificates (PKI) to authenticate exchanged keys, and secure channels (VPN/TLS) to prevent interception."}, {"type": "Written", "q": "Preserving confidentiality, integrity, and availability of data is a restatement of the concern over falsification, interception, masquerade, and denial of service. Explain how the first three concepts relate to the last four.", "note": "Confidentiality (protection from unauthorized access/disclosure) relates to interception (an attacker reading data in transit) and falsification (data tampering can expose or corrupt confidential information).\nIntegrity (protection from unauthorized modification) relates to falsification (data tampering) and masquerade (an attacker impersonating a legitimate user to alter data they shouldn't access).\nAvailability (ensuring authorized users can access data/systems when needed) relates directly to denial of service, where an attacker prevents legitimate access.\nTogether, the CIA triad provides the framework for defending against these four classes of attack."}, {"type": "Written", "q": "What is the difference among threat, vulnerability, and risk? Explain SSL and TLS.", "note": "Threat: a negative event or actor that could cause harm (e.g., an attacker trying to steal data, a fire in the data center).\nVulnerability: a weakness in a system that a threat can exploit (e.g., lack of access control, SQL injection flaw, unencrypted data at rest).\nRisk: the combination of the probability of a threat exploiting a vulnerability and the resulting impact — i.e., risk = threat × vulnerability × impact, in qualitative terms.\nSSL (Secure Sockets Layer): the original standard protocol for securing internet connections between two systems (e.g., client-server), now deprecated.\nTLS (Transport Layer Security): the modern, more secure successor to SSL, providing cryptographic protection for data in transit in applications such as web browsing, email, and VoIP."}, {"type": "Written", "q": "What is session hijacking, and how do you encrypt username and password in PHP?", "note": "Session hijacking (cookie hijacking) is the exploitation of a valid session identifier to gain unauthorized access to a user's session. Because the session ID is stored in a browser cookie and transmitted with every request, it can potentially be intercepted, letting an attacker impersonate the user.\nExample PHP encryption using MD5 hashing (note: MD5 is cryptographically broken and unsuitable for real password storage — use bcrypt/Argon2 in practice):\n<?php\n$str1 = \"compact123456\"; // password\n$str2 = \"Compact IT Job Solution\"; // username\n$str3 = md5($str1);\n$str4 = md5($str2);\necho \"Encrypted Password: \" . $str3;\necho \"Encrypted UserName: \" . $str4;\n?>"}, {"type": "Written", "q": "What are the important steps to secure a web server?", "note": "Use public key authentication for SSH; enforce strong passwords; install/configure a firewall (e.g., CSF); install/configure Fail2Ban to block brute-force attempts; install malware scanning software; keep all software up to date (patch management); back up regularly; monitor logs; disable unnecessary services; install a web application firewall / ModSecurity."}, {"type": "Written", "q": "Explain URL, VOIP, and Broadband.", "note": "URL (Uniform Resource Locator): a web address that specifies a resource's location on a network and the mechanism to retrieve it (e.g., http, ftp, mailto schemes).\nVOIP (Voice over Internet Protocol): technology and methodology for delivering voice and multimedia communication over IP networks such as the internet, rather than traditional circuit-switched telephone lines.\nBroadband: wide-bandwidth data transmission carrying multiple signals/traffic types simultaneously, over media such as coaxial cable, optical fiber, radio, or twisted pair."}, {"type": "Written", "q": "Write short notes on DHCP and SMTP.", "note": "DHCP (Dynamic Host Configuration Protocol): a network protocol where a DHCP server automatically assigns IP addresses and related configuration (subnet mask, default gateway, DNS server address) to hosts on a network, enabling them to communicate without manual configuration.\nSMTP (Simple Mail Transfer Protocol): the standard protocol for sending email between mail servers and from clients to servers."}, {"type": "Written", "q": "Write short notes on: Node, Backbone, Router, and Gateway.", "note": "Node: any active, physical, electronic device attached to a network (e.g., bridges, switches, hubs, host computers).\nBackbone: the part of the network infrastructure interconnecting different networks, providing a path for data exchange between them (e.g., connecting multiple LANs into a WAN/MAN).\nRouter: a networking device that forwards data packets between computer networks, directing traffic along the path toward its destination.\nGateway: a hardware/software device that acts as a \"gate\" between two different networks, enabling traffic to flow in and out (may be implemented as a router, firewall, or server)."}, {"type": "Written", "q": "In order to prevent [interception], the company decided to add end-to-end encryption. Which layer of the OSI model is suitable, considering development time, software maintainability, and development cost? Give reasons.", "note": "End-to-end encryption is typically implemented at the Transport Layer (Layer 4) or Application Layer (Layer 7).\nApplication layer: faster development (direct control within app code, less integration/testing overhead) and better maintainability (encryption changes don't affect network infrastructure), but less standardized/scalable across multiple applications.\nTransport layer: more standardized and scalable (protects all applications uniformly) but higher development cost (requires network infrastructure involvement and more complex configuration).\nThe right choice depends on whether the priority is fast, application-specific rollout (application layer) or a uniform, infrastructure-level solution (transport layer)."}, {"type": "Written", "q": "How would you test an ATM in a banking system?", "note": "Test cases should include: withdrawing money less than the account balance; withdrawing more than the balance; withdrawing exactly the balance; simultaneous withdrawal from ATM and internet banking; withdrawal attempts when connection to the bank's network is lost; simultaneous withdrawals from multiple ATMs (race condition / concurrency check); checking balance inquiry; verifying the error message for an incorrect PIN; entering an invalid PIN more than 3 times and confirming the account/card locks; and verifying logout timing."}, {"type": "Written", "q": "How does a mobile phone work? How many satellites are required to cover the Earth?", "note": "A mobile phone is a two-way radio: it converts voice into an electrical signal, then into radio waves transmitted to the nearest cell tower; the network relays this to the recipient's phone, which converts the signal back to sound. Beyond calls, modern smartphones support data services (web, messaging, apps). The phone's antenna converts electrical signals to/from radio waves at specific frequencies.\nSatellite coverage: a minimum of 3 satellites in Geosynchronous Earth Orbit (GEO) can provide coverage of the Earth's surface (excluding polar regions), given GEO's high altitude and wide footprint; other orbit categories (LEO, MEO) require more satellites for equivalent coverage due to their smaller footprints."}], "5. Operating Systems (OS)": [{"type": "MCQ", "q": "A process needs I/O operations; it switches to ___ (repeated from networking section for OS state-transition context).", "opts": ["Ready", "Running", "Waiting (Blocked)", "Terminated"], "ans": "c"}, {"type": "MCQ", "q": "Page fault occurs when:", "opts": ["A requested page is in memory", "A requested page is not in memory", "A page is corrupted", "An exception is thrown"], "ans": "b", "note": "A page fault occurs when a program accesses a memory block not currently in physical RAM; the OS must locate and load it from secondary storage (virtual memory)."}, {"type": "MCQ", "q": "A CPU generates 32-bit virtual addresses. The page size is 4 KB. The processor has a TLB holding a total of 128 page table entries and is 4-way set associative. What is the minimum size of the TLB tag?", "opts": ["11 bits", "13 bits", "15 bits", "20 bits"], "ans": "c", "note": "Page size = 4KB = 2¹² → 20 bits needed to address a page frame (32-12). TLB has 128 (2⁷) entries, 4-way set associative → 2⁷/4 = 2⁵ sets → 5 bits for set index. Tag = 20 - 5 = 15 bits."}, {"type": "MCQ", "q": "If main memory access time is 100ns, cache access time is 50ns, and cache hit rate is 90%, what is the average time to read from memory?", "type2": "Written", "note": "Hit ratio R = 0.9; Cache access time CT = 50ns; Memory access time MT = 100ns.\nAverage access time = R×CT + (1-R)×MT = 0.9×50 + 0.1×100 = 45 + 10 = 55ns."}, {"type": "MCQ", "q": "Suppose we have 16 KB of data in a direct-mapped cache with 4-word blocks. Determine the size of the tag, index, and offset fields for a 32-bit architecture.", "type2": "Written", "note": "Cache size = 16KB = 2¹⁴ bytes; Block size = 4 words = 16 bytes = 2⁴ bytes.\nNumber of blocks = 2¹⁴/2⁴ = 2¹⁰.\nOffset field = log₂(16) = 4 bits.\nIndex field = log₂(2¹⁰) = 10 bits.\nTag field = 32 - (4+10) = 18 bits."}, {"type": "MCQ", "q": "What is the difference between microkernel and monolithic (macro) kernel? What are the sub-components of the I/O manager in Windows NT?", "type2": "Written", "note": "Microkernel: runs only minimal essential services (IPC, basic scheduling, minimal memory management) in kernel space; other services run in user space. Slower than monolithic due to more context switches/IPC overhead, but new features/patches can be added without recompiling the whole kernel; uses message-passing for IPC.\nMonolithic kernel: all OS services run in a single kernel-space executable. Faster (fewer context switches) but adding a feature requires recompiling the whole kernel; uses signals and sockets for IPC.\nSub-components of the I/O manager in Windows NT: network redirector/server, cache manager, file systems, network driver, device driver."}, {"type": "MCQ", "q": "How is computer architecture characterized? What are the 5 stages of the DLX pipeline?", "type2": "Written", "note": "Computer architecture is characterized into three categories:\n• System Design — overall hardware components including DMA and GPU.\n• Instruction Set Architecture (ISA) — the CPU's programming interface, defining its functions/capabilities.\n• Microarchitecture — how the ISA is implemented (data path, storage elements, data processing).\nThe 5 stages of the DLX pipeline:\n1. Instruction Fetch (IF) — fetch instruction from memory into the instruction register.\n2. Instruction Decode/Register Fetch (ID) — decode instruction and read registers (fixed-field decoding).\n3. Execute/Effective Address (EX) — ALU performs the operation or computes the effective memory address.\n4. Memory Access (MEM) — access memory if needed (load/store).\n5. Write Back (WB) — write the result (from ALU or memory) back into the register file."}, {"type": "Written", "q": "Which system may manage a high degree of interaction between processes and is very useful for high-speed, real-time processing?", "opts": ["Strongly coupled and loosely cohesive", "Loosely coupled and strongly cohesive", "Loosely coupled and loosely cohesive", "Strongly coupled and strongly cohesive"], "ans": "a", "note": "MCQ presented with limited context in the source; included here for completeness — verify interpretation against the original exam if precision matters."}], "6. Digital Logic & Computer Architecture": [{"type": "MCQ", "q": "Which one is a Universal logic gate?", "opts": ["NAND", "AND", "OR", "NOT"], "ans": "a", "src": "Combined Bank AME 2018"}, {"type": "MCQ", "q": "What is the 2's complement of (65)₁₆?", "opts": ["10011011", "10011010", "00011011", "10011100"], "ans": "a"}, {"type": "MCQ", "q": "What does inductance depend on?", "opts": ["Number of turns in the coil", "Permeability of the core material", "Cross-sectional area of the coil", "All of the above"], "ans": "d"}, {"type": "MCQ", "q": "Zener diode is a ___ conducting device.", "opts": ["Unidirectional", "Bidirectional", "Multidirectional", "Tri-directional"], "ans": "b", "note": "Unlike a normal diode, a Zener diode can conduct in the reverse direction once a specific reverse voltage (Zener voltage) is reached."}, {"type": "MCQ", "q": "What should be true for a Zener Diode?", "opts": ["Reverse bias for amplifying", "Operates in forward bias only", "Works in reverse breakdown region", "Used for rectification"], "ans": "c"}, {"type": "MCQ", "q": "What is the work of a Rectifier?", "opts": ["Converts DC to AC", "Converts AC to DC", "Stores Electrical Energy", "Increases Voltage"], "ans": "b"}, {"type": "MCQ", "q": "In the given circuit, resistors of 10Ω, 20Ω, and 30Ω are connected in parallel, and a voltage source of 60V is applied across them. What is the equivalent current flowing from the voltage source?", "opts": ["8 A", "9 A", "11 A", "12 A"], "ans": "c", "note": "1/Req = 1/10 + 1/20 + 1/30 = 6/60+3/60+2/60 = 11/60 → Req = 60/11 Ω. I = V/Req = 60/(60/11) = 11 A."}, {"type": "MCQ", "q": "A basic memory storage element in a digital system is:", "opts": ["Flip-flop", "Counter", "Multiplexer", "Encoder"], "ans": "a"}, {"type": "MCQ", "q": "The greatest negative number which can be stored in a computer with 8-bit word length using 2's complement arithmetic is:", "opts": ["-256", "-127", "-255", "-128"], "ans": "d", "note": "An 8-bit two's complement number represents positive integers 0 to 127, and negative integers -1 to -128 (10000000)."}, {"type": "MCQ", "q": "Two resistors R1 and R2 are connected in parallel with R1 < R2. What is the total resistance of the combination?", "opts": ["Less than R1", "Less than R2", "Greater than R2", "Greater than 2×R2"], "ans": "a", "note": "In a parallel combination, the equivalent resistance is always less than the smallest individual resistance."}, {"type": "MCQ", "q": "Binary circuit elements have:", "opts": ["One stable state", "Two stable states", "Three stable states", "None of these"], "ans": "b"}, {"type": "MCQ", "q": "AB.(A+B).C — write the truth table.", "type2": "Written", "note": "OCR of the truth table in the source was degraded and internally inconsistent (repeated/contradictory rows), so it should not be relied upon as transcribed. Recommended approach: construct the standard 8-row truth table for inputs A, B, C, computing A', B', AB, A+B, (A+B)', and the final expression AB·(A+B)·C column by column, noting that AB·(A+B) simplifies to AB (since AB implies A+B is true), so the expression reduces to AB·C."}, {"type": "MCQ", "q": "How will you realize an AND gate and OR gate using CMOS NAND and NOR gates?", "type2": "Written", "note": "CMOS NAND gate: built from two PMOS transistors in parallel (connected to Vdd) and two NMOS transistors in series (connected to ground); output is high (1) if either upper (PMOS) transistor is on, and low (0) only if both lower (NMOS) transistors are on.\nCMOS AND gate: a NAND gate followed by an inverter (NOT) stage.\nCMOS NOR gate: built from two PMOS transistors in series and two NMOS transistors in parallel; output is high (1) only when both inputs are low; output is low if either input is high.\nCMOS OR gate: a NOR gate followed by an inverter (NOT) stage."}, {"type": "MCQ", "q": "What do you understand by universality of a logic gate? Prove the universality of the NOR logic gate.", "type2": "Written", "note": "A logic gate is 'universal' if any Boolean function (and hence any other logic gate — AND, OR, NOT) can be implemented using only that gate type. NAND and NOR are the two universal gates.\nProof sketch for NOR: NOT(A) = NOR(A,A); OR(A,B) = NOT(NOR(A,B)) = NOR(NOR(A,B), NOR(A,B)); AND(A,B) = NOR(NOT(A), NOT(B)) = NOR(NOR(A,A), NOR(B,B)). Since NOT, OR, and AND can all be derived using only NOR gates, and any Boolean circuit can be built from NOT/AND/OR, the NOR gate is universal."}, {"type": "MCQ", "q": "Describe the addressing modes of the 8086 microprocessor.", "type2": "Written", "note": "Register mode: both operands are registers (e.g., MOV AX, BX).\nImmediate mode: source operand is 8-bit or 16-bit immediate data (e.g., MOV AX, 2000).\nDisplacement/Direct mode: effective address given directly as displacement.\nRegister indirect mode: effective address held in SI, DI, or BX (e.g., MOV AX, [DI]).\nBased indexed mode: effective address = base register (BX/BP) + index register (SI/DI) (e.g., MOV AL, [BP+SI]).\nIndexed mode: effective address = index register + displacement (e.g., MOV AX, [SI+2000]).\nBased mode: effective address = base register + displacement (e.g., MOV AL, [BP+0100]).\nBased indexed displacement mode: effective address = base + index + displacement (e.g., MOV AL, [SI+BP+2000]).\nString mode: used for string instructions; SI/DI auto-increment/decrement based on the direction flag.\nI/O mode: used for input/output operations (e.g., IN A, 45 / OUT A, 50).\nRelative mode: effective address computed relative to the instruction pointer (used in jump instructions)."}, {"type": "MCQ", "q": "Mention the flags of the 8086 microprocessor.", "type2": "Written", "note": "The 8086 has 9 flags, split into Status Flags and Control Flags.\nStatus Flags (6): Sign (S), Zero (Z), Auxiliary Carry (AC), Parity (P), Carry (CY), and Overflow (O).\n• Sign Flag: set if the MSB of the result is 1 (negative result).\n• Zero Flag: set if the result is 0.\n• Auxiliary Carry: set if there's a carry from bit 3 to bit 4 (used in BCD arithmetic); not directly accessible to the programmer.\n• Parity Flag: set if the result has an even number of 1 bits.\n• Carry Flag: set if an operation generates a carry out of (or borrow into) the MSB.\n• Overflow Flag: set if a signed arithmetic result is too large to represent in the available bits.\nControl Flags (3): Directional (D), Interrupt (I), Trap (T).\n• Directional Flag: controls direction of string operations (increment/decrement SI/DI).\n• Interrupt Flag: enables/disables recognition of external interrupts.\n• Trap Flag: enables single-step mode for debugging."}, {"type": "MCQ", "q": "What is the difference between the 8086 and 8088 microprocessors?", "type2": "Written", "note": "8086: 16-bit data bus; 3 clock speeds (5 MHz, 8 MHz, 10 MHz); 512 KB addressable memory capacity per common configuration; has a Bank High Enable (BHE) signal; 6-byte instruction queue.\n8088: 8-bit data bus; clock speeds up to 8 MHz; memory implemented via 1M×8 memory banks; has a Status Signal (SSO) instead of BHE; 4-byte instruction queue (fetches only 1 byte at a time)."}, {"type": "MCQ", "q": "What is SPI (Serial Peripheral Interface)? What are its advantages over a parallel interface?", "type2": "Written", "note": "SPI is a synchronous serial communication protocol developed by Motorola for inter-chip communication, commonly used with flash memory, sensors, RTCs, and ADCs. It supports full-duplex communication (simultaneous bidirectional data transfer).\nAdvantages: transfers data without interruption; simple hardware; full-duplex; no need for a unique slave address; simple software implementation; high transfer speed."}, {"type": "MCQ", "q": "Explain 10Base2, 10Base5, 10BaseT, and Ethernet.", "type2": "Written", "note": "10Base2: Ethernet spec for thin coaxial cable, 10 Mbps, max 185m per segment.\n10Base5: Ethernet spec for thick coaxial cable, 10 Mbps, max 500m per segment.\n10BaseT: Ethernet spec for unshielded twisted-pair cable (Cat 3/4/5), 10 Mbps, max 100m per segment.\nEthernet: a computer networking technology used across LAN/MAN/WAN, connecting computers via cable to share information; a single Ethernet branch can connect up to roughly 1,024 devices."}, {"type": "MCQ", "q": "What is pipelining? What is opcode and operand in machine code? Explain snooping cache.", "type2": "Written", "note": "Opcode: the part of a machine instruction specifying the operation to perform (e.g., ADD, SUB, MOV), represented as a binary/hex value.\nOperand: the data or register the opcode operates on (e.g., in 'ADD AL, 34h', AL and 34h are operands).\nSnooping cache: see Data Structures section — caches monitor bus traffic to maintain coherence across multiple caches sharing memory."}, {"type": "MCQ", "q": "What is the difference between a battery and a capacitor?", "type2": "Written", "note": "Battery: stores energy as chemical energy; higher energy density; slower charge/discharge; essentially a DC source; charges are separated via electrochemical reaction; can supply energy over a longer period.\nCapacitor: stores energy in an electrostatic field; lower energy density than a battery; faster charge/discharge (energy stored directly on plates); commonly used in AC applications; discharges nearly instantaneously."}, {"type": "MCQ", "q": "Describe the cutoff, saturation, and active regions of operation of a transistor. Explain the working principle of an n-channel JFET with various values of Vgs and Vds.", "type2": "Written", "note": "Cutoff: base current IB = 0; only a small collector leakage current (ICEO) flows; base-emitter junction is not forward biased; VCE ≈ VCC.\nSaturation: base current is at its maximum (IB(sat)), and so is collector current; the collector-base junction is no longer reverse biased; further increase in IB does not increase IC.\nActive region: lies between cutoff and saturation; collector-base junction is reverse biased while base-emitter junction is forward biased; the transistor operates normally/linearly here (used for amplification).\nn-channel JFET: composed of an n-type semiconductor bar with a p-type gate region in the center; current flows from source to drain through the channel; applying a gate-source voltage (Vgs) creates an electric field that narrows the channel, controlling current flow.\n• Cutoff: Vgs below threshold (Vth) → channel fully depleted, no current (JFET acts as open circuit).\n• Triode/linear region: Vgs above Vth but below pinch-off voltage (Vp) → channel partially depleted, current flows and varies with Vds.\n• Saturation region: Vds beyond pinch-off → drain current becomes relatively constant, controlled mainly by Vgs."}], "7. Software Engineering & Emerging Tech": [{"type": "MCQ", "q": "What is the major drawback of the Waterfall Model?", "opts": ["It is difficult to manage", "It requires too many resources", "It is inflexible and not suitable for changing requirements", "It lacks proper documentation"], "ans": "c"}, {"type": "MCQ", "q": "How many steps/phases are in the Waterfall Model?", "opts": ["5", "6", "7", "8"], "ans": "c", "note": "Requirements gathering & analysis, System design, Implementation, Testing, Deployment, Maintenance, Retirement."}, {"type": "MCQ", "q": "Integration testing is the process of testing the ___ between two software units or modules.", "opts": ["Performance", "Functionality", "Interface", "Security"], "ans": "c"}, {"type": "MCQ", "q": "Design pattern for hierarchical structure is:", "opts": ["Structure chart", "DFD", "ERD", "UML"], "ans": "a", "note": "A structure chart is derived from a Data Flow Diagram and represents the system's modules and sub-modules in a hierarchical breakdown."}, {"type": "MCQ", "q": "Which one of the following is related to services provided by cloud computing?", "opts": ["Sourcing", "Ownership", "Reliability", "PaaS"], "ans": "d", "note": "PaaS (Platform as a Service) is a core cloud service model."}, {"type": "MCQ", "q": "Service that generally focuses on the hardware falls under which service model?", "opts": ["IaaS", "PaaS", "SaaS", "Both A and B"], "ans": "a", "note": "IaaS (Infrastructure as a Service) provisions hardware-level resources (compute, storage, network)."}, {"type": "MCQ", "q": "Which one of the following cloud concepts is related to sharing and pooling resources?", "opts": ["Virtualization", "Polymorphism", "Abstraction", "None of the above"], "ans": "a"}, {"type": "MCQ", "q": "Cloud Computing architecture is a combination of:", "opts": ["Service-oriented architecture and grid computing", "Utility computing and event-driven architecture", "Service-oriented architecture and event-driven architecture", "Virtualization and event-driven architecture"], "ans": "c"}, {"type": "MCQ", "q": "What type of computing technology refers to services and applications that typically run on a distributed network through virtualized resources?", "opts": ["Distributed Computing", "Cloud Computing", "Soft Computing", "Parallel Computing"], "ans": "b"}, {"type": "MCQ", "q": "Where is data warehousing used?", "opts": ["Transaction System", "Logical system", "Decision support system", "None"], "ans": "c"}, {"type": "MCQ", "q": "Small logical units where a data warehouse holds large amounts of data are known as:", "opts": ["Access layers", "Data marts", "Data storage", "Data miners"], "ans": "b"}, {"type": "MCQ", "q": "Which of the following is an essential process in which intelligent methods are applied to extract data patterns?", "opts": ["Warehousing", "Data Mining", "Text Mining", "Data Selection"], "ans": "b"}, {"type": "MCQ", "q": "What is the use of data cleaning?", "opts": ["To remove noisy data", "Transformations to correct wrong data", "Correct inconsistencies in data", "All of the above"], "ans": "d"}, {"type": "MCQ", "q": "Which of the following protected by copyright act?", "opts": ["Intellectual property", "Original work of authorship", "Software", "All"], "ans": "b", "note": "Copyright law protects original works of authorship (literary, artistic, musical, etc.)."}, {"type": "MCQ", "q": "Which of the following belongs to the algorithm paradigm (design technique) category?", "opts": ["Minimum & Maximum problem", "Knapsack problem", "Selection problem", "Merge sort"], "ans": "d"}, {"type": "MCQ", "q": "Which approach is used [in load balancing / cluster scheduling]?", "opts": ["Load configuration", "FIFO", "LIFO", "Round Robin"], "ans": "d", "note": "Question stem is truncated/garbled in the source scan; the answer key indicates Round Robin, commonly used to enhance cluster/load-balancer performance."}, {"type": "Written", "q": "Verification and validation are two process areas at CMMI Level 3. (a) Provide a definition for each. (b) Describe how you can fulfill these areas in your software testing activities.", "note": "(a) Verification: the process of evaluating software products/work products to ensure they meet specified requirements and standards (\"Are we building the product right?\"). Validation: the process of evaluating software products to ensure they satisfy their intended use and user needs (\"Are we building the right product?\").\n(b) To fulfill Verification: review requirements for clarity/completeness/consistency; review design/architecture documents against requirements; review code for correctness/efficiency/maintainability; conduct unit, integration, and system tests.\nTo fulfill Validation: conduct user acceptance testing; conduct usability testing; conduct performance testing under normal and peak loads.\nProcess: requirement analysis → test planning (functional, performance, security, usability testing) → test case development → test execution and defect reporting → defect resolution and retesting → final validation against customer/user needs."}, {"type": "Written", "q": "A bank has partnered with two different payment gateway service providers. The bank hires Mr. X to audit the payment gateways based on risk and threat detection. Which possible scenarios will Mr. X face?", "note": "Possible scenarios include: inadequate security measures (vulnerability to hacking/malware/phishing) at one or both providers; non-compliance with regulations such as PCI DSS or data protection laws; service disruptions/downtime affecting revenue and customer satisfaction; lack of transparency in provider operations/reporting, complicating accurate risk assessment; and insufficient backup/disaster recovery planning, risking data loss during an incident. Mr. X would need to thoroughly assess each provider, identify weaknesses, and recommend improvements to the bank."}, {"type": "Written", "q": "Discuss the necessity of using an application framework in web application development.", "note": "A web framework provides a standard, reusable structure for building web applications, services, and APIs, saving developers from reimplementing common concerns (routing, database access, session handling, security) from scratch. Examples:\n• Ruby on Rails — highly productive MVC framework.\n• Django (Python) — fast, secure, scalable, versatile; built for fast-moving development.\n• Angular — Google's framework for large-scale, high-performance single-page web apps.\n• ASP.NET — Microsoft's framework for building web apps for PC and mobile.\n• Meteor — enables rapid prototyping of real-time, cross-platform (web/Android/iOS) apps.\n• Laravel (PHP) — MVC framework emphasizing elegance, simplicity, and readability.\n• CodeIgniter (PHP) — lightweight MVC-inspired framework known for performance and minimal configuration."}, {"type": "Written", "q": "Define a virtual machine with a neat diagram; explain the working of a VM. What are the benefits of a VM?", "note": "A Virtual Machine (VM) is a virtualized computer environment with its own CPU, memory, network interface, and storage, running atop physical hardware via a hypervisor (Virtual Machine Monitor). Multiple VMs, each potentially running a different OS, can share the same physical hardware while being isolated from one another.\nCharacteristics: multiple OS instances share hardware with partitioned resources; each VM has separate security/configuration identity; VMs can be migrated between physical hosts as portable files.\nBenefits: multiple isolated OS environments run simultaneously on one machine; the VM's instruction set architecture can differ from the underlying physical hardware; easier maintenance, application provisioning, high availability, and convenient disaster recovery."}, {"type": "Written", "q": "What are the challenges in optimizing energy efficiency of data centers?", "note": "Cooling: dissipating heat generated by dense server racks consumes significant energy; optimizing cooling systems (air/water cooling) is critical.\nPower distribution: inefficient power distribution systems lose energy as heat during transmission; minimizing this loss is essential.\nServer utilization: many servers run well under capacity, wasting energy; workload consolidation and virtualization improve utilization.\nEquipment efficiency: efficiency varies across servers, storage, and networking gear; choosing energy-efficient equipment reduces consumption.\nEnergy management: effective monitoring, identifying improvement areas, and implementing reduction strategies is an ongoing operational challenge."}, {"type": "Written", "q": "Explain IaaS, PaaS, and SaaS with respect to cloud computing.", "note": "IaaS (Infrastructure as a Service): provides on-demand provisioning of compute, storage, and network connectivity; customers build their own applications on top of this infrastructure.\nPaaS (Platform as a Service): the provider offers a platform (databases, queues, workflow engines, email services, etc.) on which customers build applications, without managing the underlying infrastructure.\nSaaS (Software as a Service): the provider delivers complete end-user applications, with customers given limited administrative capability (e.g., user management, some UI customization like logos/colors)."}, {"type": "Written", "q": "Growing use of technology in the Financial Service Industry (short passage/essay prompt).", "note": "This is an essay/comprehension-style prompt from the written section, focused on how global economic shifts are driving banks and financial institutions to adopt newer technologies for recovery and competitive advantage — intended as a translation/comprehension exercise rather than a technical MCQ."}, {"type": "Written", "q": "Write a short note (100–150 words): \"The role of AI and machine learning in mitigating challenges of cyber attacks on the banking system.\"", "note": "Suggested angle for the note: AI/ML systems can detect anomalous transaction patterns in real time (fraud detection), flag phishing attempts via NLP-based email/content analysis, automate threat intelligence correlation across large log volumes, and adapt to new attack signatures faster than static rule-based systems — while acknowledging limitations such as adversarial ML attacks, false positives affecting legitimate customers, and the need for human oversight in high-stakes decisions like account freezes."}], "8. Basic Electrical & Electronics": [{"type": "MCQ", "q": "A power system is providing 200V AC at 25A. The phase angle between current and voltage is 25°. What is the power consumed by the system?", "opts": ["2113 W", "4531 W", "5517 W", "11831 W"], "ans": "b", "note": "Real power P = V×I×cos(θ) = 200×25×cos(25°) ≈ 200×25×0.9063 ≈ 4531 W."}, {"type": "MCQ", "q": "The common collector amplifier is also known as:", "opts": ["Collector follower", "Base follower", "Emitter follower", "Integrator"], "ans": "c"}, {"type": "MCQ", "q": "Negative feedback in an amplifier:", "opts": ["Reduces the gain", "Increases the gain", "Is harmful", "Converts the amplifier into an oscillator"], "ans": "a", "note": "Note: source's stated answer is (d), which is inconsistent with standard electronics theory (negative feedback stabilizes gain and reduces it, and is generally beneficial, not harmful, and does not create oscillation — positive feedback does). Flagging this as likely a transcription/OCR error in the original; verify against a reliable source before use."}, {"type": "MCQ", "q": "Which of the following is a digital modulation technique?", "opts": ["DM", "PCM", "PSK", "All of the above"], "ans": "d"}, {"type": "MCQ", "q": "The three major components of a communication system are:", "opts": ["Source, data rate and response time", "Source, Link and receiver", "Transmitter, link and receiver", "Source, link and detector"], "ans": "c"}, {"type": "MCQ", "q": "A frequency range of 1 GHz to 30 GHz is referred to as:", "opts": ["Medium wave", "Micro wave", "Long wave", "None"], "ans": "b"}, {"type": "MCQ", "q": "A transformer transforms:", "opts": ["Frequency", "Voltage", "Current", "Voltage and Current"], "ans": "d"}, {"type": "MCQ", "q": "NAND gates are preferred over other gates because they:", "opts": ["Have lower function area", "Can be used to make any gate", "Consume least electronic power", "Provide maximum density in a chip"], "ans": "b", "note": "NAND is a universal gate, so any Boolean function can be implemented using only NAND gates."}, {"type": "Written", "q": "AB.(A+B).C — write the truth table. [See also Digital Logic section]", "note": "See the Digital Logic & Computer Architecture section for the recommended re-derivation approach; the algebraic simplification is AB·(A+B)·C = AB·C."}, {"type": "Written", "q": "A 3-phase 12-pole alternator running at 500 rpm supplies power to an 8-pole induction motor. If slip is 3%, what is the full-load speed of the motor?", "note": "Alternator frequency f = P×N/120 = 12×500/120 = 50 Hz.\nSynchronous speed of the motor Ns = 120×f/P = 120×50/8 = 750 rpm.\nSlip s = (Ns - N)/Ns × 100 → 3 = (750 - N)/750 × 100 → N = 750 - 22.5 = 727.5 rpm."}, {"type": "Written", "q": "Explain the parity method for error detection. Write the bit string of \"Delta\" using ASCII.", "note": "Parity method: an extra parity bit is appended to a data block, set to make the total count of 1-bits either even (even parity) or odd (odd parity). The receiver recounts the 1-bits; a mismatch from the expected parity indicates a transmission error (though this method cannot detect an even number of bit-flips).\nExample: sending 4-bit data 1011 (three 1s) with even parity requires appending a 1, giving 10111.\nASCII bit string for \"Delta\" (D-e-l-t-a): D=01000100, e=01100101, l=01101100, t=01110100, a=01100001."}, {"type": "Written", "q": "Suppose a digitized TV picture is transmitted from a source using a matrix of 480×500 pixels, where each pixel can take one of 32 intensity values, and 30 pictures are sent per second. Find the source rate R (bps).", "note": "Total pixels = 480×500 = 240,000.\nBits per pixel = log₂(32) = 5.\nSource rate R = pixels × bits/pixel × pictures/second = 240,000 × 5 × 30 = 36,000,000 bps (36 Mbps)."}, {"type": "Written", "q": "What is the total latency for a 3-kbyte e-mail message if the bandwidth of the network is 1 Gbps? Distance between sender and receiver is 300 km, light travels at 2×10⁸ m/s, Round Trip Time is 50ms, Queuing Time is 5ms.", "note": "Propagation time = Distance / Propagation speed = 300,000 m / (2×10⁸ m/s) = 1.5 ms.\nTransmission time = Message size / Bandwidth = (3,000×8 bits) / (10⁹ bps) = 24,000/10⁹ ≈ 0.024 ms (0.024 ms, i.e., 24 µs).\nLatency = Propagation time + Transmission time + Queuing time + Processing delay.\nUsing the given RTT (50ms) and Queuing time (5ms) alongside propagation/transmission time, total latency ≈ 1.5 + 0.024 + 5 + (remaining RTT/processing components) ≈ 11.74 ms (as stated in the source's approximate final answer). Note: the OCR of the intermediate arithmetic in this item was degraded — recommend re-deriving from the given formula (Latency = Propagation + Transmission + Queuing + Processing delay) rather than relying on the transcribed intermediate steps."}, {"type": "Written", "q": "One drawback of a small packet size is that link bandwidth is significantly consumed by overhead bytes. Suppose a packet consists of P bytes of payload and a fixed header, and a voice source is encoded at a constant rate of 128 kbps, with each packet filled before being sent. Determine the packetization delay for packet length L = 1500 bytes (5-byte header).", "note": "Payload size = 1500 - 5 = 1495 bytes = 1495×8 = 11,960 bits.\nPacketization delay = Payload (bits) / Source rate = 11,960 / 128,000 ≈ 0.0935 seconds (≈93.5 ms)."}, {"type": "Written", "q": "Banker's Algorithm: 5 processes P0–P4, 3 resource types A (10 instances), B (5 instances), C (7 instances). Given Allocation and Max matrices, (a) compute the Need matrix, (b) determine if the system is in a safe or unsafe state.", "note": "Need = Max - Allocation, computed row by row for each process. The OCR of the exact Allocation/Max values in the source table was degraded and internally inconsistent, so the specific numeric matrix should not be relied upon as transcribed — recommend re-checking the original scan or source exam paper for the exact Allocation and Max values before working the safety-sequence algorithm. General method: compute Need for each process, then repeatedly find a process whose Need ≤ Available; if found, simulate its completion (add its Allocation back to Available) and continue; if all processes can finish this way, the state is safe (and the completion order is a safe sequence); otherwise it's unsafe."}], "9. Non-Departmental Topics (GK, English, Math/Aptitude)": [{"type": "MCQ", "q": "Which connects the two seas in the Suez Canal?", "opts": ["Arabian Sea and Mediterranean Sea", "Mediterranean Sea and Red Sea", "Persian Gulf and Black Sea", "Black Sea and Arabian Sea"], "ans": "b"}, {"type": "MCQ", "q": "Who is the first ICC ODI Men's World Cup winning captain?", "opts": ["Clive Lloyd", "Kapil Dev", "Alan Border", "Steve Waugh"], "ans": "a"}, {"type": "MCQ", "q": "Who won the Nobel Peace Prize in 2024?", "opts": ["David Baker", "John Jumper", "Nihon Hidankyo", "Gary Ruvkun"], "ans": "c"}, {"type": "MCQ", "q": "The highest peak in Bangladesh is:", "opts": ["Saka Haphong", "Bijoy Tajingdong", "Dumlong", "Keokradong"], "ans": "a"}, {"type": "MCQ", "q": "Strasbourg belongs to which country?", "opts": ["France", "Germany", "Canada", "Russia"], "ans": "a"}, {"type": "MCQ", "q": "Which country is known as the 'Rainbow Nation'?", "opts": ["China", "South Korea", "Japan", "South Africa"], "ans": "d", "note": "Coined by Archbishop Desmond Tutu, referring to South Africa's diverse cultures after apartheid."}, {"type": "MCQ", "q": "Which is the third-largest economy in the world?", "opts": ["United States", "Japan", "China", "Kolkata"], "ans": "b", "note": "As transcribed in the source (Japan following the US and China) — note global GDP rankings shift over time and should be verified against current data."}, {"type": "MCQ", "q": "Who won the Ballon d'Or in 2022?", "opts": ["Lionel Messi", "Kylian Mbappé", "Karim Benzema", "Ronaldo"], "ans": "c"}, {"type": "MCQ", "q": "World Environment Day is celebrated on ___ of every year.", "opts": ["5th June", "6th June", "2nd June", "1st June"], "ans": "a"}, {"type": "MCQ", "q": "When was International Mother Language Day declared by UNESCO?", "opts": ["November 1999", "February 2000", "February 1999", "November 2000"], "ans": "a"}, {"type": "MCQ", "q": "The lead character in the film 'The Bandit Queen' was played by:", "opts": ["Rupa Ganguly", "Seema Biswas", "Pratiba Sinha", "Shabana Azmi"], "ans": "b"}, {"type": "MCQ", "q": "A pipe can fill a tank in 4 hours, and another pipe can fill it in 6 hours. How much time will they take to fill the tank together?", "opts": ["40 hours", "4.5 hours", "2.4 hours", "5 hours"], "ans": "c", "note": "Combined rate = 1/4 + 1/6 = 3/12+2/12 = 5/12 tank/hour → time = 12/5 = 2.4 hours."}, {"type": "MCQ", "q": "A went 5 meters north, then 3 meters east, then 2 meters south. What is the distance from A's starting point to his final position?", "opts": ["4.24 meters", "5.24 meters", "3.24 meters", "4 meters"], "ans": "a", "note": "Net north displacement = 5-2 = 3m; east displacement = 3m. Distance = √(3²+3²) = √18 ≈ 4.24m."}, {"type": "MCQ", "q": "Mr. X uses 30% of his salary for one expense, 20% for another, and 10% for another. His remaining amount is 12,000 Taka. What is his total salary?", "opts": ["25,000 TK", "30,000 TK", "35,000 TK", "3,000 TK"], "ans": "b", "note": "Remaining = 100-30-20-10 = 40% of salary = 12,000 → salary = 30,000 TK."}, {"type": "MCQ", "q": "The father's age is 36 and the son's age is 16. How many years ago was the father's age three times the son's age?", "opts": ["6 years ago", "36 years ago", "12 years ago", "4 years ago"], "ans": "a", "note": "Let x years ago: 36-x = 3(16-x) → 36-x = 48-3x → 2x = 12 → x = 6."}, {"type": "MCQ", "q": "If x is an integer and x² = 2, then value of x⁴ = ?", "note": "Source presents this ambiguously ('x+2=2' vs 'x²=2'); as a written-section fill-in without listed options — recommend confirming exact phrasing from the original before use."}, {"type": "MCQ", "q": "A basketball team has won 15 games and lost 9. If these games represent some fraction of the games to be played, then how many more games must the team win to average 75% for the season?", "note": "The exact percentage figure in the source was garbled by OCR ('162%'), which is not a valid framing for 'fraction of games played' — recommend re-checking the original wording/percentage before attempting to solve."}, {"type": "MCQ", "q": "Students of a class are made to stand in rows. If [n] more students stand in each row, there would be 2 rows fewer. If 4 fewer students stand in each row, there would be 4 more rows. What is the number of students in the class?", "note": "Classic 'rows and columns' algebra problem; the exact numeric parameter for the first condition was not reliably captured by OCR — recommend confirming exact wording from source before solving."}, {"type": "MCQ", "q": "In a given figure, PQT is a right triangle. What is the area of square QRST?", "note": "Diagram-dependent geometry question; the figure itself was not reliably extractable from the scan. Recommend viewing the original page directly for the diagram."}, {"type": "MCQ", "q": "AD is the longest side of triangle ABD shown in the figure. What is the length of the longest side of triangle ABC?", "note": "Diagram-dependent geometry question; recommend viewing the original page directly for the figure."}, {"type": "MCQ", "q": "The percentage profit earned by selling an article for Tk. 1920 is equal to the percentage loss incurred by selling the same article for Tk. 1280. At what price should the article be sold to make a 25% profit?", "note": "Classic profit/loss algebra: let cost price = C. Profit% at 1920 = Loss% at 1280 → (1920-C)/C = (C-1280)/C → 1920-C = C-1280 → 2C = 3200 → C = 1600. For 25% profit: Selling Price = 1600 × 1.25 = 2000 Tk."}, {"type": "MCQ", "q": "A father divided his property between his two sons A and B. A invests his share at 8% p.a. compound profit; B invests his share at 10% p.a. simple profit. At the end of 2 years, B's profit is Tk. 1336 more than A's. Find A's share of the father's total property of Tk. 25,000.", "note": "Let A's share = x, B's share = (25000 - x). A's compound interest over 2 years = x[(1.08)² - 1] = x(0.1664). B's simple interest over 2 years = (25000-x) × 0.10 × 2 = (25000-x) × 0.20.\nEquation: (25000-x)(0.20) - x(0.1664) = 1336 → solve for x. (Recommend verifying arithmetic directly given OCR limitations on this page.)"}, {"type": "MCQ", "q": "(12345)₁₀ = (?)₈ — convert decimal 12345 to octal.", "note": "12345 ÷ 8 = 1543 remainder 1\n1543 ÷ 8 = 192 remainder 7\n192 ÷ 8 = 24 remainder 0\n24 ÷ 8 = 3 remainder 0\n3 ÷ 8 = 0 remainder 3\nReading remainders bottom-up: (12345)₁₀ = (30071)₈."}, {"type": "MCQ", "q": "10-bit number taken randomly — find the probability that all bits are 1.", "note": "There are 2¹⁰ = 1024 possible 10-bit numbers, only 1 of which has all bits set to 1. Probability = 1/1024 ≈ 0.00098 (roughly 0.1%). Note: the source's transcribed answer (1023/1024 ≈ 0.99) describes the complementary probability — that NOT all bits are 1 — so double-check which quantity the original question is actually asking for."}, {"type": "MCQ", "q": "In Bangladesh Bank, there are 6 Assistant Directors (ADs) and 4 Deputy Directors (DDs). Each AD brings a bag, while only half of the DDs bring a bag. If a bag is selected at random from all the bags, what is the probability that the chosen bag belongs to a DD?", "note": "Bags from ADs = 6; bags from DDs = 4/2 = 2. Total bags = 8. P(bag belongs to a DD) = 2/8 = 1/4."}, {"type": "MCQ", "q": "Evaluate the definite integral ∫₀² (2x² + 3x) dx.", "note": "∫(2x²+3x)dx = (2/3)x³ + (3/2)x², evaluated from 0 to 2 = (2/3)(8) + (3/2)(4) = 16/3 + 6 = 16/3 + 18/3 = 34/3 ≈ 11.33."}, {"type": "Written", "q": "Translation exercises: Bengali to English and English to Bengali passages (banking/technology themed), plus a short essay on the growing use of technology in the Financial Service Industry.", "note": "These are language/translation components of the written exam rather than technical CSE content; practice with banking-sector vocabulary (e.g., terms around transactions, regulation, digital transformation) is the most relevant preparation."}]};
+const ICONS  = ["\ud83d\udcbb", "\ud83c\udf33", "\ud83d\uddc4\ufe0f", "\ud83c\udf10", "\u2699\ufe0f", "\ud83d\udd0c", "\ud83d\udee0\ufe0f", "\u26a1", "\ud83c\udfaf"];
+const COLORS = ["#00b4d8", "#06d6a0", "#9d4edd", "#4895ef", "#f77f00", "#ef233c", "#f7c948", "#ff6b6b", "#a8dadc"];
+const CATS   = Object.keys(DATA);
+
+// Flatten all questions with metadata
+const ALL = [];
+CATS.forEach((cat, ci) => {
+  DATA[cat].forEach((q, qi) => {
+    ALL.push({ ...q, cat, ci, qi, id: ci + '-' + qi });
+  });
+});
+
+function isMCQ(q) { return Array.isArray(q.opts) && q.opts.length > 0 && q.type !== 'Written'; }
+function isWritten(q) { return !isMCQ(q); }
+
+// State
+let mode      = 'browse';
+let activeCat = 0;
+let filter    = 'all';
+let searchQ   = '';
+let quiz      = null;
+
+// ── Sidebar ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function buildSidebar() {
+  document.getElementById('btn-browse').className = 'mode-btn' + (mode === 'browse' ? ' active' : '');
+  document.getElementById('btn-quiz').className   = 'mode-btn' + (mode === 'quiz'   ? ' active' : '');
+  document.getElementById('cat-list').innerHTML = CATS.map((cat, i) => {
+    const active = (i === activeCat && searchQ.length < 2) ? ' active' : '';
+    const border = active ? `border-right: 3px solid ${COLORS[i]};` : '';
+    return `<button class="cat-btn${active}" style="${border}" onclick="selectCat(${i})">
+      ${ICONS[i]} ${cat.replace(/^\d+\.\s*/, '')}
+      <span class="cnt">${DATA[cat].length}</span>
+    </button>`;
+  }).join('');
+}
+
+function selectCat(i) {
+  activeCat = i; filter = 'all'; searchQ = '';
+  document.getElementById('search-inp').value = '';
+  buildSidebar(); render(); closeSidebar();
+}
+
+// ── Mode ──
+function setMode(m) {
+  mode = m; buildSidebar();
+  document.getElementById('browse-view').style.display = m === 'browse' ? 'block' : 'none';
+  document.getElementById('quiz-view').style.display   = m === 'quiz'   ? 'block' : 'none';
+  if (m === 'quiz') startQuiz(); else renderBrowse();
+}
+
+// ── Search ──
+function onSearch() {
+  searchQ = document.getElementById('search-inp').value.toLowerCase();
+  if (searchQ.length > 1) activeCat = -1;
+  buildSidebar(); renderBrowse();
+}
+
+// ── Render ──
+function render() { if (mode === 'browse') renderBrowse(); }
+
+function getQs() {
+  let qs = searchQ.length > 1
+    ? ALL.filter(q => (q.q || '').toLowerCase().includes(searchQ) || (q.note || '').toLowerCase().includes(searchQ))
+    : (activeCat >= 0 ? DATA[CATS[activeCat]].map((q, qi) => ({ ...q, cat: CATS[activeCat], ci: activeCat, qi, id: activeCat + '-' + qi })) : []);
+  if (filter === 'mcq')     qs = qs.filter(isMCQ);
+  if (filter === 'written') qs = qs.filter(isWritten);
+  return qs;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderBrowse() {
+  const qs  = getQs();
+  const col  = COLORS[activeCat] || '#00b4d8';
+  const icon = ICONS[activeCat]  || '📖';
+  const name = activeCat >= 0 ? CATS[activeCat].replace(/^\d+\.\s*/, '') : 'Search Results';
+  const mc   = qs.filter(isMCQ).length;
+  const wr   = qs.filter(isWritten).length;
+
+  const hdr = searchQ.length > 1
+    ? `<div class="cat-hdr"><span class="cat-hdr-icon">🔍</span><div><div class="cat-hdr-title">Search Results</div><div class="cat-hdr-meta">${qs.length} questions matching "${esc(searchQ)}"</div></div></div>`
+    : `<div class="cat-hdr" style="border-bottom-color:${col}">
+        <span class="cat-hdr-icon">${icon}</span>
+        <div><div class="cat-hdr-title" style="color:${col}">${esc(name)}</div>
+        <div class="cat-hdr-meta">${qs.length} questions · MCQ: ${mc} · Written: ${wr}</div></div>
+       </div>`;
+
+  const pills = `<div class="pills">
+    <button class="pill ${filter==='all'?'active':''}" onclick="setFilter('all')" ${filter==='all'?`style="background:${col};border-color:${col};"`:''}>All (${qs.length})</button>
+    <button class="pill ${filter==='mcq'?'active':''}" onclick="setFilter('mcq')" ${filter==='mcq'?'style="background:#4895ef;border-color:#4895ef;"':''}>MCQ (${mc})</button>
+    <button class="pill ${filter==='written'?'active':''}" onclick="setFilter('written')" ${filter==='written'?'style="background:#f7c948;border-color:#f7c948;"':''}>Written (${wr})</button>
+  </div>`;
+
+  const cards = qs.length === 0
+    ? '<div class="empty">No questions found.</div>'
+    : qs.map((q, i) => card(q, i, col)).join('');
+
+  document.getElementById('browse-view').innerHTML = hdr + pills + cards;
+}
+
+function setFilter(f) { filter = f; renderBrowse(); }
+
+function card(q, i, col) {
+  const id   = q.id;
+  const wr   = isWritten(q);
+  const src  = q.src ? `<span class="q-tag tag-src">${esc(q.src)}</span>` : '';
+  const ttag = wr ? '<span class="q-tag tag-wr">Written</span>' : '<span class="q-tag tag-mcq">MCQ</span>';
+
+  let body = '';
+  if (!wr && q.opts) {
+    const lets = ['a','b','c','d','e'];
+    body += '<div class="opts-grid">' + q.opts.map((opt, oi) =>
+      `<button class="opt-btn" data-let="${lets[oi]}" onclick="checkOpt(this,'${id}','${lets[oi]}','${esc(q.ans||'')}')">
+        <span class="opt-let">${lets[oi].toUpperCase()}</span><span>${esc(opt)}</span>
+      </button>`
+    ).join('') + '</div>';
+    const correctOpt = q.ans && q.opts ? esc(q.opts[['a','b','c','d','e'].indexOf(q.ans)] || '') : '';
+    body += `<div class="ans-box" id="ans-${id}">
+      <div class="ans-label">✓ Answer</div>
+      <div class="ans-text">Option ${esc((q.ans||'').toUpperCase())}: ${correctOpt}</div>
+    </div>`;
+  } else {
+    body += `<button class="reveal-btn" onclick="revealAns('${id}')">Show Model Answer</button>
+    <div class="ans-box" id="ans-${id}">
+      <div class="ans-label">✓ Model Answer / Explanation</div>
+      <div class="ans-text">${esc(q.note || '')}</div>
+    </div>`;
+  }
+
+  if (q.note && !wr) {
+    body += `<div class="note-box">
+      <div class="note-label">📝 Note</div>
+      <div class="note-text">${esc(q.note)}</div>
+    </div>`;
+  }
+
+  return `<div class="q-card" id="card-${id}">
+    <div class="q-hdr" onclick="toggleCard('${id}')">
+      <div style="flex:1">
+        <div class="q-num">Q${i+1} · ${esc(q.cat ? q.cat.replace(/^\d+\.\s*/,'') : '')}</div>
+        <div class="q-text">${esc(q.q)}</div>
+        <div class="q-tags">${ttag}${src}</div>
+      </div>
+      <span class="q-chev">▶</span>
+    </div>
+    <div class="q-body">${body}</div>
+  </div>`;
+}
+
+function toggleCard(id) {
+  const c = document.getElementById('card-' + id);
+  if (c) c.classList.toggle('open');
+}
+
+function checkOpt(btn, id, letter, correct) {
+  const card = document.getElementById('card-' + id);
+  if (!card) return;
+  card.querySelectorAll('.opt-btn').forEach(b => {
+    b.onclick = null;
+    if (b.dataset.let === correct) b.classList.add('correct');
+    else b.classList.add('wrong');
+  });
+  if (letter !== correct) { btn.classList.remove('wrong'); btn.classList.add('wrong'); }
+  const ab = document.getElementById('ans-' + id);
+  if (ab) ab.classList.add('show');
+}
+
+function revealAns(id) {
+  const ab = document.getElementById('ans-' + id);
+  if (ab) ab.classList.add('show');
+}
+
+// ── QUIZ ──
+function startQuiz() {
+  const catQs = activeCat >= 0
+    ? DATA[CATS[activeCat]].map((q, qi) => ({ ...q, ci: activeCat, qi, id: activeCat + '-' + qi })).filter(isMCQ)
+    : ALL.filter(isMCQ);
+
+  if (catQs.length === 0) {
+    document.getElementById('quiz-view').innerHTML =
+      '<div class="empty">No MCQ questions here. Use Browse mode for written questions.</div>';
+    return;
+  }
+  const shuffled = [...catQs].sort(() => Math.random() - 0.5);
+  quiz = { qs: shuffled, idx: 0, score: 0, wrong: 0, skipped: 0, done: false, ans: {} };
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const qv = document.getElementById('quiz-view');
+  if (!quiz) return;
+  const { qs, idx, score, wrong, skipped, done } = quiz;
+  const col = COLORS[activeCat] || '#00b4d8';
+
+  if (done) {
+    const pct = Math.round(score / qs.length * 100);
+    document.getElementById('hdr-score').textContent = pct + '%';
+    qv.innerHTML = `<div class="quiz-score">
+      <h2 style="color:${col}">${pct}%</h2>
+      <p>${qs.length} questions · ${activeCat >= 0 ? CATS[activeCat].replace(/^\d+\.\s*/,'') : 'All Categories'}</p>
+      <div class="score-row">
+        <div class="score-item"><div class="score-val c">${score}</div><div class="score-lbl">Correct</div></div>
+        <div class="score-item"><div class="score-val w">${wrong}</div><div class="score-lbl">Wrong</div></div>
+        <div class="score-item"><div class="score-val s">${skipped}</div><div class="score-lbl">Skipped</div></div>
+      </div>
+      <button class="retry-btn" onclick="startQuiz()">Retry</button>
+    </div>`;
+    return;
+  }
+
+  const q    = qs[idx];
+  const lets = ['a','b','c','d','e'];
+  const answered = quiz.ans[idx];
+
+  const optsHtml = q.opts.map((opt, oi) => {
+    const l = lets[oi];
+    let cls = '';
+    if (answered !== undefined) {
+      if (l === q.ans) cls = ' correct';
+      else if (l === answered) cls = ' wrong';
+    }
+    return `<button class="opt-btn${cls}" onclick="quizAns('${l}')" ${answered !== undefined ? 'disabled' : ''}>
+      <span class="opt-let">${l.toUpperCase()}</span><span>${esc(opt)}</span>
+    </button>`;
+  }).join('');
+
+  const noteHtml = answered !== undefined && q.note
+    ? `<div class="note-box" style="margin-top:10px">
+        <div class="note-label">📝 Explanation</div>
+        <div class="note-text">${esc(q.note)}</div>
+       </div>` : '';
+
+  const pct = (idx / qs.length * 100).toFixed(1);
+
+  qv.innerHTML = `<div class="quiz-wrap">
+    <div class="quiz-prog">Q${idx+1}/${qs.length} · ✓ ${score} · ✗ ${wrong} · Skip ${skipped}</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+    <div class="quiz-q">${esc(q.q)}</div>
+    <div class="opts-grid">${optsHtml}</div>
+    ${noteHtml}
+    <div class="quiz-nav">
+      <button class="qnav-btn" onclick="quizPrev()" ${idx===0?'disabled':''}>← Prev</button>
+      ${answered !== undefined
+        ? (idx === qs.length-1
+            ? `<button class="qnav-btn primary" onclick="quizFinish()">Finish ✓</button>`
+            : `<button class="qnav-btn primary" onclick="quizNext()">Next →</button>`)
+        : `<button class="qnav-btn primary" onclick="quizSkip()">Skip</button>`
+      }
+    </div>
+  </div>`;
+}
+
+function quizAns(l) {
+  if (quiz.ans[quiz.idx] !== undefined) return;
+  quiz.ans[quiz.idx] = l;
+  if (l === quiz.qs[quiz.idx].ans) quiz.score++;
+  else quiz.wrong++;
+  renderQuiz();
+}
+function quizSkip() {
+  if (quiz.ans[quiz.idx] !== undefined) return;
+  quiz.ans[quiz.idx] = null; quiz.skipped++;
+  quizNext();
+}
+function quizNext() {
+  if (quiz.idx < quiz.qs.length - 1) { quiz.idx++; renderQuiz(); }
+  else quizFinish();
+}
+function quizPrev() {
+  if (quiz.idx > 0) { quiz.idx--; renderQuiz(); }
+}
+function quizFinish() {
+  quiz.qs.forEach((_, i) => {
+    if (quiz.ans[i] === undefined) { quiz.ans[i] = null; quiz.skipped++; }
+  });
+  quiz.done = true; renderQuiz();
+}
+
+// Init
+buildSidebar();
+renderBrowse();
+</script>
+
+<footer class="footer">© Arko — BB AD ICT Question Bank · 215 questions · All rights reserved.</footer>
+</body>
+</html>
